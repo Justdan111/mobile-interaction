@@ -4,9 +4,9 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v57.0.0/ before 
 
 ## This app
 
-- Metro runs on port **8085** (`npm start`). Do not use the default 8081 —
-  sibling apps in this repo share it and Expo Go's cache is keyed by
-  dev-server URL, so assets get served from the wrong project.
+- Metro runs on port **8090** (`npm start`). Do not use 8081 or anything
+  near it — sibling apps in this repo share it and Expo Go's cache is keyed
+  by dev-server URL, so assets get served from the wrong project.
 - Dependency versions are pinned to the SDK 57 set that the local Expo Go
   build is patched for. Skew shows up as a silent bounce to the home screen
   at splash, with no JS error. Do not upgrade or run `expo install --fix`.
