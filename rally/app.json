@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "Rally",
+    "slug": "rally",
+    "scheme": "rally",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F1F1F1",
+    "ios": { "supportsTablet": true },
+    "android": { "predictiveBackGestureEnabled": false },
+    "plugins": ["expo-router", "expo-font"]
+  }
+}
