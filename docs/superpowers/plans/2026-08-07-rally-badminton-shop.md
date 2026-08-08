@@ -47,7 +47,7 @@ Every task's requirements implicitly include this section.
   | `typescript` (dev) | `~6.0.3` |
   | `@types/react` (dev) | `~19.2.2` |
 
-- **Metro runs on port 8085.** `npm start` must resolve to `expo start --port 8085`. Expo Go caches recently-opened projects keyed by dev-server URL; siblings sharing 8081 make one app request assets from another app's server, surfacing as `ENOENT` on a path that belongs to a different project.
+- **Metro runs on port 8090.** `npm start` must resolve to `expo start --port 8090`. Expo Go caches recently-opened projects keyed by dev-server URL; siblings sharing 8081 make one app request assets from another app's server, surfacing as `ENOENT` on a path that belongs to a different project.
 - **Expo 57 API surface must be checked against the versioned docs** at <https://docs.expo.dev/versions/v57.0.0/> before writing against it. Do not write router APIs from memory. The root `Tabs` export is deprecated — this app uses no tab navigator, but treat every other router import with the same suspicion.
 - **Reanimated 4 needs no babel plugin.** `babel-preset-expo` handles worklets in SDK 57. Adding `react-native-reanimated/plugin` breaks the build.
 - **Stop Metro before running `tools/make-art.py`.** Metro watches `assets/` and will read a PNG mid-write, then cache `Error: Empty file` against that path until the server restarts.
@@ -133,7 +133,7 @@ Nothing renders until Expo, NativeWind, Nunito and the port pin all work togethe
 
 **Interfaces:**
 - Consumes: nothing
-- Produces: `colors` (the object in `theme/colors.ts`, keys exactly as in Global Constraints); the `@/*` path alias resolving to `rally/*`; Metro on port 8085
+- Produces: `colors` (the object in `theme/colors.ts`, keys exactly as in Global Constraints); the `@/*` path alias resolving to `rally/*`; Metro on port 8090
 
 - [ ] **Step 1: Create the project directory and `package.json`**
 
@@ -182,10 +182,10 @@ mkdir -p rally/app/\(shop\)/product rally/components/ui rally/components/home \
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "start": "expo start --port 8085",
-    "android": "expo start --android --port 8085",
-    "ios": "expo start --ios --port 8085",
-    "web": "expo start --web --port 8085"
+    "start": "expo start --port 8090",
+    "android": "expo start --android --port 8090",
+    "ios": "expo start --ios --port 8090",
+    "web": "expo start --web --port 8090"
   },
   "private": true
 }
@@ -325,7 +325,7 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v57.0.0/ before 
 
 ## This app
 
-- Metro runs on port **8085** (`npm start`). Do not use the default 8081 —
+- Metro runs on port **8090** (`npm start`). Do not use 8081 or anything near it —
   sibling apps in this repo share it and Expo Go's cache is keyed by
   dev-server URL, so assets get served from the wrong project.
 - Dependency versions are pinned to the SDK 57 set that the local Expo Go
@@ -491,7 +491,7 @@ Expected: no output, exit 0. A `Cannot find module '@/theme/colors'` here means 
 cd "/Users/danemmanuel/Documents/mobile interactions/rally" && npm start
 ```
 
-Expected: Metro prints `exp://<lan-ip>:8085`. Open that URL in Expo Go.
+Expected: Metro prints `exp://<lan-ip>:8090`. Open that URL in Expo Go.
 
 Expected on screen: `#F1F1F1` background, "Rally" in heavy rounded Nunito (not the system font — if the letterforms look like Helvetica, `useFonts` did not resolve), "Search your rackets" in grey below it, and a teal rounded rectangle. Screenshot it.
 
@@ -502,7 +502,7 @@ If the app bounces straight back to the Expo Go home screen with no error, that 
 ```bash
 cd "/Users/danemmanuel/Documents/mobile interactions"
 git add rally/
-git commit -m "feat(rally): scaffold Expo 57 + NativeWind app on port 8085"
+git commit -m "feat(rally): scaffold Expo 57 + NativeWind app on port 8090"
 ```
 
 ---
@@ -3125,14 +3125,14 @@ Add to the `expo` block:
 
 - [ ] **Step 3: Write `README.md`**
 
-`rally/README.md`: what the app is, `npm start` runs on port 8085 and why, how to add a product photo (`tools/photos.tsv` → `fetch-photos.sh` → stop Metro → `make-art.py`), and a pointer to the spec at `docs/superpowers/specs/2026-08-07-rally-badminton-shop-design.md`.
+`rally/README.md`: what the app is, `npm start` runs on port 8090 and why, how to add a product photo (`tools/photos.tsv` → `fetch-photos.sh` → stop Metro → `make-art.py`), and a pointer to the spec at `docs/superpowers/specs/2026-08-07-rally-badminton-shop-design.md`.
 
 - [ ] **Step 4: Full comparison pass**
 
 Restart Metro with a cleared cache, since the icon files changed under `assets/`:
 
 ```bash
-cd "/Users/danemmanuel/Documents/mobile interactions/rally" && npx expo start --port 8085 --clear
+cd "/Users/danemmanuel/Documents/mobile interactions/rally" && npx expo start --port 8090 --clear
 ```
 
 Capture all three states and put each beside its comp:
@@ -3180,7 +3180,7 @@ git add rally/ && git commit -m "feat(rally): app icons, README and comp-matchin
 The app is done when all of these hold:
 
 - [ ] `npx tsc --noEmit` is silent from `rally/`.
-- [ ] Metro bundles on port 8085 with no red-box and no missing-module warnings.
+- [ ] Metro bundles on port 8090 with no red-box and no missing-module warnings.
 - [ ] All three screens read as the same design as their comps, side by side.
 - [ ] Hearts toggle and agree between Home and the detail screen.
 - [ ] The stepper drives the detail total; `$120 × 3` shows `$ 360.00`.
