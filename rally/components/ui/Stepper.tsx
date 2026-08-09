@@ -27,7 +27,7 @@ export function Stepper({
         onPress={() => step(-1)}
         accessibilityLabel="Decrease quantity"
         className="h-9 w-9 rounded-[10px] bg-teal"
-        style={{ opacity: atMin ? 0.4 : 1 }}
+        style={atMin ? { opacity: 0.4 } : undefined}
       >
         <MinusIcon />
       </IconButton>
