@@ -519,7 +519,7 @@ Everything downstream imports from here, so it lands before any screen. All SVG,
 - Consumes: `colors` from Task 1
 - Produces: `IconProps = { size?: number; color?: string; strokeWidth?: number }` and these components, all accepting `IconProps`:
   `MenuIcon`, `BellIcon`, `SearchIcon`, `HeartIcon`, `HeartFilledIcon`, `StarIcon`, `ChevronLeftIcon`, `ChevronUpIcon`, `MinusIcon`, `PlusIcon`, `CloseIcon`, `HomeIcon`, `CartIcon`, `MessageIcon`, `AccountIcon`, `SettingIcon`, `SignOutIcon`.
-  Plus `SwooshUnderline({ width, color })` and `BrandMark({ brand, size, color })` where `brand: BrandId = 'volara' | 'kestrel' | 'ardent' | 'sable'`.
+  Plus `SwooshUnderline({ width, color })` and `BrandMark({ brand, size, color, cut })` where `brand: BrandId = 'volara' | 'kestrel' | 'ardent' | 'sable'`. `cut` is the tile colour showing through the mark's negative space, defaulting to `colors.surface`; callers rendering a mark on a non-white tile must pass it.
 
 - [ ] **Step 1: Write the icon module**
 
@@ -2092,7 +2092,7 @@ git add rally/ && git commit -m "feat(rally): home header, search and voucher ca
 **Interfaces:**
 - Consumes: `brands`, `products` (Task 5), `images` (Task 4), `BrandMark` (Task 2), `SectionHeader`, `PricePill`, `HeartButton` (Task 3), `useStore` (Task 6)
 - Produces:
-  - `CategoryRail({ selected, onSelect })` — `selected: BrandId`, `onSelect: (id: BrandId) => void`
+  - `CategoryRail({ selected, onSelect })` — `selected: BrandId`, `onSelect: (id: BrandId) => void`. Must pass `BrandMark`'s `cut` prop (added in Task 2): the teal tile needs `cut={colors.teal}`, or Ardent's crossbar and Sable's letterform render white-on-white and vanish.
   - `ProductCard({ product })` — reads the store itself for favourite state, navigates on press
   - `ProductGrid({ products })`
 
@@ -2141,6 +2141,10 @@ export function CategoryRail({
               brand={brand.id}
               size={26}
               color={brand.id === 'volara' && !active ? colors.ember : ink}
+              // `cut` is the tile colour showing through the negative space in
+              // Ardent's crossbar and Sable's letterform. Omit it on the teal
+              // tile and both details render white-on-white and disappear.
+              cut={active ? colors.teal : colors.surface}
             />
             <Text
               className="font-nunito-extrabold text-[13px]"
