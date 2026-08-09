@@ -316,14 +316,19 @@ export function BrandMark({
   brand,
   size = 28,
   color = colors.ink,
+  cut = colors.surface,
 }: {
   brand: BrandId;
   size?: number;
   color?: string;
+  /** The tile colour behind the mark — shows through the negative space in
+      `ardent`'s crossbar and `sable`'s letterform. Callers rendering on a
+      non-white tile must pass it, or the detail disappears into the glyph. */
+  cut?: string;
 }) {
   switch (brand) {
     case 'volara':
-      // A swept quill — the hero brand's mark, always struck in ember.
+      // A swept quill — the hero brand's mark, which call sites strike in ember.
       return (
         <Svg {...frame(size)}>
           <Path
@@ -346,7 +351,7 @@ export function BrandMark({
       return (
         <Svg {...frame(size)}>
           <Path d="M12 3.4 21.4 20.6h-4.6L12 11.2 7.2 20.6H2.6L12 3.4Z" fill={color} />
-          <Path d="M7.6 15.4h8.8" stroke={colors.surface} strokeWidth={2.2} strokeLinecap="round" />
+          <Path d="M7.6 15.4h8.8" stroke={cut} strokeWidth={2.2} strokeLinecap="round" />
         </Svg>
       );
     case 'sable':
@@ -356,7 +361,7 @@ export function BrandMark({
           <Rect x={2.4} y={2.4} width={19.2} height={19.2} rx={5.6} fill={color} />
           <Path
             d="M15.4 8.6c-1-1-2.2-1.4-3.6-1.4-2 0-3.4 1-3.4 2.4 0 3.2 7.2 1.6 7.2 5.4 0 1.8-1.8 3-4 3-1.6 0-3-.5-4-1.6"
-            stroke={colors.surface}
+            stroke={cut}
             strokeWidth={2}
             strokeLinecap="round"
             fill="none"
