@@ -1179,7 +1179,11 @@ export function Stepper({
         onPress={() => step(-1)}
         accessibilityLabel="Decrease quantity"
         className="h-9 w-9 rounded-[10px] bg-teal"
-        style={{ opacity: atMin ? 0.4 : 1 }}
+        // Only override when there is something to override. Passing a
+        // concrete `opacity: 1` here would sit last in IconButton's style
+        // array and clobber its pressed-state 0.6, so the button would never
+        // dim on press while the `+` beside it does.
+        style={atMin ? { opacity: 0.4 } : undefined}
       >
         <MinusIcon />
       </IconButton>
