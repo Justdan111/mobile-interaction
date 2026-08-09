@@ -1,76 +1,74 @@
 /**
- * Static sample data. Every number here is read off the three comps — the app
- * is a faithful rebuild of those screens, not a live CGM client. The chart
- * series were sampled straight from the mock artwork, which is why they carry
- * three decimals rather than round numbers.
+ * Sample data for the three comps, reshaped into something the app can compute
+ * against. Nothing here is a headline number: the figures the screens show
+ * (72 mg/dL, 93 average, 7.1% HbA1c, 50/30/20) all fall out of these series via
+ * `lib/glucose.ts`, so logging a reading moves them.
+ *
+ * Today's curve keeps the shape sampled from the comp artwork but is expressed
+ * in mg/dL, solved so its mean is 93 and its final sample is 72 - the two
+ * numbers the dashboard puts on screen.
  */
 
-export const today = {
-  label: 'MON. OCT 20',
-  current: 72,
-  unit: 'mg/dL',
-  /** Up, down or flat — drives the trend triangle on the dashboard. */
-  trend: 'up' as 'up' | 'down' | 'flat',
+export type Reading = {
+  /** Minutes past midnight, so the series needs no Date at module scope. */
+  minute: number;
+  mgdl: number;
 };
+
+export type DaySummary = {
+  date: string;
+  label: string;
+  /** Fractions of the day spent in, above and below the target band. */
+  tir: number;
+  above: number;
+  below: number;
+  average: number;
+};
+
+/** Today's trace: 51 samples at 5-minute spacing, 10:00 through 14:10. */
+const TODAY_MGDL = [
+  57, 70, 80, 82, 122, 128, 129, 143, 158, 158, 147, 110, 79, 72, 73, 78, 86,
+  93, 95, 91, 87, 80, 72, 64, 55, 48, 45, 50, 63, 76, 88, 95, 100, 105, 107,
+  108, 104, 98, 86, 73, 64, 71, 82, 93, 106, 121, 129, 128, 126, 98, 72,
+];
+
+const FIRST_SAMPLE_MINUTE = 10 * 60;
+const SAMPLE_SPACING = 5;
+
+export const todayReadings: Reading[] = TODAY_MGDL.map((mgdl, i) => ({
+  minute: FIRST_SAMPLE_MINUTE + i * SAMPLE_SPACING,
+  mgdl,
+}));
+
+export const todayLabel = 'MON. OCT 20';
 
 /**
- * The dashboard trace, normalised 0..1 against the plotted band: 51 samples
- * spanning 10:00 to now.
+ * The thirteen days *behind* today - today itself is computed from
+ * `todayReadings` and appended at runtime. Solved so that once today folds in,
+ * the fortnight aggregates to exactly 50% in target, 30% above and 20% below,
+ * at a mean of 157 mg/dL, which is the 7.1% HbA1c the dashboard reports.
+ *
+ * Because today is live, logging readings moves all four of those figures.
  */
-export const trace = [
-  0.278, 0.361, 0.426, 0.444, 0.686, 0.731, 0.741, 0.834, 0.926, 0.935, 0.87,
-  0.657, 0.482, 0.444, 0.454, 0.491, 0.547, 0.592, 0.611, 0.592, 0.574, 0.537,
-  0.5, 0.454, 0.408, 0.37, 0.361, 0.399, 0.482, 0.565, 0.639, 0.686, 0.722,
-  0.76, 0.778, 0.787, 0.769, 0.741, 0.676, 0.602, 0.556, 0.602, 0.676, 0.75,
-  0.834, 0.926, 0.982, 0.982, 0.972, 0.815, 0.666,
+export const history: DaySummary[] = [
+  { date: '2025-10-07', label: 'TUE 07 OCT', tir: 0.5239, above: 0.3229, below: 0.1532, average: 164 },
+  { date: '2025-10-08', label: 'WED 08 OCT', tir: 0.3883, above: 0.3295, below: 0.2822, average: 158 },
+  { date: '2025-10-09', label: 'THU 09 OCT', tir: 0.7704, above: 0.1397, below: 0.0899, average: 142 },
+  { date: '2025-10-10', label: 'FRI 10 OCT', tir: 0.567, above: 0.2937, below: 0.1393, average: 162 },
+  { date: '2025-10-11', label: 'SAT 11 OCT', tir: 0.4252, above: 0.3096, below: 0.2652, average: 156 },
+  { date: '2025-10-12', label: 'SUN 12 OCT', tir: 0.567, above: 0.2634, below: 0.1696, average: 155 },
+  { date: '2025-10-13', label: 'MON 13 OCT', tir: 0.4006, above: 0.4065, below: 0.1929, average: 175 },
+  { date: '2025-10-14', label: 'TUE 14 OCT', tir: 0.5269, above: 0.2548, below: 0.2183, average: 151 },
+  { date: '2025-10-15', label: 'WED 15 OCT', tir: 0.3605, above: 0.3891, below: 0.2504, average: 169 },
+  { date: '2025-10-16', label: 'THU 16 OCT', tir: 0.3759, above: 0.4233, below: 0.2008, average: 177 },
+  { date: '2025-10-17', label: 'FRI 17 OCT', tir: 0.4006, above: 0.3228, below: 0.2766, average: 157 },
+  { date: '2025-10-18', label: 'SAT 18 OCT', tir: 0.4992, above: 0.3047, below: 0.1961, average: 160 },
+  { date: '2025-10-19', label: 'SUN 19 OCT', tir: 0.3513, above: 0.44, below: 0.2087, average: 179 },
 ];
 
-export const traceAxis = ['10', '12', '14', 'now'];
+/** The band the app scores against. Adjustable from the menu. */
+export const DEFAULT_TARGET = { low: 70, high: 180 };
 
-export const summary = [
-  { label: 'Average', value: '93', unit: 'mg/dL' },
-  { label: 'HbA1c', value: '7.1', unit: '%' },
-  { label: 'CV', value: '36', unit: '%' },
-];
-
-/** The three range cards on the Events screen. Bars are fractions of the card. */
-export const events = [
-  {
-    label: 'Time in target',
-    value: '50',
-    unit: '%',
-    tone: 'violet' as const,
-    bars: [0.478, 0.462, 0.488, 0.488, 0.453, 0.41],
-  },
-  {
-    label: 'Above range',
-    value: '30',
-    unit: '%',
-    tone: 'clay' as const,
-    bars: [0.39, 0.543, 0.695, 0.661, 0.771, 0.508],
-  },
-  {
-    label: 'Below range',
-    value: '20',
-    unit: '%',
-    tone: 'amber' as const,
-    bars: [0.353, 0.215, 0.267, 0.31, 0.5, 0.241],
-  },
-];
-
-/** Thirteen days of time-in-range, plus the ticks under them. */
-export const fortnight = [
-  0.68, 0.504, 1.0, 0.736, 0.552, 0.736, 0.52, 0.684, 0.468, 0.488, 0.52, 0.648,
-  0.456,
-];
-
-export const fortnightAxis = ['1', '07', '14', '21', '28', '4', '11'];
-
-/** Where the dotted reference line sits inside the fortnight chart. */
-export const fortnightMedian = 0.53;
-
-export const fortnightHeadline = {
-  value: '50',
-  unit: '%',
-  badge: 'Good',
-};
+/** What the events cards are keyed on - order matters, it is the card order. */
+export const RANGE_BANDS = ['tir', 'above', 'below'] as const;
+export type RangeBand = (typeof RANGE_BANDS)[number];

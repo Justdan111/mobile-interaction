@@ -16,7 +16,16 @@ const TONES: Record<Tone, [string, string]> = {
 export const BAR_WIDTH = 18;
 export const BAR_GAP = 6.4;
 
-/** The bar cluster tucked into the right of each range card. */
+/** How much of the card's height the tallest bar is allowed to take. */
+const FILL = 0.85;
+
+/**
+ * The bar cluster tucked into the right of each range card. Values are scaled
+ * against the series' own maximum, not an absolute one: a card showing 8-14%
+ * below range would otherwise render as a row of stubs. The cluster is there to
+ * show the shape of the last six days, and the figure beside it carries the
+ * magnitude.
+ */
 export function MiniBars({
   values,
   tone,
@@ -28,6 +37,8 @@ export function MiniBars({
 }) {
   const [crest, mid] = TONES[tone];
   const width = values.length * BAR_WIDTH + (values.length - 1) * BAR_GAP;
+  const peak = Math.max(...values, 0.0001);
+  const scaled = values.map((v) => (v / peak) * FILL);
 
   return (
     <Svg width={width} height={height}>
@@ -39,7 +50,7 @@ export function MiniBars({
         </LinearGradient>
       </Defs>
 
-      {values.map((v, i) => {
+      {scaled.map((v, i) => {
         const barHeight = Math.max(v * height, BAR_WIDTH);
         return (
           <Rect

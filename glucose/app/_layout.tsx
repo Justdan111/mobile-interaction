@@ -11,6 +11,7 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
+import { AppStateProvider } from '@/state/app-state';
 import { colors } from '@/theme/colors';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -32,14 +33,14 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.void }}>
       <SafeAreaProvider>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: colors.void },
-          }}
-        >
-          <Stack.Screen name="index" />
-        </Stack>
+        <AppStateProvider>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: colors.void },
+            }}
+          />
+        </AppStateProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

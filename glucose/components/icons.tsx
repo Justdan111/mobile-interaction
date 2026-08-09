@@ -1,4 +1,4 @@
-import Svg, { Circle, Line, Path, Polygon } from 'react-native-svg';
+import Svg, { Circle, Line, Path, Polygon, Rect } from 'react-native-svg';
 import { colors } from '@/theme/colors';
 
 type IconProps = { size?: number; color?: string };
@@ -138,6 +138,107 @@ export function TrendTriangle({
       <Polygon
         points={direction === 'up' ? '15.5,1 30,15 1,15' : '15.5,15 30,1 1,1'}
         fill={color}
+      />
+    </Svg>
+  );
+}
+
+/** Tab bar: the dashboard's own trace, reduced to a glyph. */
+export function PulseIcon({ size = 22, color = colors.chalk }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path
+        d="M2 15.5c2.2 0 3-6.5 5-6.5s2.4 9 4.4 9 2.2-11 4.3-11c1.7 0 2 5 2.6 6.4.3.7.9 1.1 1.7 1.1"
+        stroke={color}
+        strokeWidth={1.9}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </Svg>
+  );
+}
+
+/** Tab bar: the fortnight bars, reduced to a glyph. */
+export function BarsIcon({ size = 22, color = colors.chalk }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      {[
+        [3.5, 13],
+        [9.5, 5],
+        [15.5, 9.5],
+        [21, 15.5],
+      ].map(([x, y]) => (
+        <Line
+          key={x}
+          x1={x}
+          y1={y}
+          x2={x}
+          y2={20}
+          stroke={color}
+          strokeWidth={2.4}
+          strokeLinecap="round"
+        />
+      ))}
+    </Svg>
+  );
+}
+
+/** Tab bar: the range cards, reduced to a glyph. */
+export function LayersIcon({ size = 22, color = colors.chalk }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      {[4.5, 11, 17.5].map((y) => (
+        <Rect
+          key={y}
+          x={3}
+          y={y}
+          width={18}
+          height={4.2}
+          rx={2.1}
+          stroke={color}
+          strokeWidth={1.7}
+          fill="none"
+        />
+      ))}
+    </Svg>
+  );
+}
+
+export function CloseIcon({ size = 16, color = colors.chalk }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 16 16">
+      <Line x1={2} y1={2} x2={14} y2={14} stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+      <Line x1={14} y1={2} x2={2} y2={14} stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+export function CheckIcon({ size = 15, color = colors.chalk }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 16 16">
+      <Path
+        d="M3 8.6 6.4 12 13 4.5"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </Svg>
+  );
+}
+
+export function TrashIcon({ size = 17, color = colors.mist }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 20 20">
+      <Path
+        d="M4 6h12M8.5 6V4.4h3V6M5.6 6l.7 9.4a1 1 0 0 0 1 .9h5.4a1 1 0 0 0 1-.9L14.4 6"
+        stroke={color}
+        strokeWidth={1.4}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
       />
     </Svg>
   );
