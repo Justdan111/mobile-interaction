@@ -1,10 +1,18 @@
-import { Text, View } from 'react-native';
+import { Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import Animated, { type AnimatedStyle } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BrandMark, SwooshUnderline } from '@/components/icons';
 import type { Voucher } from '@/data/vouchers';
 import { colors } from '@/theme/colors';
 
-export function VoucherCard({ voucher }: { voucher: Voucher }) {
+export function VoucherCard({
+  voucher,
+  contentStyle,
+}: {
+  voucher: Voucher;
+  /** Animated parallax offset from the carousel; omitted when static. */
+  contentStyle?: StyleProp<AnimatedStyle<ViewStyle>>;
+}) {
   return (
     <LinearGradient
       colors={[colors.teal, colors.tealDeep]}
@@ -17,7 +25,7 @@ export function VoucherCard({ voucher }: { voucher: Voucher }) {
       {/* Layout lives on a plain View: NativeWind's className does not drive
           flex on LinearGradient, so centring set there is silently ignored and
           the copy pins to the top. */}
-      <View className="flex-1 justify-center px-6">
+      <Animated.View className="flex-1 justify-center px-6" style={contentStyle}>
         <View className="absolute right-6 top-6">
           <BrandMark brand={voucher.brand} size={44} color={colors.ember} cut={colors.teal} />
         </View>
@@ -41,7 +49,7 @@ export function VoucherCard({ voucher }: { voucher: Voucher }) {
             {` ${voucher.tail}`}
           </Text>
         </View>
-      </View>
+      </Animated.View>
     </LinearGradient>
   );
 }
