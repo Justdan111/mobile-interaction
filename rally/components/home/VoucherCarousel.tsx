@@ -1,10 +1,18 @@
-import { useWindowDimensions, View } from 'react-native';
+import { useCallback, useEffect, useRef } from 'react';
+import {
+  useWindowDimensions,
+  View,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from 'react-native';
 import Animated, {
   Extrapolation,
   interpolate,
   interpolateColor,
+  useAnimatedRef,
   useAnimatedScrollHandler,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   type SharedValue,
 } from 'react-native-reanimated';
@@ -18,6 +26,18 @@ const PAGE_PADDING = 20;
 const REST_SCALE = 0.93;
 /** How far the copy lags the card, as a fraction of screen width. */
 const PARALLAX = 0.18;
+/** How long a panel holds before the carousel advances itself. */
+const DWELL_MS = 3800;
+
+const COUNT = vouchers.length;
+
+/**
+ * The panels are laid out twice. Advancing past the end of the first copy puts
+ * an identical panel on screen, so the offset can be reset to the start
+ * without animating and the loop is seamless — where scrolling back to page 0
+ * would rewind visibly across every panel in between.
+ */
+const slides = [...vouchers, ...vouchers];
 
 function Slide({
   index,
@@ -84,12 +104,25 @@ function Dot({
   width: number;
 }) {
   const style = useAnimatedStyle(() => {
-    const range = [(index - 1) * width, index * width, (index + 1) * width];
+    // Each dot lights up twice — once for its panel in each copy of the list —
+    // so the range covers both. Input stays monotonic because the two active
+    // points are COUNT pages apart.
+    const range = [
+      (index - 1) * width,
+      index * width,
+      (index + 1) * width,
+      (index + COUNT - 1) * width,
+      (index + COUNT) * width,
+      (index + COUNT + 1) * width,
+    ];
     return {
       // The active dot stretches into a pill and colours up continuously, so
       // it tracks a half-swipe instead of snapping when the page settles.
-      width: interpolate(scrollX.value, range, [8, 22, 8], Extrapolation.CLAMP),
+      width: interpolate(scrollX.value, range, [8, 22, 8, 8, 22, 8], Extrapolation.CLAMP),
       backgroundColor: interpolateColor(scrollX.value, range, [
+        colors.dot,
+        colors.teal,
+        colors.dot,
         colors.dot,
         colors.teal,
         colors.dot,
@@ -103,6 +136,15 @@ function Dot({
 export function VoucherCarousel() {
   const { width } = useWindowDimensions();
   const scrollX = useSharedValue(0);
+  const listRef = useAnimatedRef<Animated.ScrollView>();
+
+  // An auto-playing banner is exactly what "reduce motion" exists for, so
+  // honour it: the panels stay swipeable, they just stop moving on their own.
+  const reducedMotion = useReducedMotion();
+
+  const page = useRef(0);
+  const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const holding = useRef(false);
 
   // Driven on the UI thread — a JS-thread onScroll makes the dots and the
   // scale lag behind the finger under any load.
@@ -110,21 +152,61 @@ export function VoucherCarousel() {
     scrollX.value = e.contentOffset.x;
   });
 
+  const advance = useCallback(() => {
+    if (holding.current) return;
+    page.current += 1;
+    listRef.current?.scrollTo({ x: page.current * width, animated: true });
+  }, [listRef, width]);
+
+  const restart = useCallback(() => {
+    if (timer.current) clearInterval(timer.current);
+    if (reducedMotion) return;
+    timer.current = setInterval(advance, DWELL_MS);
+  }, [advance, reducedMotion]);
+
+  useEffect(() => {
+    restart();
+    return () => {
+      if (timer.current) clearInterval(timer.current);
+    };
+  }, [restart]);
+
+  function onMomentumEnd(e: NativeSyntheticEvent<NativeScrollEvent>) {
+    const landed = Math.round(e.nativeEvent.contentOffset.x / width);
+    if (landed >= COUNT) {
+      // Same panel, second copy — rewind silently so the loop can run on.
+      const wrapped = landed - COUNT;
+      page.current = wrapped;
+      listRef.current?.scrollTo({ x: wrapped * width, animated: false });
+    } else {
+      page.current = landed;
+    }
+  }
+
   return (
     <View>
       <Animated.ScrollView
+        ref={listRef}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         onScroll={onScroll}
         scrollEventThrottle={16}
         decelerationRate="fast"
+        onScrollBeginDrag={() => {
+          holding.current = true;
+        }}
+        onScrollEndDrag={() => {
+          holding.current = false;
+          // Give a full dwell after a swipe rather than advancing on whatever
+          // was left of the running interval.
+          restart();
+        }}
+        onMomentumScrollEnd={onMomentumEnd}
       >
-        {/* Only four panels, so they all mount — no virtualisation needed, and
-            a plain ScrollView keeps the scroll handler simple. */}
-        {vouchers.map((voucher, index) => (
+        {slides.map((voucher, index) => (
           <Slide
-            key={voucher.id}
+            key={`${voucher.id}-${index}`}
             index={index}
             scrollX={scrollX}
             width={width}
