@@ -1255,7 +1255,28 @@ git add rally/ && git commit -m "feat(rally): shared UI primitives"
 
 ---
 
-## Task 4: Photo pipeline
+## Task 4: Photo pipeline — COMPLETE, and it diverged from this text
+
+> **The committed `rally/tools/make-art.py` is authoritative, not the script
+> below.** Backdrop colour keying was implemented as written, run against real
+> photographs, and it failed: clouds survived as blue blobs, a pink wall left
+> magenta smears, a court's white line cut a grey band through the subject. A
+> median border colour cannot describe a gradient, and free badminton
+> photography is overwhelmingly shot on skies, courts and painted walls.
+>
+> It was replaced with `rembg` (U2Net) matting plus three correction passes:
+> keying the backdrop back out of the string bed the silhouette encloses,
+> dropping cast shadows via a uniform-darkening ratio test, and gating that
+> test on local detail so dark neutral objects aren't erased with the shadows.
+> `rembg` is a build-time dependency only — nothing extra ships in the bundle.
+>
+> The `gear-bag` slot was dropped and replaced with `racket-pair`: every free
+> racket-bag photograph carried a legible manufacturer wordmark. Task 5's
+> catalogue reflects this.
+>
+> The rest of this task's text stands as the original intent.
+
+
 
 Product photography drives all three screens, and the pipeline has to keep working for photos added later — it is not a one-shot import.
 
@@ -1669,15 +1690,17 @@ export const products: Product[] = [
   },
   {
     id: 'drift-tour',
-    name: 'Kestrel Drift Tour Bag',
+    name: 'Kestrel Drift Tour 88',
     brand: 'kestrel',
-    category: 'Gear Bag',
+    category: 'Racket',
     price: 56,
     rating: 4.6,
     sold: '7.8K',
     description:
-      'Six-racket thermal compartment with a vented shoe pocket and padded shoulder straps. Water-resistant shell, taped seams.',
-    images: ['gear-bag', 'racket-drift', 'court-action'],
+      'The entry frame in the Kestrel line, strung at 22lb and balanced for control. Aluminium head on a steel shaft, forgiving on off-centre hits.',
+    // Was a gear bag. Every free racket-bag photograph carried a legible
+    // manufacturer wordmark, so the slot became a racket — see Task 4.
+    images: ['racket-pair', 'racket-drift', 'court-action'],
   },
 ];
 
