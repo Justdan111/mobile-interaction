@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { BellIcon, MenuIcon, type BrandId } from '@/components/icons';
+import { useDrawer } from '@/components/drawer/DrawerHost';
 import { CategoryRail } from '@/components/home/CategoryRail';
 import { ProductGrid } from '@/components/home/ProductGrid';
 import { SearchField } from '@/components/home/SearchField';
@@ -13,13 +14,13 @@ import { SectionHeader } from '@/components/ui/SectionHeader';
 export default function Home() {
   const [query, setQuery] = useState('');
   const [brand, setBrand] = useState<BrandId>('volara');
+  const drawer = useDrawer();
 
   return (
     <Screen>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="pb-10">
         <View className="flex-row items-center justify-between px-5 pb-6 pt-4">
-          {/* Wired to the drawer in Task 9. */}
-          <IconButton onPress={() => {}} accessibilityLabel="Open menu">
+          <IconButton onPress={drawer.open} accessibilityLabel="Open menu">
             <MenuIcon />
           </IconButton>
           <IconButton onPress={() => {}} accessibilityLabel="Notifications">

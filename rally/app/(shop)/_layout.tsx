@@ -1,13 +1,16 @@
 import { Stack } from 'expo-router';
+import { DrawerHost } from '@/components/drawer/DrawerHost';
 import { colors } from '@/theme/colors';
 
 export default function ShopLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: colors.ground },
-      }}
-    />
+    <DrawerHost>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.ground },
+        }}
+      />
+    </DrawerHost>
   );
 }
