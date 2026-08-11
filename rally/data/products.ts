@@ -18,7 +18,7 @@ export type Product = {
 export const products: Product[] = [
   {
     id: 'kinetic-17-le',
-    name: 'Volara Kinetic 17 Limited Edition',
+    name: 'Volara Kinetic 17 LE',
     brand: 'volara',
     category: 'Racket',
     price: 120,
