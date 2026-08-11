@@ -184,6 +184,23 @@ def clear_string_bed(alpha, px, lo=0.05, hi=0.14):
     ) / 255.0
     shadow *= 1.0 - smoothstep(0.05, 0.22, detail)
 
+    # The detail gate is too generous for one case: the shadow *of a string
+    # bed* is itself a lattice, so it carries plenty of local detail and the
+    # gate waves it through. A racket on a pink wall kept a pink squiggle.
+    #
+    # Hue settles it. A shadow is the backdrop minus light, so it holds the
+    # backdrop's chromaticity exactly; the product almost never does. Compare
+    # chromaticity — colour with brightness divided out — and let a match
+    # override the detail gate. A charcoal racket on blue sky is neutral where
+    # the sky is blue, so it stays.
+    def chroma(v):
+        return v / np.maximum(v.sum(axis=-1, keepdims=True), 1e-3)
+
+    chroma_dist = np.sqrt(((chroma(px) - chroma(backdrop[None, None, :])) ** 2).sum(axis=2))
+    same_hue = 1.0 - smoothstep(0.012, 0.05, chroma_dist)
+    darker = 1.0 - smoothstep(0.94, 1.06, level)
+    shadow = np.maximum(shadow, same_hue * darker)
+
     return alpha * keep * (1.0 - shadow)
 
 
