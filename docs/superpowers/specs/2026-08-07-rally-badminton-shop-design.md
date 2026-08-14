@@ -303,7 +303,7 @@ rally/
   assets/img/                    raw .jpg + cut/*.png
   app.json  tailwind.config.js  metro.config.js  babel.config.js
   global.css  nativewind-env.d.ts  tsconfig.json  package.json
-  CREDITS.md  README.md  AGENTS.md  CLAUDE.md
+  CREDITS.md  README.md  AGENTS.md
 ```
 
 Each component file stays focused — a file growing past a couple of hundred
