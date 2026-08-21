@@ -251,7 +251,21 @@ simulator and comparing screenshots against the comps in
   `@react-native-async-storage/async-storage`,
   `@expo-google-fonts/anton`, `@expo-google-fonts/inter`.
 
-## 10. Out of scope
+## 10. Working agreements
+
+These are binding for the whole project.
+
+- **Branch:** all work happens on `halftone`, branched from `main`. Nothing is
+  committed directly to `main`.
+- **No AI attribution.** Commits and pull requests must never carry
+  `Co-Authored-By: Claude`, "Generated with Claude Code", or any equivalent
+  trailer, footer, or badge. This applies to commit messages, PR titles, PR
+  bodies, and any file written into the repository.
+- **Human review is required.** Every pull request is reviewed personally by
+  the repository owner. No PR is merged, auto-merged, or self-approved without
+  that review.
+
+## 11. Out of scope
 
 - Any backend, auth, or real networking.
 - Real photography. Avatars and art are procedural.
