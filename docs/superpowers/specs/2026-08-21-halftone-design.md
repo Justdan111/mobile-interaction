@@ -214,6 +214,18 @@ counts derive from member arrays. Chat previews derive from the last message in
 the thread. Nothing in the UI can contradict anything else, and editing one
 project updates every surface that mentions it.
 
+**The calendar is live.** It opens on the real current month with the real
+current date marked, not a frozen August 2023. Mock deadlines are therefore
+anchored to *day-of-month positions within the current month* rather than to
+absolute dates: tasks on the 5th and 9th, project windows on the 23rd–24th.
+Day numbers are clamped to the month's length so February and 30-day months
+stay valid. This keeps the comps' exact mark composition — a today marker, two
+task days, one joined two-day project window — while the app always shows a
+month the user is actually in.
+
+Dates are computed at module load from a single injectable clock, so tests can
+pin a date without touching the data files.
+
 ## 8. Testing
 
 TDD applies to the parts with real logic:
