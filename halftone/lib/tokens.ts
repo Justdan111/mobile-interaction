@@ -35,3 +35,15 @@ export const tokens: Record<Mode, Record<TokenName, string>> = {
     success: '#34C759',
   },
 };
+
+// Fixed art-direction palettes for procedural halftone plates (Avatar,
+// TeamTile). These are deliberately NOT mode-keyed — they read the same in
+// light and dark — and deliberately NOT semantic tokens: they exist purely
+// so a list of people or teams reads as varied rather than uniform, not to
+// carry any meaning `tokens` values do.
+
+/** Rotating plate colours so a member list reads as varied, not uniform. */
+export const PLATE_COLORS = ['#6C63E8', '#E5483D', '#0A84FF', '#F0A202', '#34C759', '#8E5BE8'];
+
+/** Saturated plate grounds, echoing the app-icon tiles in the comps. */
+export const TILE_GROUNDS = ['#2C4BFF', '#111111', '#E8622C', '#6C63E8', '#0F8B5B', '#C41E4A'];

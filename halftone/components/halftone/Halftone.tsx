@@ -7,8 +7,8 @@ type Props = {
   size: number;
   seed: string;
   density?: number;
-  /** Defaults to the ink token for the active mode. */
-  dotColor?: string;
+  /** No default: callers must pass a theme-aware colour (e.g. `useTheme().t.ink`). */
+  dotColor: string;
   /** Omit for a transparent plate. */
   background?: string;
   opacity?: number;
@@ -19,7 +19,7 @@ export function Halftone({
   size,
   seed,
   density = 46,
-  dotColor = '#FFFFFF',
+  dotColor,
   background,
   opacity = 1,
 }: Props) {

@@ -3,9 +3,7 @@ import { View } from 'react-native';
 import { Halftone } from './Halftone';
 import { FIELD_NAMES } from './fields';
 import { hashSeed } from '../../lib/seed';
-
-/** Saturated plate grounds, echoing the app-icon tiles in the comps. */
-const TILE_GROUNDS = ['#2C4BFF', '#111111', '#E8622C', '#6C63E8', '#0F8B5B', '#C41E4A'];
+import { TILE_GROUNDS } from '../../lib/tokens';
 
 export function TeamTile({
   teamId,
@@ -20,7 +18,11 @@ export function TeamTile({
 }) {
   const h = hashSeed(teamId);
   const ground = TILE_GROUNDS[h % TILE_GROUNDS.length];
-  const variant = FIELD_NAMES[(h >> 5) % FIELD_NAMES.length];
+  // Unsigned shift: hashSeed returns a uint32 via `>>> 0`, but a signed `>>`
+  // reinterprets any value with the top bit set as negative (ToInt32), which
+  // would make `% FIELD_NAMES.length` negative and index the array with a
+  // negative number — always `undefined` — for roughly half of all team ids.
+  const variant = FIELD_NAMES[(h >>> 5) % FIELD_NAMES.length];
 
   return (
     <View

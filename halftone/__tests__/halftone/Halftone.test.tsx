@@ -4,9 +4,11 @@ import { processColor } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Halftone } from '../../components/halftone/Halftone';
 import { Avatar } from '../../components/halftone/Avatar';
+import { TeamTile } from '../../components/halftone/TeamTile';
 import { generateDots } from '../../components/halftone/fields';
 import { ThemeProvider } from '../../lib/theme';
-import { tokens } from '../../lib/tokens';
+import { tokens, TILE_GROUNDS } from '../../lib/tokens';
+import { hashSeed } from '../../lib/seed';
 
 // @testing-library/react-native v14's `render` is async (it returns a
 // Promise that resolves to the render result — confirmed by reading
@@ -37,24 +39,25 @@ describe('Halftone', () => {
     const size = 200;
     const seed = 'test';
     const density = 24;
-    const result = await render(<Halftone variant={variant} size={size} seed={seed} density={density} />);
+    const result = await render(
+      <Halftone variant={variant} size={size} seed={seed} density={density} dotColor="#FFFFFF" />
+    );
 
     const circles = result.root!.queryAll((i: { type: string }) => i.type === 'RNSVGCircle');
 
     // Real correspondence, not a loose smoke check: the rendered circle
     // count must equal generateDots' own output count for these exact
-    // inputs, and (per the field's dot-dropping logic) that is well above
-    // 50 for this seed/density, so both the brief's threshold and a real
-    // regression guard are satisfied by the same assertion.
+    // inputs. This subsumes the brief's `toBeGreaterThan(50)` threshold
+    // (that count is well above 50 for this seed/density) with a stronger,
+    // exact guard against dropped or duplicated dots.
     const expectedDots = generateDots(variant, { size, density, seed });
     expect(circles.length).toBe(expectedDots.length);
-    expect(circles.length).toBeGreaterThan(50);
   });
 
   it('renders every variant without throwing', async () => {
     for (const v of ['sphere', 'wave', 'blob', 'orbit'] as const) {
       await expect(
-        render(<Halftone variant={v} size={120} seed="x" density={16} />)
+        render(<Halftone variant={v} size={120} seed="x" density={16} dotColor="#FFFFFF" />)
       ).resolves.not.toThrow();
     }
   });
@@ -105,5 +108,57 @@ describe('Avatar', () => {
       expect(darkGround.props.fill.payload).toBe(processColor(tokens.dark.card));
       expect(lightGround.props.fill.payload).not.toBe(darkGround.props.fill.payload);
     });
+  });
+});
+
+// TeamTile does not call useTheme (neither does Halftone, which the reviewer
+// specifically credited as correct design), so no ThemeProvider is needed.
+describe('TeamTile', () => {
+  // Verified (not assumed) via lib/seed's real hashSeed against lib/tokens'
+  // real TILE_GROUNDS/fields' FIELD_NAMES: 'team-alpha' hashes to ground
+  // '#C41E4A' / variant 'wave', 'team-bravo' hashes to ground '#111111' /
+  // variant 'sphere' — a pair that differs on BOTH axes, not a coincidence
+  // of two arbitrary strings.
+  const ID_A = 'team-alpha';
+  const ID_B = 'team-bravo';
+
+  function expectedGroundFill(teamId: string): ReturnType<typeof processColor> {
+    const h = hashSeed(teamId);
+    return processColor(TILE_GROUNDS[h % TILE_GROUNDS.length]);
+  }
+
+  it('gives the same teamId the same ground and variant every time', async () => {
+    const a = (await render(<TeamTile teamId={ID_A} name="Alpha" size={48} />)).toJSON();
+    const b = (await render(<TeamTile teamId={ID_A} name="Alpha" size={48} />)).toJSON();
+    expect(JSON.stringify(a)).toEqual(JSON.stringify(b));
+  });
+
+  it('gives different teamIds different ground colours (verified, not assumed)', async () => {
+    const a = await render(<TeamTile teamId={ID_A} name="Alpha" size={48} />);
+    const b = await render(<TeamTile teamId={ID_B} name="Bravo" size={48} />);
+
+    const groundA = a.root!.queryAll((i: { type: string }) => i.type === 'RNSVGRect')[0];
+    const groundB = b.root!.queryAll((i: { type: string }) => i.type === 'RNSVGRect')[0];
+
+    // Ties directly to the real TILE_GROUNDS values via hashSeed, not just
+    // "the two JSON trees differ" (which a bug that varied only unrelated
+    // noise could also satisfy).
+    expect(groundA.props.fill.payload).toBe(expectedGroundFill(ID_A));
+    expect(groundB.props.fill.payload).toBe(expectedGroundFill(ID_B));
+    expect(groundA.props.fill.payload).not.toBe(groundB.props.fill.payload);
+  });
+
+  it('applies the default radius when the prop is omitted', async () => {
+    const withDefault = await render(<TeamTile teamId={ID_A} name="Alpha" size={48} />);
+    const withExplicit = await render(<TeamTile teamId={ID_A} name="Alpha" size={48} radius={2} />);
+
+    const defaultRadius = withDefault.root!.props.style.borderRadius;
+    const explicitRadius = withExplicit.root!.props.style.borderRadius;
+
+    expect(defaultRadius).toBe(14);
+    expect(explicitRadius).toBe(2);
+    // Proves the assertion actually exercises the `radius` prop wiring
+    // rather than a coincidence of both branches producing 14.
+    expect(defaultRadius).not.toBe(explicitRadius);
   });
 });
