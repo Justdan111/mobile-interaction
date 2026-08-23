@@ -5,9 +5,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Halftone } from '../../components/halftone/Halftone';
 import { Avatar } from '../../components/halftone/Avatar';
 import { TeamTile } from '../../components/halftone/TeamTile';
-import { generateDots } from '../../components/halftone/fields';
 import { ThemeProvider } from '../../lib/theme';
-import { tokens, TILE_GROUNDS } from '../../lib/tokens';
+import { tokens, TILE_GROUNDS, PLATE_COLORS } from '../../lib/tokens';
+import { generateDots, FIELD_NAMES } from '../../components/halftone/fields';
 import { hashSeed } from '../../lib/seed';
 
 // @testing-library/react-native v14's `render` is async (it returns a
@@ -109,6 +109,30 @@ describe('Avatar', () => {
       expect(lightGround.props.fill.payload).not.toBe(darkGround.props.fill.payload);
     });
   });
+
+  describe('unsigned-shift regression (plate lookup)', () => {
+    // 'Bob Smith' is a deliberately chosen fixture, not an assumed one:
+    // hashSeed('Bob Smith') === 3361952911 (0xc863548f), which is
+    // >= 0x80000000 — the top bit is set. Under the bug this fix replaced
+    // (a signed `>>` on hashSeed's unsigned uint32 output), ToInt32 would
+    // reinterpret this hash as negative, `% PLATE_COLORS.length` would stay
+    // negative, and `PLATE_COLORS[negativeIndex]` would be `undefined`.
+    // None of the other fixtures already in this file ('Alice Johnson',
+    // 'Eric Thompson', 'team-alpha', 'team-bravo') have a top-bit-set hash,
+    // so this is the first assertion in the suite that actually exercises
+    // that branch.
+    it("uses the unsigned-shift plate colour for a name whose hash's top bit is set", async () => {
+      const name = 'Bob Smith';
+      const h = hashSeed(name);
+      expect(h).toBeGreaterThanOrEqual(0x80000000); // confirms the fixture qualifies
+
+      const expectedPlate = PLATE_COLORS[(h >>> 3) % PLATE_COLORS.length];
+      const rendered = await renderAvatar(name, 40);
+      const dot = rendered.root!.queryAll((i: { type: string }) => i.type === 'RNSVGCircle')[0];
+
+      expect(dot.props.fill.payload).toBe(processColor(expectedPlate));
+    });
+  });
 });
 
 // TeamTile does not call useTheme (neither does Halftone, which the reviewer
@@ -160,5 +184,51 @@ describe('TeamTile', () => {
     // Proves the assertion actually exercises the `radius` prop wiring
     // rather than a coincidence of both branches producing 14.
     expect(defaultRadius).not.toBe(explicitRadius);
+  });
+
+  describe('unsigned-shift regression (ground + variant lookup)', () => {
+    // 'team-charlie' is a deliberately chosen fixture, not an assumed one:
+    // hashSeed('team-charlie') === 3568208867 (0xd4ae8be3), which is
+    // >= 0x80000000 — the top bit is set. Under the bug this fix replaced
+    // (a signed `>>` on hashSeed's unsigned uint32 output), ToInt32 would
+    // reinterpret this hash as negative for the variant lookup, `%
+    // FIELD_NAMES.length` would stay negative, and `FIELD_NAMES[negativeIndex]`
+    // would be `undefined` — silently breaking generateDots for this tile.
+    // Neither 'team-alpha' nor 'team-bravo' (used elsewhere in this file)
+    // has a top-bit-set hash, so this is the first assertion in the suite
+    // that exercises that branch, and the first assertion anywhere on
+    // TeamTile's variant value specifically (the earlier ground-colour test
+    // never inspects which field was chosen).
+    const ID = 'team-charlie';
+    const SIZE = 48;
+    const DENSITY = 16; // matches TeamTile's Math.max(16, Math.round(size / 3)) for size=48
+
+    it("selects the unsigned-shift ground colour for a teamId whose hash's top bit is set", async () => {
+      const h = hashSeed(ID);
+      expect(h).toBeGreaterThanOrEqual(0x80000000); // confirms the fixture qualifies
+
+      const expectedGround = TILE_GROUNDS[h % TILE_GROUNDS.length];
+      const rendered = await render(<TeamTile teamId={ID} name="Charlie" size={SIZE} />);
+      const ground = rendered.root!.queryAll((i: { type: string }) => i.type === 'RNSVGRect')[0];
+
+      expect(ground.props.fill.payload).toBe(processColor(expectedGround));
+    });
+
+    it("selects the unsigned-shift field variant for a teamId whose hash's top bit is set", async () => {
+      const h = hashSeed(ID);
+      expect(h).toBeGreaterThanOrEqual(0x80000000); // confirms the fixture qualifies
+
+      const expectedVariant = FIELD_NAMES[(h >>> 5) % FIELD_NAMES.length];
+      const rendered = await render(<TeamTile teamId={ID} name="Charlie" size={SIZE} />);
+      const circles = rendered.root!.queryAll((i: { type: string }) => i.type === 'RNSVGCircle');
+      const actualDots = circles.map((c) => ({ x: c.props.cx, y: c.props.cy, r: c.props.r }));
+
+      // Proves the rendered geometry corresponds to the *expected* field,
+      // not merely that some field was chosen: a wrong (or undefined, i.e.
+      // pre-bugfix) variant produces a different dot count/layout than
+      // generateDots(expectedVariant, ...) for the identical inputs.
+      const expectedDots = generateDots(expectedVariant, { size: SIZE, density: DENSITY, seed: ID });
+      expect(actualDots).toEqual(expectedDots);
+    });
   });
 });
