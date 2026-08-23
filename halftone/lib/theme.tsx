@@ -15,6 +15,8 @@ type ThemeValue = {
   toggle: () => void;
   /** Raw token values for consumers that cannot use className: SVG, glass tints. */
   t: Record<TokenName, string>;
+  /** True once the persisted preference has been read (or the read has failed/found nothing). */
+  hydrated: boolean;
 };
 
 const ThemeContext = createContext<ThemeValue | null>(null);
@@ -27,13 +29,25 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const system = useSystemColorScheme();
   const { setColorScheme } = useNativeWindColorScheme();
   const [preference, setPreferenceState] = useState<Preference>('system');
+  const [hydrated, setHydrated] = useState(false);
 
-  // Restore the stored preference once on mount.
+  // Restore the stored preference once on mount. Every exit from this read —
+  // a valid value, nothing stored, a corrupt value `isPreference` rejects, or
+  // the read itself failing — must still flip `hydrated`, or the splash
+  // screen (which waits on it in app/_layout.tsx) hangs forever.
   useEffect(() => {
     let cancelled = false;
-    AsyncStorage.getItem(THEME_STORAGE_KEY).then((stored) => {
-      if (!cancelled && isPreference(stored)) setPreferenceState(stored);
-    });
+    AsyncStorage.getItem(THEME_STORAGE_KEY)
+      .then((stored) => {
+        if (!cancelled && isPreference(stored)) setPreferenceState(stored);
+      })
+      .catch(() => {
+        // Read failed (e.g. storage unavailable) — fall back to the default
+        // preference rather than leaving the app stuck unhydrated.
+      })
+      .finally(() => {
+        if (!cancelled) setHydrated(true);
+      });
     return () => {
       cancelled = true;
     };
@@ -57,8 +71,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setPreference,
       toggle: () => setPreference(mode === 'dark' ? 'light' : 'dark'),
       t: tokens[mode],
+      hydrated,
     };
-  }, [mode, preference]);
+  }, [mode, preference, hydrated]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
