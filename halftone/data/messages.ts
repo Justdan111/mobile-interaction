@@ -9,7 +9,10 @@ const at = (daysAgo: number, time: string) => `${shiftDays(todayIso(), -daysAgo)
  * The Website Development thread reproduces the reference comp's exact
  * sequence, including "Tom", who sends messages here without being a member
  * of the team roster in data/teams.ts — that mismatch exists in the source
- * comp itself and is reproduced deliberately, not a mistake.
+ * comps themselves and is reproduced deliberately, not a mistake. Every
+ * senderId here resolves through the `people` lookup in data/people.ts,
+ * which is not the same thing as a team's member roster (see that file's
+ * comment on Tom).
  */
 export const messages: Message[] = [
   // t-website-dev — reproduces the reference chat-thread comp.

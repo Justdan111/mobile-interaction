@@ -2,6 +2,7 @@ import { projects } from '../../data/projects';
 import { teams } from '../../data/teams';
 import { messages } from '../../data/messages';
 import { proposals } from '../../data/proposals';
+import { people } from '../../data/people';
 import { todayIso } from '../../lib/today';
 
 const dayOf = (iso: string) => Number(iso.slice(8, 10));
@@ -42,6 +43,27 @@ describe('mock data integrity', () => {
 
   it('orders every project pay range low to high', () => {
     for (const p of projects) expect(p.payMin).toBeLessThanOrEqual(p.payMax);
+  });
+
+  it('orders every multi-day project window start to end', () => {
+    // Guards against a future short-month clamp collapsing or inverting a
+    // window — the joined-pill calendar rendering assumes deadlineEnd is
+    // never before deadline.
+    for (const p of projects) {
+      if (p.deadlineEnd !== undefined) {
+        expect(p.deadlineEnd.localeCompare(p.deadline)).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+
+  it('resolves every message sender in the people lookup', () => {
+    // The people lookup (data/people.ts) is the one place a sender id turns
+    // into a display name and avatar. A sender that resolves to nothing has
+    // no name and no avatar source downstream (Task 12 groups messages by
+    // sender for avatar placement).
+    for (const m of messages) {
+      expect(people[m.senderId]).toEqual(expect.any(String));
+    }
   });
 
   it('reproduces the mark composition from the reference comp', () => {
