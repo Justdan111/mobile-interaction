@@ -92,7 +92,7 @@ export function generateDots(name: FieldName, opts: DotOptions): Dot[] {
       const wobbleY = (rand() - 0.5) * jitter * cell;
       const grain = 0.88 + rand() * 0.24;
 
-      const r = Math.min(maxRadius, v * grain * maxRadius);
+      const r = clamp(v * grain * maxRadius, 0, maxRadius);
       if (r < MIN_VISIBLE_RADIUS) continue;
 
       dots.push({
