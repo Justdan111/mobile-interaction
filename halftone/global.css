@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-page: 244 243 240;
+    --color-card: 255 255 255;
+    --color-ink: 15 15 18;
+    --color-muted: 107 107 114;
+    --color-accent: 108 99 232;
+    --color-accent-deep: 59 52 201;
+    --color-chip: 236 235 249;
+    --color-hairline: 227 225 220;
+    --color-danger: 229 72 61;
+    --color-info: 10 132 255;
+    --color-success: 52 199 89;
+  }
+
+  .dark:root {
+    --color-page: 10 10 10;
+    --color-card: 28 28 30;
+    --color-ink: 255 255 255;
+    --color-muted: 142 142 147;
+    --color-accent: 123 119 232;
+    --color-accent-deep: 59 52 201;
+    --color-chip: 42 42 51;
+    --color-hairline: 44 44 46;
+    --color-danger: 229 72 61;
+    --color-info: 10 132 255;
+    --color-success: 52 199 89;
+  }
+}
+
+/* Ruling R3. expo-google-fonts registers each Inter weight as its own family,
+   so `font-weight` alone cannot select a face on Android. Binding family and
+   weight together here — rather than as `fontFamily` keys in the Tailwind
+   config — avoids emitting two competing rules for `.font-medium`,
+   `.font-semibold` and `.font-bold` (one fontFamily, one fontWeight), where
+   which one wins is undefined. Every component in this plan already uses these
+   class names, so no call site changes. */
+@layer components {
+  .font-medium   { font-family: Inter_500Medium;   font-weight: 500; }
+  .font-semibold { font-family: Inter_600SemiBold; font-weight: 600; }
+  .font-bold     { font-family: Inter_700Bold;     font-weight: 700; }
+}
