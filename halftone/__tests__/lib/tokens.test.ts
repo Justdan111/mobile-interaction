@@ -1,20 +1,34 @@
-import { tokens, TOKEN_NAMES } from '../../lib/tokens';
+import { tokens } from '../../lib/tokens';
 
 describe('tokens', () => {
-  it('defines every token in both modes', () => {
-    for (const name of TOKEN_NAMES) {
-      expect(tokens.light[name]).toMatch(/^#[0-9A-F]{6}$/i);
-      expect(tokens.dark[name]).toMatch(/^#[0-9A-F]{6}$/i);
-    }
-  });
+  it('matches the spec palette exactly, in both modes', () => {
+    expect(tokens.light).toEqual({
+      page: '#F4F3F0',
+      card: '#FFFFFF',
+      ink: '#0F0F12',
+      muted: '#6B6B72',
+      accent: '#6C63E8',
+      accentDeep: '#3B34C9',
+      chip: '#ECEBF9',
+      hairline: '#E3E1DC',
+      danger: '#E5483D',
+      info: '#0A84FF',
+      success: '#34C759',
+    });
 
-  it('matches the spec palette', () => {
-    expect(tokens.light.page).toBe('#F4F3F0');
-    expect(tokens.dark.page).toBe('#0A0A0A');
-    expect(tokens.light.accent).toBe('#6C63E8');
-    expect(tokens.dark.accent).toBe('#7B77E8');
-    expect(tokens.light.ink).toBe('#0F0F12');
-    expect(tokens.dark.ink).toBe('#FFFFFF');
+    expect(tokens.dark).toEqual({
+      page: '#0A0A0A',
+      card: '#1C1C1E',
+      ink: '#FFFFFF',
+      muted: '#8E8E93',
+      accent: '#7B77E8',
+      accentDeep: '#3B34C9',
+      chip: '#2A2A33',
+      hairline: '#2C2C2E',
+      danger: '#E5483D',
+      info: '#0A84FF',
+      success: '#34C759',
+    });
   });
 
   it('inverts ink and page between modes', () => {
