@@ -27,8 +27,10 @@ function lobe(nx: number, ny: number, cx: number, cy: number, radius: number): n
 /**
  * Field intensity in [0, 1] at normalized coords, both in [-1, 1].
  * Each variant is a distinct silhouette from the reference comps.
+ * Exported so the four fields can be compared directly, since generateDots
+ * layers per-variant noise (grain) that masks intensity differences.
  */
-function intensity(name: FieldName, nx: number, ny: number): number {
+export function intensity(name: FieldName, nx: number, ny: number): number {
   switch (name) {
     case 'sphere': {
       // Two offset lobes with a hollow core — the yin-yang plate.
@@ -105,6 +107,6 @@ export function generateDots(name: FieldName, opts: DotOptions): Dot[] {
   return dots;
 }
 
-function clamp(v: number, lo: number, hi: number): number {
+export function clamp(v: number, lo: number, hi: number): number {
   return v < lo ? lo : v > hi ? hi : v;
 }

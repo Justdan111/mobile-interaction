@@ -1,4 +1,4 @@
-import { generateDots, FIELD_NAMES } from '../../components/halftone/fields';
+import { generateDots, FIELD_NAMES, intensity, clamp } from '../../components/halftone/fields';
 
 const opts = { size: 300, density: 40, seed: 'test' };
 
@@ -13,32 +13,41 @@ describe('generateDots', () => {
     expect(a).not.toEqual(b);
   });
 
-  it('produces visibly different art per variant', () => {
-    // Compare structural shape by grid cells and radius signatures.
-    // Use jitter:0 to eliminate positional wobble; vary intensity + grain independently.
-    // All variants at fixed seed must produce distinct sets of (col, row, radius) tuples.
-    const getSignature = (name: FieldName): Set<string> => {
-      const noWobbleOpts = { ...opts, seed: 'structural_test', jitter: 0 };
-      const dots = generateDots(name, noWobbleOpts);
-      const cell = noWobbleOpts.size / noWobbleOpts.density;
-      const signature = new Set<string>();
-      for (const dot of dots) {
-        const cellCol = Math.round(dot.x / cell);
-        const cellRow = Math.round(dot.y / cell);
-        // Round radius to 2 decimals to handle floating-point variance
-        const radiusBucket = Math.round(dot.r * 100) / 100;
-        signature.add(`${cellCol},${cellRow},${radiusBucket}`);
+  it('field intensity functions are distinct across variant pairs', () => {
+    // Sample each field intensity over a normalized [-1, 1] grid to measure
+    // pure intensity differences, isolated from grain noise. Grain is per-variant
+    // (seeded on field name), which masks intensity differences at the dot level.
+    const gridSize = 40;
+    const getIntensityArray = (name: typeof FIELD_NAMES[number]): number[] => {
+      const values: number[] = [];
+      for (let row = 0; row < gridSize; row++) {
+        for (let col = 0; col < gridSize; col++) {
+          const nx = (col / gridSize) * 2 - 1;
+          const ny = (row / gridSize) * 2 - 1;
+          values.push(intensity(name, nx, ny));
+        }
       }
-      return signature;
+      return values;
     };
 
-    // All six variant pairs must differ in output
-    const signatures = FIELD_NAMES.map(getSignature);
+    const meanAbsoluteDifference = (a: number[], b: number[]): number => {
+      let sum = 0;
+      for (let i = 0; i < a.length; i++) {
+        sum += Math.abs(a[i] - b[i]);
+      }
+      return sum / a.length;
+    };
+
+    const arrays = FIELD_NAMES.map(getIntensityArray);
+    // Threshold is set well below the observed minimum pair difference (blob vs orbit: 0.1751)
+    // to guard against future intensity function regressions.
+    const threshold = 0.10;
+
+    // All six variant pairs must have mean absolute difference > threshold
     for (let i = 0; i < FIELD_NAMES.length; i++) {
       for (let j = i + 1; j < FIELD_NAMES.length; j++) {
-        const same = [...signatures[i]].filter((c) => signatures[j].has(c)).length;
-        const different = signatures[i].size + signatures[j].size - 2 * same;
-        expect(different).toBeGreaterThan(0);
+        const diff = meanAbsoluteDifference(arrays[i], arrays[j]);
+        expect(diff).toBeGreaterThan(threshold);
       }
     }
   });
@@ -64,25 +73,18 @@ describe('generateDots', () => {
     }
   });
 
-  it('lower-bounds radius to 0 when intensity is negative', () => {
-    // Test the radius clamp directly: field functions should return non-negative,
-    // but the clamp guard protects against regressions.
-    // We can't easily make a field return negative through generateDots due to
-    // MIN_VISIBLE_RADIUS filtering, so test the clamping invariant directly:
-    // any negative intensity * grain product must clamp to 0.
+  it('clamp guards radius lower and upper bounds', () => {
+    // Test the exported clamp guard used in radius calculation.
+    // This ensures negative values (from future field regressions) clamp to 0.
     const testCases = [
-      { r: -1, expected: 0 },
-      { r: 0, expected: 0 },
-      { r: 0.5, expected: 0.5 },
-      { r: 4, expected: 4 },
-      { r: 5, expected: 4 },
+      { input: -1, lo: 0, hi: 4, expected: 0 },
+      { input: 0, lo: 0, hi: 4, expected: 0 },
+      { input: 0.5, lo: 0, hi: 4, expected: 0.5 },
+      { input: 4, lo: 0, hi: 4, expected: 4 },
+      { input: 5, lo: 0, hi: 4, expected: 4 },
     ];
     for (const tc of testCases) {
-      // Simulate the clamp applied to radius: clamp(v * grain * maxRadius, 0, maxRadius)
-      const clamp = (v: number, lo: number, hi: number) =>
-        v < lo ? lo : v > hi ? hi : v;
-      const maxRadius = 4;
-      const result = clamp(tc.r, 0, maxRadius);
+      const result = clamp(tc.input, tc.lo, tc.hi);
       expect(result).toBe(tc.expected);
     }
   });
@@ -97,37 +99,5 @@ describe('generateDots', () => {
     const sparse = generateDots('sphere', { ...opts, density: 20 });
     const dense = generateDots('sphere', { ...opts, density: 60 });
     expect(dense.length).toBeGreaterThan(sparse.length);
-  });
-
-  it('field functions are structurally distinct per variant', () => {
-    // Use zero jitter and check distribution patterns across all variants.
-    // Each variant's intensity profile should produce a distinct yield per row/column.
-    const testOpts = { ...opts, jitter: 0, seed: 'intensity_test' };
-    const distributions: Record<string, number[]> = {};
-
-    for (const name of FIELD_NAMES) {
-      const dots = generateDots(name, testOpts);
-      const cell = testOpts.size / testOpts.density;
-      const rowCounts = new Array(testOpts.density).fill(0);
-
-      for (const dot of dots) {
-        const row = Math.round(dot.y / cell);
-        if (row >= 0 && row < testOpts.density) {
-          rowCounts[row]++;
-        }
-      }
-      distributions[name] = rowCounts;
-    }
-
-    // Each variant's row distribution must differ from all others
-    const variants = FIELD_NAMES as unknown as string[];
-    for (let i = 0; i < variants.length; i++) {
-      for (let j = i + 1; j < variants.length; j++) {
-        const a = distributions[variants[i]];
-        const b = distributions[variants[j]];
-        const diffCount = a.filter((v, idx) => v !== b[idx]).length;
-        expect(diffCount).toBeGreaterThan(0);
-      }
-    }
   });
 });
