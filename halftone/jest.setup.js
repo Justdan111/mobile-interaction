@@ -18,3 +18,10 @@ jest.mock('expo-glass-effect', () => ({
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock')
 );
+
+// react-native-reanimated v4 pulls in the native `react-native-worklets`
+// module at import time; that native binding doesn't exist under Jest, so an
+// unmocked import throws (`Cannot read properties of undefined (reading
+// 'loadUnpackers')`) before any test using an animated component even runs.
+// The package ships its own Jest mock for exactly this — swap it in.
+jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
