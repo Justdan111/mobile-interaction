@@ -1,8 +1,10 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react-native';
+import { processColor } from 'react-native';
 import { Segmented } from '../../components/ui/Segmented';
 import { PillButton } from '../../components/ui/PillButton';
 import { Toggle } from '../../components/ui/Toggle';
+import { Icon } from '../../components/ui/icons';
 import { ThemeProvider } from '../../lib/theme';
 import { tokens } from '../../lib/tokens';
 
@@ -65,15 +67,19 @@ describe('Segmented', () => {
   });
 
   it('marks the active option as selected for assistive tech', async () => {
+    // Tied to the specific option by `name`, not just "some tab is selected"
+    // — a component that always marked the first option active (ignoring
+    // `value`) would fail this, since 'Calendar' is the second option here.
     await wrap(<Segmented options={options} value="b" onChange={() => {}} />);
-    expect(screen.getByRole('tab', { selected: true })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'Calendar', selected: true })).toBeTruthy();
   });
 
   it('marks the inactive option as not selected', async () => {
     // Complements the test above: proves the component distinguishes the two
-    // options rather than marking every tab (or none) as selected.
+    // options rather than marking every tab (or none) as selected, and again
+    // ties the assertion to the specific option by name.
     await wrap(<Segmented options={options} value="b" onChange={() => {}} />);
-    expect(screen.getByRole('tab', { selected: false })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'Active projects', selected: false })).toBeTruthy();
   });
 });
 
@@ -87,11 +93,21 @@ describe('PillButton', () => {
 });
 
 describe('Toggle', () => {
-  it('reports the flipped value', async () => {
+  it('reports the flipped value when starting off', async () => {
     const onChange = jest.fn();
     await wrap(<Toggle value={false} onChange={onChange} />);
     fireEvent.press(screen.getByRole('switch'));
     expect(onChange).toHaveBeenCalledWith(true);
+  });
+
+  it('reports the flipped value when starting on', async () => {
+    // Complements the off->on case above: a component that ignored `value`
+    // on press and always reported `true` would pass the off->on test by
+    // coincidence but fails this one, which starts from `value={true}`.
+    const onChange = jest.fn();
+    await wrap(<Toggle value={true} onChange={onChange} />);
+    fireEvent.press(screen.getByRole('switch'));
+    expect(onChange).toHaveBeenCalledWith(false);
   });
 
   it('exposes its state to assistive tech', async () => {
@@ -125,5 +141,27 @@ describe('Toggle', () => {
       const rendered = await wrap(<Toggle value={false} onChange={() => {}} />);
       expect(findBackgroundColor(rendered.toJSON())).toBe(tokens.dark.chip);
     });
+  });
+});
+
+describe('Icon', () => {
+  // Regression coverage for a real bug: the 'star' icon's <Path> originally
+  // wrote `fill={filled ? color : 'none'} {...s}`, with the spread AFTER the
+  // explicit fill — so `s.fill` ('none') always won and `filled` was a
+  // silent no-op. These assert the resolved `fill` on the rendered SVG path
+  // node directly, so they fail again if that ordering regresses.
+  it('fills the star with the given color when filled is true', async () => {
+    // react-native-svg normalizes `fill` to its own processed-color object
+    // (`{ payload, type }`), not the raw string — match the same idiom
+    // already established in __tests__/halftone/Halftone.test.tsx.
+    const rendered = await render(<Icon name="star" size={20} color="#112233" filled />);
+    const path = rendered.root!.queryAll((i: { type: string }) => i.type === 'RNSVGPath')[0];
+    expect(path.props.fill.payload).toBe(processColor('#112233'));
+  });
+
+  it('leaves the star unfilled when filled is false (the default)', async () => {
+    const rendered = await render(<Icon name="star" size={20} color="#112233" />);
+    const path = rendered.root!.queryAll((i: { type: string }) => i.type === 'RNSVGPath')[0];
+    expect(path.props.fill).toBeNull();
   });
 });

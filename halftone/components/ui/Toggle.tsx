@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { useTheme } from '../../lib/theme';
+import { TOGGLE_KNOB_COLOR } from '../../lib/tokens';
 
 export function Toggle({
   value,
@@ -28,7 +29,7 @@ export function Toggle({
         className="h-8 w-[52px] justify-center rounded-full"
         style={{ backgroundColor: value ? (tint ?? t.success) : t.chip }}
       >
-        <Animated.View style={[{ width: 28, height: 28, borderRadius: 14, backgroundColor: '#FFFFFF' }, knob]} />
+        <Animated.View style={[{ width: 28, height: 28, borderRadius: 14, backgroundColor: TOGGLE_KNOB_COLOR }, knob]} />
       </View>
     </Pressable>
   );

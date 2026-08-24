@@ -47,3 +47,11 @@ export const PLATE_COLORS = ['#6C63E8', '#E5483D', '#0A84FF', '#F0A202', '#34C75
 
 /** Saturated plate grounds, echoing the app-icon tiles in the comps. */
 export const TILE_GROUNDS = ['#2C4BFF', '#111111', '#E8622C', '#6C63E8', '#0F8B5B', '#C41E4A'];
+
+/**
+ * The `Toggle` knob is white in both light and dark mode — deliberate art
+ * direction (a switch's moving part reads as a physical object, not a
+ * themed surface), not a semantic colour. Lives here, not inline in the
+ * component, per the "no raw hex at call sites" rule.
+ */
+export const TOGGLE_KNOB_COLOR = '#FFFFFF';
