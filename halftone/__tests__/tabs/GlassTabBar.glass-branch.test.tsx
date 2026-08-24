@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react-native';
+import { processColor } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider } from '../../lib/theme';
 
@@ -36,6 +37,25 @@ const wrap = (ui: React.ReactElement) =>
       <ThemeProvider>{ui}</ThemeProvider>
     </SafeAreaProvider>
   );
+
+
+// The icon's colour reaches the screen as an SVG stroke, not as a prop on a
+// queryable host element (RTL v14's `screen` has no UNSAFE_getByType), so read
+// the stroke actually painted into the rendered tree. That is stronger
+// evidence than a prop assertion anyway: it is the value that ends up on the
+// pixels. react-native-svg stores it processed, so compare against
+// `processColor` of the expected colour.
+function focusedIconStroke(): unknown {
+  const seen: unknown[] = [];
+  const walk = (node: any): void => {
+    if (!node || typeof node !== 'object') return;
+    if (node.props?.stroke != null) seen.push(node.props.stroke.payload ?? node.props.stroke);
+    (node.children ?? []).forEach(walk);
+  };
+  walk(screen.toJSON());
+  expect(seen.length).toBeGreaterThan(0);
+  return seen[0];
+}
 
 describe('GlassTabBar / TabPill surface (glass path — isLiquidGlassAvailable() === true)', () => {
   it('GlassTabBar renders through GlassContainer, not the BlurView fallback', async () => {
@@ -92,6 +112,22 @@ describe('GlassTabBar / TabPill surface (glass path — isLiquidGlassAvailable()
     await wrap(<TabPill icon="search" label="Search" isFocused onPress={() => {}} />);
     expect(screen.getByTestId('tab-pill-glass-surface')).toBeTruthy();
     expect(screen.queryByTestId('tab-pill-fallback-surface')).toBeNull();
+  });
+
+  // Regression test for the focused icon disappearing into its own chip on
+  // the glass path. The chip's GlassView is tinted with `t.accent`; the icon
+  // used to be painted in `t.accent` too, so on a real iOS 26 device it was
+  // accent on accent and simply not visible — only the label read, because it
+  // was already the near-black foreground. Assert the relationship, not the
+  // literal hex: the icon must not be the chip's own tint, and it must match
+  // the label so the two read as one unit.
+  it('paints the focused icon in the label foreground, never the chip tint', async () => {
+    await wrap(<TabPill icon="search" label="Search" isFocused onPress={() => {}} />);
+    const chip = screen.getByTestId('tab-pill-glass-surface');
+    const stroke = focusedIconStroke();
+    expect(stroke).not.toBe(processColor(chip.props.tintColor));
+    const labelColor = (screen.getByText('Search').props.style as { color: string }).color;
+    expect(stroke).toBe(processColor(labelColor));
   });
 
   it('an unfocused TabPill takes neither surface branch (no chip at all)', async () => {

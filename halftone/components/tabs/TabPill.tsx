@@ -11,7 +11,14 @@ import { useTheme } from '../../lib/theme';
 // one deliberate exception to the no-raw-hex rule; it is confined to this
 // file and GlassTabBar.tsx.
 const ICON_INACTIVE = '#6B6B72';
-const LABEL_COLOR = '#0F0F12';
+// Icon *and* label of the focused chip share one foreground colour, so they
+// read as a single unit. It deliberately is not `t.accent`: the chip's own
+// surface is tinted with `t.accent` on the glass path, so an accent-coloured
+// icon sat on an accent-tinted chip and vanished into it — the label survived
+// only because it was already this near-black. One value serves both surfaces:
+// it contrasts against the glass path's saturated accent tint and against the
+// fallback chip's light lavender alike.
+const CHIP_FOREGROUND = '#0F0F12';
 const FALLBACK_CHIP_COLOR = '#CFCCF7';
 
 export function TabPill({
@@ -40,10 +47,10 @@ export function TabPill({
         borderRadius: 22,
       }}
     >
-      <Icon name={icon} size={22} color={isFocused ? t.accent : ICON_INACTIVE} strokeWidth={1.9} />
+      <Icon name={icon} size={22} color={isFocused ? CHIP_FOREGROUND : ICON_INACTIVE} strokeWidth={1.9} />
       {isFocused ? (
         <Animated.View entering={FadeIn.duration(160)} exiting={FadeOut.duration(90)}>
-          <Text numberOfLines={1} style={{ color: LABEL_COLOR, fontFamily: 'Inter_600SemiBold', fontSize: 14 }}>
+          <Text numberOfLines={1} style={{ color: CHIP_FOREGROUND, fontFamily: 'Inter_600SemiBold', fontSize: 14 }}>
             {label}
           </Text>
         </Animated.View>

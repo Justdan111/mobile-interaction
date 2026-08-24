@@ -1,9 +1,11 @@
 import React from 'react';
+import { processColor } from 'react-native';
 import { render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { TabPill } from '../../components/tabs/TabPill';
 import { TABS, GlassTabBar } from '../../components/tabs/GlassTabBar';
 import { ThemeProvider } from '../../lib/theme';
+import { tokens } from '../../lib/tokens';
 
 // @testing-library/react-native@14 declares both `render` and the `rerender`
 // it returns as async (each wraps React's `act` internally) — await every
@@ -63,6 +65,44 @@ describe('TabPill', () => {
   it('reports selected: false when not focused', async () => {
     await wrap(<TabPill icon="chat" label="Chats" isFocused={false} onPress={() => {}} />);
     expect(screen.getByRole('tab').props.accessibilityState.selected).toBe(false);
+  });
+});
+
+
+// The icon's colour reaches the screen as an SVG stroke, not as a prop on a
+// queryable host element (RTL v14's `screen` has no UNSAFE_getByType), so read
+// the stroke actually painted into the rendered tree. That is stronger
+// evidence than a prop assertion anyway: it is the value that ends up on the
+// pixels. react-native-svg stores it processed, so compare against
+// `processColor` of the expected colour.
+function focusedIconStroke(): unknown {
+  const seen: unknown[] = [];
+  const walk = (node: any): void => {
+    if (!node || typeof node !== 'object') return;
+    if (node.props?.stroke != null) seen.push(node.props.stroke.payload ?? node.props.stroke);
+    (node.children ?? []).forEach(walk);
+  };
+  walk(screen.toJSON());
+  expect(seen.length).toBeGreaterThan(0);
+  return seen[0];
+}
+
+describe('TabPill focused chip legibility (fallback path)', () => {
+  // Companion to the glass-path test in GlassTabBar.glass-branch.test.tsx.
+  // The focused icon shares the label's foreground on *both* surfaces, so one
+  // colour has to stay legible against the fallback's light lavender chip as
+  // well as against the glass path's saturated accent tint.
+  it('paints the focused icon in the same foreground as its label', async () => {
+    await wrap(<TabPill icon="search" label="Search" isFocused onPress={() => {}} />);
+    const labelColor = (screen.getByText('Search').props.style as { color: string }).color;
+    expect(focusedIconStroke()).toBe(processColor(labelColor));
+  });
+
+  it('does not paint the focused icon in the accent, which is the chip tint', async () => {
+    await wrap(<TabPill icon="search" label="Search" isFocused onPress={() => {}} />);
+    const stroke = focusedIconStroke();
+    expect(stroke).not.toBe(processColor(tokens.light.accent));
+    expect(stroke).not.toBe(processColor(tokens.dark.accent));
   });
 });
 
