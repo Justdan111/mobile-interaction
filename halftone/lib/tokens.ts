@@ -55,3 +55,27 @@ export const TILE_GROUNDS = ['#2C4BFF', '#111111', '#E8622C', '#6C63E8', '#0F8B5
  * component, per the "no raw hex at call sites" rule.
  */
 export const TOGGLE_KNOB_COLOR = '#FFFFFF';
+
+/**
+ * Home screen art-card row (`ArtCardRow`): one fixed ground/dot pair per
+ * card id. Like PLATE_COLORS/TILE_GROUNDS above, these are art plates —
+ * deliberately NOT mode-keyed, since inverting them would break the
+ * halftone contrast they depend on.
+ */
+export const ART_CARD_PALETTES: Record<string, { ground: string; dot: string }> = {
+  inspiration: { ground: '#8E88F0', dot: '#FFFFFF' },
+  unite: { ground: '#C9C9C9', dot: '#141414' },
+  match: { ground: '#D6D6D6', dot: '#141414' },
+};
+
+/**
+ * Caption legibility for the art-card row. Each card's dot colour is a
+ * seeded pattern painted across the whole plate, so no single flat colour
+ * reliably contrasts with both the ground and the dots at fine
+ * granularity. The caption instead sits on a scrim strip painted in a
+ * colour chosen independently of the plate's own dot colour — see
+ * ArtCardRow, which layers this scrim between the Halftone art and the
+ * caption text rather than relying on colour choice alone.
+ */
+export const ART_CARD_CAPTION_COLOR = '#FFFFFF';
+export const ART_CARD_CAPTION_SCRIM = 'rgba(0,0,0,0.42)';
