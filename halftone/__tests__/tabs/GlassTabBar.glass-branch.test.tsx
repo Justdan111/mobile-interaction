@@ -44,8 +44,48 @@ describe('GlassTabBar / TabPill surface (glass path — isLiquidGlassAvailable()
         <TabPill icon="search" label="Search" isFocused onPress={() => {}} />
       </GlassTabBar>
     );
-    expect(screen.getByTestId('tab-bar-glass-surface')).toBeTruthy();
+    expect(screen.getByTestId('tab-bar-surface')).toBeTruthy();
     expect(screen.queryByTestId('tab-bar-fallback-surface')).toBeNull();
+  });
+
+  // Regression test for the bar rendering completely invisibly on a real
+  // iOS 26 device. `GlassContainer` paints no surface of its own — natively
+  // it is a UIVisualEffectView carrying a UIGlassContainerEffect, which only
+  // governs how *child* glass surfaces merge. Wrapping plain views in it
+  // produced a bar with no glass, no hairline and no background at all, while
+  // every test still passed because they only asserted the container branch
+  // was taken. The bar needs its own GlassView as the pill surface, so assert
+  // on a prop that only a GlassView accepts rather than on a testID a plain
+  // View could just as easily carry.
+  it('paints the pill with a real GlassView surface, not a bare GlassContainer', async () => {
+    await wrap(
+      <GlassTabBar>
+        <TabPill icon="search" label="Search" isFocused onPress={() => {}} />
+      </GlassTabBar>
+    );
+    const surface = screen.getByTestId('tab-bar-glass-surface');
+    expect(surface.props.glassEffectStyle).toBe('regular');
+  });
+
+  // The container's merge behaviour applies to glass surfaces that are
+  // siblings within it (as in the SDK 57 docs' own example). If the bar's
+  // GlassView were made an *ancestor* of the chip's GlassView instead, this
+  // would fail — and the bar and chip would stack glass rather than merge.
+  it('keeps the bar surface and the focused chip as sibling glass surfaces', async () => {
+    await wrap(
+      <GlassTabBar>
+        <TabPill icon="search" label="Search" isFocused onPress={() => {}} />
+      </GlassTabBar>
+    );
+    const barSurface = screen.getByTestId('tab-bar-glass-surface');
+    const chipSurface = screen.getByTestId('tab-pill-glass-surface');
+    const ancestorIds: unknown[] = [];
+    for (let node = chipSurface.parent; node; node = node.parent) {
+      ancestorIds.push(node.props?.testID);
+    }
+    expect(ancestorIds).toContain('tab-bar-surface');
+    expect(ancestorIds).not.toContain('tab-bar-glass-surface');
+    expect(barSurface.props.pointerEvents).toBe('none');
   });
 
   it('the focused TabPill renders through GlassView, not the fallback chip', async () => {

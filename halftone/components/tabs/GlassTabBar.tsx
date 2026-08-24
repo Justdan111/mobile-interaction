@@ -1,8 +1,8 @@
 import React from 'react';
-import { Platform, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
-import { GlassContainer, isLiquidGlassAvailable } from '../../lib/glass';
+import { GlassContainer, GlassView, isLiquidGlassAvailable } from '../../lib/glass';
 import type { IconName } from '../ui/icons';
 
 export const TABS: Array<{ name: string; href: string; icon: IconName; label: string }> = [
@@ -14,6 +14,16 @@ export const TABS: Array<{ name: string; href: string; icon: IconName; label: st
 ];
 
 const BAR_RADIUS = 34;
+
+// The comps float the pill clear of the home indicator rather than sitting it
+// directly on the safe-area edge: measured off .design/comps, the bar's bottom
+// edge is ~45pt above the screen edge on a device whose bottom inset is 34pt.
+const BAR_GAP = 10;
+const BAR_SIDE_INSET = 16;
+
+// Glass elements inside a GlassContainer start merging at this distance, so
+// the focused chip visibly fuses into the bar as it slides between tabs.
+const GLASS_MERGE_SPACING = 18;
 
 export function GlassTabBar({ children }: { children?: React.ReactNode }) {
   const insets = useSafeAreaInsets();
@@ -38,20 +48,39 @@ export function GlassTabBar({ children }: { children?: React.ReactNode }) {
       pointerEvents="box-none"
       style={{
         position: 'absolute',
-        left: 16,
-        right: 16,
-        bottom: Math.max(insets.bottom, 12),
+        left: BAR_SIDE_INSET,
+        right: BAR_SIDE_INSET,
+        bottom: Math.max(insets.bottom, 12) + BAR_GAP,
       }}
     >
       {glass ? (
-        // GlassContainer lets the bar and the focused TabPill read as one
-        // glass system, so the chip merges into the bar as it moves.
+        // `GlassContainer` paints nothing itself. Its native implementation
+        // (node_modules/expo-glass-effect/ios/GlassContainer.swift) is a
+        // UIVisualEffectView carrying a `UIGlassContainerEffect`, whose only
+        // job is to govern how the *child* glass surfaces blend and merge —
+        // the SDK 57 docs describe it as combining "multiple glass views into
+        // a combined effect", and its whole prop surface is `spacing` plus
+        // ViewProps. A GlassContainer wrapped straight around plain views
+        // therefore renders an invisible bar: no surface, no hairline, icons
+        // floating on the page background. The surface has to be a GlassView.
+        //
+        // This one is a sibling of the focused TabPill's own GlassView rather
+        // than its ancestor, matching the docs' example (sibling GlassViews
+        // inside one GlassContainer) — that sibling relationship is what makes
+        // the container's merge behaviour apply, so the bar and the active
+        // chip read as one glass system instead of glass stacked on glass.
         <GlassContainer
           testID="tab-bar-surface"
-          spacing={18}
-          style={{ borderRadius: BAR_RADIUS, overflow: 'hidden' }}
+          spacing={GLASS_MERGE_SPACING}
+          style={{ borderRadius: BAR_RADIUS }}
         >
-          <View testID="tab-bar-glass-surface">{row}</View>
+          <GlassView
+            testID="tab-bar-glass-surface"
+            glassEffectStyle="regular"
+            pointerEvents="none"
+            style={[StyleSheet.absoluteFill, { borderRadius: BAR_RADIUS, overflow: 'hidden' }]}
+          />
+          {row}
         </GlassContainer>
       ) : (
         // The comps' own bar is an opaque pill; the fallback must remain a
