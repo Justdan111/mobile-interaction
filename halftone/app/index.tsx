@@ -1,9 +1,7 @@
-import { Text, View } from 'react-native';
+import { Redirect } from 'expo-router';
 
+// Temporary: routes the splash straight to the tab bar so it's reachable.
+// Task 8 replaces this with the real splash screen.
 export default function Index() {
-  return (
-    <View className="flex-1 items-center justify-center bg-page">
-      <Text className="text-ink text-2xl">Halftone</Text>
-    </View>
-  );
+  return <Redirect href="/(tabs)" />;
 }

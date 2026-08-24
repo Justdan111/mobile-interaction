@@ -15,6 +15,15 @@ jest.mock('expo-glass-effect', () => ({
   isGlassEffectAPIAvailable: () => false,
 }));
 
+// react-native-safe-area-context needs a <SafeAreaProvider> ancestor to
+// resolve insets; under Jest there's no native layout pass to populate one.
+// The package ships its own Jest mock (a simplified SafeAreaProvider that
+// serves fixed metrics via context) for exactly this — swap it in, same as
+// the reanimated mock above.
+jest.mock('react-native-safe-area-context', () =>
+  require('react-native-safe-area-context/jest/mock').default
+);
+
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock')
 );
