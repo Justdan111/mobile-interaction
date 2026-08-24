@@ -36,4 +36,28 @@ describe('Splash', () => {
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/(tabs)'), { timeout: 2500 });
     expect(mockReplace).not.toHaveBeenCalledWith('/onboarding');
   });
+
+  // Proves the splash doesn't hang forever when the storage read itself
+  // rejects (e.g. native storage unavailable, corrupt state). Without a
+  // try/catch around the read, this rejection becomes an unhandled promise
+  // rejection and router.replace is never reached — the user is stuck on
+  // the splash indefinitely.
+  it('falls through to onboarding when the storage read rejects', async () => {
+    // `ThemeProvider` also calls `AsyncStorage.getItem` (for its own
+    // preference key) on mount, before the splash's delayed read fires —
+    // a plain `mockRejectedValueOnce` would reject *that* call instead and
+    // prove nothing about the splash. Reject only the splash's own key.
+    const realGetItem = (AsyncStorage.getItem as jest.Mock).getMockImplementation();
+    (AsyncStorage.getItem as jest.Mock).mockImplementation((key: string) =>
+      key === ONBOARDING_KEY
+        ? Promise.reject(new Error('storage unavailable'))
+        : realGetItem!(key)
+    );
+    try {
+      await wrap();
+      await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/onboarding'), { timeout: 2500 });
+    } finally {
+      (AsyncStorage.getItem as jest.Mock).mockImplementation(realGetItem);
+    }
+  });
 });

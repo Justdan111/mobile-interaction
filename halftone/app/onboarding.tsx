@@ -67,6 +67,7 @@ export default function Onboarding() {
           {SLIDES.map((s, i) => (
             <View
               key={s.seed}
+              testID={`progress-${i}`}
               className={`h-1.5 flex-1 rounded-full ${i <= index ? 'bg-accent' : 'bg-chip'}`}
             />
           ))}
