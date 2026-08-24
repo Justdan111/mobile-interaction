@@ -71,4 +71,17 @@ describe('ProjectDetail', () => {
     fireEvent.press(screen.getByText('Send proposal'));
     expect(mockPush).toHaveBeenCalledWith('/proposals');
   });
+
+  // `target` (projects[0]) has one done task and one not-done task — assert
+  // against that mix directly instead of assuming which index is which, so
+  // the test still means what it says if the fixture data is reordered.
+  it('shows a check mark only for the tasks that are done', async () => {
+    const done = target.tasks.find((t) => t.done);
+    const notDone = target.tasks.find((t) => !t.done);
+    expect(done).toBeTruthy();
+    expect(notDone).toBeTruthy();
+    await wrap();
+    expect(screen.getByTestId(`task-done-${done!.id}`)).toBeTruthy();
+    expect(screen.queryByTestId(`task-done-${notDone!.id}`)).toBeNull();
+  });
 });

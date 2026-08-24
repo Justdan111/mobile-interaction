@@ -28,7 +28,7 @@ export default function ProjectDetail() {
   return (
     <SafeAreaView className="flex-1 bg-page" edges={['top']}>
       <ScreenHeader title="Project" back />
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
         <Text className="text-ink text-[24px] font-bold leading-[31px]">{project.title}</Text>
         <Text className="text-ink mt-2 text-[22px] font-bold">
           {formatPayRange(project.payMin, project.payMax, project.currency)}
@@ -66,7 +66,11 @@ export default function ProjectDetail() {
                   <Text className="text-muted text-[10px]">{month}</Text>
                 </View>
                 <Text className="text-ink flex-1 text-[15px]">{task.title}</Text>
-                {task.done ? <Icon name="check" size={18} color={t.success} /> : null}
+                {task.done ? (
+                  <View testID={`task-done-${task.id}`}>
+                    <Icon name="check" size={18} color={t.success} />
+                  </View>
+                ) : null}
               </View>
             );
           })}
