@@ -36,4 +36,37 @@ describe('Trigger (app/(tabs)/_layout adapter)', () => {
     fireEvent.press(screen.getByRole('tab'));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
+
+  // Regression test for a real bug found by reading the installed
+  // expo-router/ui source (node_modules/expo-router/build/ui/TabTrigger.js),
+  // not by tapping — UI automation to the Simulator window is unavailable in
+  // this sandbox (`osascript`/System Events enumerates zero windows for the
+  // Simulator process here), so this reproduces the failure without one.
+  //
+  // In production, the slot's `onPress` prop IS expo-router/ui's
+  // `handleOnPress`, which — before switching tabs — runs:
+  //   if (event?.isDefaultPrevented()) return;   // called AS A FUNCTION
+  //   if (!shouldHandleMouseEvent(event)) return; // native: !event?.defaultPrevented
+  // `Trigger` originally called `onPress?.({} as never)`. `({}).isDefaultPrevented`
+  // is `undefined`, and invoking it throws `TypeError: event.isDefaultPrevented
+  // is not a function` — before `switchTab()` ever runs, meaning every real
+  // tab tap would throw and navigation would silently never fire.
+  it('hands the slot onPress an event object that survives real navigation preconditions', async () => {
+    let reachedNavigation = false;
+    // Mirrors the two lines from TabTrigger.js's handleOnPress exactly,
+    // including the *unguarded* method call on `isDefaultPrevented` (only
+    // `event?.`, not `event?.isDefaultPrevented?.()`) — that unguarded call
+    // is precisely what threw against the original `{}` stub.
+    const handleOnPressLikeExpoRouterUi = (event: any) => {
+      if (event?.isDefaultPrevented()) return;
+      if (event?.defaultPrevented) return;
+      reachedNavigation = true;
+    };
+    await wrap(
+      <Trigger icon="search" label="Search" isFocused={false} onPress={handleOnPressLikeExpoRouterUi} />
+    );
+    const { fireEvent } = require('@testing-library/react-native');
+    expect(() => fireEvent.press(screen.getByRole('tab'))).not.toThrow();
+    expect(reachedNavigation).toBe(true);
+  });
 });
