@@ -1,9 +1,100 @@
-import { Text, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { ScrollView, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { Segmented } from '../../components/ui/Segmented';
+import { SwipeableRow, type SwipeAction } from '../../components/ui/SwipeableRow';
+import { TeamRow } from '../../components/chats/TeamRow';
+import { teams as sourceTeams } from '../../data/teams';
+import { proposals } from '../../data/proposals';
+import { messages } from '../../data/messages';
+import { people as allPeople } from '../../data/people';
+import { threadPreview } from '../../lib/derive';
+import { useTheme } from '../../lib/theme';
+
+const SEGMENTS = [
+  { key: 'proposals', label: 'Proposals' },
+  { key: 'teams', label: 'Teams' },
+];
 
 export default function Chats() {
+  const router = useRouter();
+  const { t } = useTheme();
+  const [segment, setSegment] = useState('teams');
+  const [muted, setMuted] = useState<Set<string>>(
+    () => new Set(sourceTeams.filter((x) => x.muted).map((x) => x.id))
+  );
+  const [left, setLeft] = useState<Set<string>>(() => new Set());
+
+  // `data/people.ts` is the single authoritative sender->name lookup; the
+  // only thing this screen adds on top is the "You" display convention for
+  // the current user's own messages in a preview chip, rather than showing
+  // their full profile name back to themselves.
+  const people = useMemo(() => ({ ...allPeople, me: 'You' }), []);
+
+  const visibleTeams = sourceTeams.filter((x) => !left.has(x.id));
+
+  const actionsFor = (id: string, name: string): SwipeAction[] => [
+    {
+      key: 'mute',
+      label: muted.has(id) ? 'Off' : 'On',
+      a11yLabel: muted.has(id) ? `Unmute ${name}` : `Mute ${name}`,
+      icon: 'bell',
+      color: t.info,
+      onPress: () =>
+        setMuted((prev) => {
+          const next = new Set(prev);
+          next.has(id) ? next.delete(id) : next.add(id);
+          return next;
+        }),
+    },
+    {
+      key: 'exit',
+      label: 'Exit',
+      a11yLabel: `Leave ${name}`,
+      icon: 'exit',
+      color: t.danger,
+      onPress: () => setLeft((prev) => new Set(prev).add(id)),
+    },
+  ];
+
   return (
-    <View className="flex-1 items-center justify-center bg-page">
-      <Text className="text-ink font-display text-2xl">Chats</Text>
-    </View>
+    <SafeAreaView className="flex-1 bg-page" edges={['top']}>
+      <ScreenHeader title="Chats" />
+      <View className="px-4 pb-3">
+        <Segmented options={SEGMENTS} value={segment} onChange={setSegment} />
+      </View>
+
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+        {segment === 'teams'
+          ? visibleTeams.map((team) => (
+              <SwipeableRow key={team.id} actions={actionsFor(team.id, team.name)}>
+                <TeamRow
+                  id={team.id}
+                  name={team.name}
+                  subtitle={`${team.members.length} members`}
+                  preview={threadPreview(team.id, messages, people)}
+                  onPress={() => router.push(`/chat/${team.id}`)}
+                />
+              </SwipeableRow>
+            ))
+          : proposals.map((p) => (
+              <SwipeableRow key={p.id} actions={actionsFor(p.threadId, p.counterpartName)}>
+                <TeamRow
+                  id={p.counterpartId}
+                  name={p.counterpartName}
+                  subtitle={p.role}
+                  preview={threadPreview(p.threadId, messages, people)}
+                  onPress={() => router.push(`/chat/${p.threadId}`)}
+                />
+              </SwipeableRow>
+            ))}
+
+        {segment === 'teams' && visibleTeams.length === 0 ? (
+          <Text className="text-muted py-12 text-center text-[15px]">You have left every team.</Text>
+        ) : null}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
