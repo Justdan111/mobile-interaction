@@ -57,6 +57,16 @@ export const TILE_GROUNDS = ['#2C4BFF', '#111111', '#E8622C', '#6C63E8', '#0F8B5
 export const TOGGLE_KNOB_COLOR = '#FFFFFF';
 
 /**
+ * Foreground for icons/labels drawn on top of a solid action or status
+ * surface — swipe-action buttons (mute/exit) and the unread-count badge.
+ * Always white against the saturated `danger`/`info` fills those surfaces
+ * use, in both light and dark mode; it's contrast against a fixed brand
+ * colour, not a themed surface, so it isn't mode-keyed either. Lives here,
+ * not inline at each call site, per the "no raw hex at call sites" rule.
+ */
+export const ACTION_FOREGROUND_COLOR = '#FFFFFF';
+
+/**
  * Home screen art-card row (`ArtCardRow`): one fixed ground/dot pair per
  * card id. Like PLATE_COLORS/TILE_GROUNDS above, these are art plates —
  * deliberately NOT mode-keyed, since inverting them would break the

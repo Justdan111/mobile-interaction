@@ -6,6 +6,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { Icon, type IconName } from './icons';
+import { ACTION_FOREGROUND_COLOR } from '../../lib/tokens';
 
 export type SwipeAction = {
   key: string;
@@ -71,8 +72,8 @@ export function SwipeableRow({
             style={{ width: ACTION_WIDTH, backgroundColor: a.color }}
             className="items-center justify-center gap-1.5"
           >
-            <Icon name={a.icon} size={24} color="#FFFFFF" />
-            <Text style={{ color: '#FFFFFF', fontFamily: 'Inter_500Medium', fontSize: 13 }}>
+            <Icon name={a.icon} size={24} color={ACTION_FOREGROUND_COLOR} />
+            <Text style={{ color: ACTION_FOREGROUND_COLOR, fontFamily: 'Inter_500Medium', fontSize: 13 }}>
               {a.label}
             </Text>
           </Pressable>

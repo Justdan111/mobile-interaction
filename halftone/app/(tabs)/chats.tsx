@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { FlatList, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
@@ -59,6 +59,27 @@ export default function Chats() {
     },
   ];
 
+  const rows =
+    segment === 'teams'
+      ? visibleTeams.map((team) => ({
+          key: team.id,
+          actions: actionsFor(team.id, team.name),
+          id: team.id,
+          name: team.name,
+          subtitle: `${team.members.length} members`,
+          preview: threadPreview(team.id, messages, people),
+          onPress: () => router.push(`/chat/${team.id}`),
+        }))
+      : proposals.map((p) => ({
+          key: p.id,
+          actions: actionsFor(p.threadId, p.counterpartName),
+          id: p.counterpartId,
+          name: p.counterpartName,
+          subtitle: p.role,
+          preview: threadPreview(p.threadId, messages, people),
+          onPress: () => router.push(`/chat/${p.threadId}`),
+        }));
+
   return (
     <SafeAreaView className="flex-1 bg-page" edges={['top']}>
       <ScreenHeader title="Chats" />
@@ -66,35 +87,28 @@ export default function Chats() {
         <Segmented options={SEGMENTS} value={segment} onChange={setSegment} />
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
-        {segment === 'teams'
-          ? visibleTeams.map((team) => (
-              <SwipeableRow key={team.id} actions={actionsFor(team.id, team.name)}>
-                <TeamRow
-                  id={team.id}
-                  name={team.name}
-                  subtitle={`${team.members.length} members`}
-                  preview={threadPreview(team.id, messages, people)}
-                  onPress={() => router.push(`/chat/${team.id}`)}
-                />
-              </SwipeableRow>
-            ))
-          : proposals.map((p) => (
-              <SwipeableRow key={p.id} actions={actionsFor(p.threadId, p.counterpartName)}>
-                <TeamRow
-                  id={p.counterpartId}
-                  name={p.counterpartName}
-                  subtitle={p.role}
-                  preview={threadPreview(p.threadId, messages, people)}
-                  onPress={() => router.push(`/chat/${p.threadId}`)}
-                />
-              </SwipeableRow>
-            ))}
-
-        {segment === 'teams' && visibleTeams.length === 0 ? (
-          <Text className="text-muted py-12 text-center text-[15px]">You have left every team.</Text>
-        ) : null}
-      </ScrollView>
+      <FlatList
+        data={rows}
+        keyExtractor={(row) => row.key}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => (
+          <SwipeableRow actions={item.actions}>
+            <TeamRow
+              id={item.id}
+              name={item.name}
+              subtitle={item.subtitle}
+              preview={item.preview}
+              onPress={item.onPress}
+            />
+          </SwipeableRow>
+        )}
+        ListEmptyComponent={
+          segment === 'teams' ? (
+            <Text className="text-muted py-12 text-center text-[15px]">You have left every team.</Text>
+          ) : null
+        }
+      />
     </SafeAreaView>
   );
 }

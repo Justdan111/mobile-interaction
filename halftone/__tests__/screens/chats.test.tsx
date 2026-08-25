@@ -8,6 +8,21 @@ jest.mock('expo-router', () => ({ useRouter: () => ({ push: jest.fn() }) }));
 
 const wrap = () => render(<ThemeProvider><Chats /></ThemeProvider>);
 
+// react-native-svg's <Polyline> lowers to a host 'RNSVGPath' node under
+// the test renderer, so this walks the rendered JSON tree counting them
+// — the only way, in this RN Testing Library version, to tell a
+// single-stroke check apart from a double-stroke one.
+function countHostNodesByType(node: unknown, type: string): number {
+  if (!node) return 0;
+  const nodes = Array.isArray(node) ? node : [node];
+  let count = 0;
+  for (const n of nodes as any[]) {
+    if (n?.type === type) count += 1;
+    if (n?.children) count += countHostNodesByType(n.children, type);
+  }
+  return count;
+}
+
 describe('Chats', () => {
   it('opens on the Teams segment', async () => {
     await wrap();
@@ -65,5 +80,26 @@ describe('Chats', () => {
     const badges = screen.getAllByText(/^\d+$/);
     expect(badges.length).toBe(1);
     expect(badges[0].props.children).toBe(1);
+  });
+
+  it('shows a read tick only for the thread whose last message is mine', async () => {
+    // t-print-ad's last message is mine (delivered: true, unread: 0) — it
+    // should show a read tick. t-brand-identity's only message is from
+    // Alice Kim, not me (delivered: false), even though it too has
+    // unread: 0 — a read tick against someone else's message would be
+    // showing the wrong thing entirely, so it must show neither a tick nor
+    // a badge. Exactly one read tick should render across all three teams.
+    await wrap();
+    expect(screen.getAllByLabelText('read tick').length).toBe(1);
+  });
+
+  it('draws the read tick as a double check, not a single check', async () => {
+    // Comp fidelity: a single-check glyph reused for the read tick would
+    // pass every other assertion in this file (they only check whether a
+    // tick renders, not its shape), so this test looks at the actual SVG
+    // polylines drawn inside the tick.
+    await wrap();
+    const tick = screen.getByLabelText('read tick');
+    expect(countHostNodesByType(tick.toJSON(), 'RNSVGPath')).toBe(2);
   });
 });

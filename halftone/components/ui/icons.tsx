@@ -5,7 +5,7 @@ export type IconName =
   | 'search' | 'mail' | 'chat' | 'target' | 'smiley' | 'heart'
   | 'chevronRight' | 'chevronLeft' | 'filter' | 'bell' | 'exit'
   | 'mic' | 'clip' | 'play' | 'star' | 'lock' | 'shield' | 'moon'
-  | 'edit' | 'pin' | 'briefcase' | 'clock' | 'check';
+  | 'edit' | 'pin' | 'briefcase' | 'clock' | 'check' | 'checkDouble';
 
 type Props = { name: IconName; size?: number; color: string; strokeWidth?: number; filled?: boolean };
 
@@ -36,6 +36,7 @@ export function Icon({ name, size = 24, color, strokeWidth = 1.8, filled = false
       {name === 'briefcase' && (<><Rect x={3} y={7.5} width={18} height={12} rx={2.5} {...s} /><Path d="M9 7.5V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1.5" {...s} /></>)}
       {name === 'clock' && (<><Circle cx={12} cy={12} r={8.5} {...s} /><Polyline points="12,7 12,12 15.5,14" {...s} /></>)}
       {name === 'check' && <Polyline points="5,12.5 10,17.5 19,7" {...s} />}
+      {name === 'checkDouble' && (<><Polyline points="1,12.5 6,17.5 15,7" {...s} /><Polyline points="7,12.5 12,17.5 21,7" {...s} /></>)}
     </Svg>
   );
 }

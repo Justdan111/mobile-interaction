@@ -5,6 +5,7 @@ import { Avatar } from '../halftone/Avatar';
 import { Icon } from '../ui/icons';
 import { formatClock } from '../../lib/format';
 import { useTheme } from '../../lib/theme';
+import { ACTION_FOREGROUND_COLOR } from '../../lib/tokens';
 import type { ThreadPreview } from '../../data/types';
 
 export function TeamRow({
@@ -47,13 +48,18 @@ export function TeamRow({
             </Text>
             {preview.unread > 0 ? (
               <View className="h-5 min-w-5 items-center justify-center rounded-full px-1.5" style={{ backgroundColor: t.info }}>
-                <Text style={{ color: '#FFF', fontSize: 11, fontFamily: 'Inter_600SemiBold' }}>
+                <Text style={{ color: ACTION_FOREGROUND_COLOR, fontSize: 11, fontFamily: 'Inter_600SemiBold' }}>
                   {preview.unread}
                 </Text>
               </View>
-            ) : (
-              <Icon name="check" size={15} color={t.info} strokeWidth={2.4} />
-            )}
+            ) : preview.delivered ? (
+              // Read tick: the thread's last message was sent by 'me', so it
+              // is meaningful to show it as seen. A thread whose last message
+              // came from someone else has nothing of "mine" to mark read.
+              <View accessibilityLabel="read tick">
+                <Icon name="checkDouble" size={15} color={t.info} strokeWidth={2.4} />
+              </View>
+            ) : null}
           </View>
         ) : null}
       </View>
