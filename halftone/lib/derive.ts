@@ -69,6 +69,5 @@ export function threadPreview(
     text: last.body ?? (last.voice ? 'Voice message' : ''),
     at: last.at,
     unread: inThread.filter((m) => !m.read && m.senderId !== 'me').length,
-    delivered: last.senderId === 'me',
   };
 }

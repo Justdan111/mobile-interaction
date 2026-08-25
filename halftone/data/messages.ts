@@ -81,12 +81,8 @@ export const messages: Message[] = [
     read: true,
   },
 
-  // The two teams outside the reference thread each carry at least one
-  // message (Ruling R2 — an empty thread renders no preview row at all).
-  // t-brand-identity's only message is from someone else (read, but not
-  // 'me' — no read tick belongs on it) and t-print-ad's last message is
-  // mine (delivered, unread: 0 — this is where a read tick belongs) so the
-  // chats list exercises both branches of the delivered/read-tick gate.
+  // The two teams outside the reference thread each carry a single message
+  // (Ruling R2 — an empty thread renders no preview row at all).
   {
     id: 'msg-brand-1',
     threadId: 't-brand-identity',
@@ -101,14 +97,6 @@ export const messages: Message[] = [
     senderId: 'm-emilie-laurent',
     body: 'Excited to join the project!',
     at: at(3, '13:28:00'),
-    read: true,
-  },
-  {
-    id: 'msg-print-2',
-    threadId: 't-print-ad',
-    senderId: 'me',
-    body: "Sounds great — let's get started.",
-    at: at(3, '13:45:00'),
     read: true,
   },
 

@@ -102,14 +102,6 @@ describe('threadPreview', () => {
     ];
     expect(threadPreview('y', withOwnUnread, people)!.unread).toBe(0);
   });
-
-  it('marks delivered true only when the last message is from me', () => {
-    const fromMe: Message[] = [
-      { id: 'a', threadId: 'z', senderId: 'me', body: 'Sent', at: '2023-08-01T09:00:00Z', read: true },
-    ];
-    expect(threadPreview('z', fromMe, people)!.delivered).toBe(true);
-    expect(threadPreview('x', messages, people)!.delivered).toBe(false);
-  });
 });
 
 // These fixtures deliberately differ in id/title/dates from `project` above,

@@ -52,14 +52,11 @@ export function TeamRow({
                   {preview.unread}
                 </Text>
               </View>
-            ) : preview.delivered ? (
-              // Read tick: the thread's last message was sent by 'me', so it
-              // is meaningful to show it as seen. A thread whose last message
-              // came from someone else has nothing of "mine" to mark read.
+            ) : (
               <View accessibilityLabel="read tick">
                 <Icon name="checkDouble" size={15} color={t.info} strokeWidth={2.4} />
               </View>
-            ) : null}
+            )}
           </View>
         ) : null}
       </View>

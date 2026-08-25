@@ -75,22 +75,15 @@ describe('Chats', () => {
 
   it('shows an unread badge only for the team with unread messages, and read ticks for the rest', async () => {
     // Only t-website-dev has an unread (unread: 1) message from someone
-    // other than 'me'; the other two teams' single seeded message is read.
+    // other than 'me'; the other two teams' single seeded message is read,
+    // so this exercises both sides of the unread/read-tick binary — it must
+    // fail whether the branch gets stuck always showing ticks (no badge
+    // would render) or always showing badges (three badges, not one).
     await wrap();
     const badges = screen.getAllByText(/^\d+$/);
     expect(badges.length).toBe(1);
     expect(badges[0].props.children).toBe(1);
-  });
-
-  it('shows a read tick only for the thread whose last message is mine', async () => {
-    // t-print-ad's last message is mine (delivered: true, unread: 0) — it
-    // should show a read tick. t-brand-identity's only message is from
-    // Alice Kim, not me (delivered: false), even though it too has
-    // unread: 0 — a read tick against someone else's message would be
-    // showing the wrong thing entirely, so it must show neither a tick nor
-    // a badge. Exactly one read tick should render across all three teams.
-    await wrap();
-    expect(screen.getAllByLabelText('read tick').length).toBe(1);
+    expect(screen.getAllByLabelText('read tick').length).toBe(2);
   });
 
   it('draws the read tick as a double check, not a single check', async () => {
@@ -99,7 +92,9 @@ describe('Chats', () => {
     // tick renders, not its shape), so this test looks at the actual SVG
     // polylines drawn inside the tick.
     await wrap();
-    const tick = screen.getByLabelText('read tick');
-    expect(countHostNodesByType(tick.toJSON(), 'RNSVGPath')).toBe(2);
+    const ticks = screen.getAllByLabelText('read tick');
+    for (const tick of ticks) {
+      expect(countHostNodesByType(tick.toJSON(), 'RNSVGPath')).toBe(2);
+    }
   });
 });

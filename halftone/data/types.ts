@@ -103,5 +103,4 @@ export type ThreadPreview = {
   text: string;
   at: ISODateTime;
   unread: number;
-  delivered: boolean;
 };
