@@ -22,8 +22,8 @@ function barHeights(node: any, out: number[] = []): number[] {
 describe('VoiceNote waveform', () => {
   it('draws the same bars for the same message seed across renders', async () => {
     const voice = { durationSec: 5, seed: 'alice-johnson-voice-1' };
-    const a = await render(<VoiceNote voice={voice} tint="#7B77E8" />);
-    const b = await render(<VoiceNote voice={voice} tint="#7B77E8" />);
+    const a = await render(<VoiceNote voice={voice} tint="#7B77E8" barColor="#AAAAAA" />);
+    const b = await render(<VoiceNote voice={voice} tint="#7B77E8" barColor="#AAAAAA" />);
 
     const barsA = barHeights(a.toJSON());
     const barsB = barHeights(b.toJSON());
@@ -33,8 +33,8 @@ describe('VoiceNote waveform', () => {
   });
 
   it('draws different bars for a different message seed', async () => {
-    const a = await render(<VoiceNote voice={{ durationSec: 5, seed: 'alice-johnson-voice-1' }} tint="#7B77E8" />);
-    const b = await render(<VoiceNote voice={{ durationSec: 5, seed: 'me-voice-1' }} tint="#7B77E8" />);
+    const a = await render(<VoiceNote voice={{ durationSec: 5, seed: 'alice-johnson-voice-1' }} tint="#7B77E8" barColor="#AAAAAA" />);
+    const b = await render(<VoiceNote voice={{ durationSec: 5, seed: 'me-voice-1' }} tint="#7B77E8" barColor="#AAAAAA" />);
 
     const barsA = barHeights(a.toJSON());
     const barsB = barHeights(b.toJSON());
@@ -45,7 +45,7 @@ describe('VoiceNote waveform', () => {
   });
 
   it('shows the note duration', async () => {
-    const r = await render(<VoiceNote voice={{ durationSec: 5, seed: 'x' }} tint="#7B77E8" />);
+    const r = await render(<VoiceNote voice={{ durationSec: 5, seed: 'x' }} tint="#7B77E8" barColor="#AAAAAA" />);
     expect(r.getByText('0:05')).toBeTruthy();
   });
 });

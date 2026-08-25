@@ -67,6 +67,17 @@ export const TOGGLE_KNOB_COLOR = '#FFFFFF';
 export const ACTION_FOREGROUND_COLOR = '#FFFFFF';
 
 /**
+ * The voice-note play-button circle for the current user's *own* messages
+ * is a fixed white disc sitting on top of the accent-filled bubble — a
+ * control surface, not a foreground colour on a surface (the inverse of
+ * `ACTION_FOREGROUND_COLOR`, which is a foreground fixed against a themed
+ * surface). Always white in both light and dark mode, like
+ * `TOGGLE_KNOB_COLOR`'s "physical control" rationale. Lives here, not
+ * inline at the call site, per the "no raw hex at call sites" rule.
+ */
+export const VOICE_NOTE_SURFACE_COLOR = '#FFFFFF';
+
+/**
  * Home screen art-card row (`ArtCardRow`): one fixed ground/dot pair per
  * card id. Like PLATE_COLORS/TILE_GROUNDS above, these are art plates —
  * deliberately NOT mode-keyed, since inverting them would break the

@@ -3,6 +3,7 @@ import { Text, View } from 'react-native';
 import { VoiceNote } from './VoiceNote';
 import { formatClock } from '../../lib/format';
 import { useTheme } from '../../lib/theme';
+import { ACTION_FOREGROUND_COLOR, VOICE_NOTE_SURFACE_COLOR } from '../../lib/tokens';
 import type { Message } from '../../data/types';
 
 export function MessageBubble({
@@ -26,7 +27,7 @@ export function MessageBubble({
       {showSender ? (
         <Text
           className={`mb-0.5 text-[13px] font-semibold ${isOwn ? '' : 'text-muted'}`}
-          style={isOwn ? { color: '#FFFFFF' } : undefined}
+          style={isOwn ? { color: ACTION_FOREGROUND_COLOR } : undefined}
         >
           {isOwn ? 'You' : senderName}
         </Text>
@@ -35,11 +36,12 @@ export function MessageBubble({
       {message.voice ? (
         <VoiceNote
           voice={message.voice}
-          tint={isOwn ? '#FFFFFF' : t.accent}
-          iconColor={isOwn ? t.accent : '#FFFFFF'}
+          tint={isOwn ? VOICE_NOTE_SURFACE_COLOR : t.accent}
+          iconColor={isOwn ? t.accent : ACTION_FOREGROUND_COLOR}
+          barColor={isOwn ? ACTION_FOREGROUND_COLOR : t.muted}
         />
       ) : (
-        <Text className="text-[15px] leading-[21px]" style={{ color: isOwn ? '#FFFFFF' : t.ink }}>
+        <Text className="text-[15px] leading-[21px]" style={{ color: isOwn ? ACTION_FOREGROUND_COLOR : t.ink }}>
           {message.body}
         </Text>
       )}

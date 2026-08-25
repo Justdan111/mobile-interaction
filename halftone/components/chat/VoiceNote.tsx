@@ -3,6 +3,7 @@ import { Text, View } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
 import { Icon } from '../ui/icons';
 import { hashSeed, makeRandom } from '../../lib/seed';
+import { ACTION_FOREGROUND_COLOR } from '../../lib/tokens';
 import type { Voice } from '../../data/types';
 
 const BARS = 26;
@@ -18,9 +19,11 @@ function useBars(seed: string) {
 export function VoiceNote({
   voice,
   tint,
-  iconColor = '#FFFFFF',
+  iconColor = ACTION_FOREGROUND_COLOR,
+  barColor,
 }: {
   voice: Voice;
+  /** Circle background behind the play icon — not the waveform's colour. */
   tint: string;
   /**
    * Play-triangle colour. Defaults to white, which is correct against an
@@ -30,6 +33,13 @@ export function VoiceNote({
    * accent-coloured triangle on a white circle, not a white-on-white one.
    */
   iconColor?: string;
+  /**
+   * Waveform bar colour. Deliberately separate from `tint`: the comp's
+   * other-sender bars are neutral gray (no accent tint), while `tint` for
+   * that case is the accent-purple circle background — one value can't
+   * serve both without accent-tinting bars the comp draws in plain gray.
+   */
+  barColor: string;
 }) {
   const bars = useBars(voice.seed);
   const width = BARS * 5;
@@ -48,7 +58,7 @@ export function VoiceNote({
             width={2.5}
             height={h * 22}
             rx={1.25}
-            fill={tint}
+            fill={barColor}
             opacity={0.85}
           />
         ))}
