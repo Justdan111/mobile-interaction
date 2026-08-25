@@ -6,7 +6,10 @@ import { hashSeed } from '../../lib/seed';
 import { PLATE_COLORS } from '../../lib/tokens';
 import { useTheme } from '../../lib/theme';
 
-export function Avatar({ name, size }: { name: string; size: number }) {
+// `radius` defaults to a full circle, which is what every surface but the team
+// detail wants. Team detail's comp uses rounded squares that match the radius of
+// the file rows beside them, so the shape has to be the call site's choice.
+export function Avatar({ name, size, radius }: { name: string; size: number; radius?: number }) {
   const { t } = useTheme();
   const h = hashSeed(name);
   const variant = FIELD_NAMES[h % FIELD_NAMES.length];
@@ -18,7 +21,7 @@ export function Avatar({ name, size }: { name: string; size: number }) {
 
   return (
     <View
-      style={{ width: size, height: size, borderRadius: size / 2, overflow: 'hidden' }}
+      style={{ width: size, height: size, borderRadius: radius ?? size / 2, overflow: 'hidden' }}
       className="bg-chip"
       accessibilityLabel={`${name} avatar`}
     >
