@@ -5,7 +5,7 @@ export type IconName =
   | 'search' | 'mail' | 'chat' | 'target' | 'smiley' | 'heart'
   | 'chevronRight' | 'chevronLeft' | 'filter' | 'bell' | 'exit'
   | 'mic' | 'clip' | 'play' | 'star' | 'lock' | 'shield' | 'moon'
-  | 'edit' | 'pin' | 'briefcase' | 'clock' | 'check' | 'checkDouble';
+  | 'edit' | 'pin' | 'briefcase' | 'clock' | 'check' | 'checkDouble' | 'close';
 
 type Props = { name: IconName; size?: number; color: string; strokeWidth?: number; filled?: boolean };
 
@@ -37,6 +37,9 @@ export function Icon({ name, size = 24, color, strokeWidth = 1.8, filled = false
       {name === 'clock' && (<><Circle cx={12} cy={12} r={8.5} {...s} /><Polyline points="12,7 12,12 15.5,14" {...s} /></>)}
       {name === 'check' && <Polyline points="5,12.5 10,17.5 19,7" {...s} />}
       {name === 'checkDouble' && (<><Polyline points="1,12.5 6,17.5 15,7" {...s} /><Polyline points="7,12.5 12,17.5 21,7" {...s} /></>)}
+      {/* Counterpart to `check`: a settled-but-negative status, so a declined
+          proposal is not chipped with the clock that means "still waiting". */}
+      {name === 'close' && (<><Polyline points="6,6 18,18" {...s} /><Polyline points="18,6 6,18" {...s} /></>)}
     </Svg>
   );
 }
