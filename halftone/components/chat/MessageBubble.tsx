@@ -3,7 +3,11 @@ import { Text, View } from 'react-native';
 import { VoiceNote } from './VoiceNote';
 import { formatClock } from '../../lib/format';
 import { useTheme } from '../../lib/theme';
-import { ACTION_FOREGROUND_COLOR, VOICE_NOTE_SURFACE_COLOR } from '../../lib/tokens';
+import {
+  ACTION_FOREGROUND_COLOR,
+  MESSAGE_ON_ACCENT_MUTED_COLOR,
+  VOICE_NOTE_SURFACE_COLOR,
+} from '../../lib/tokens';
 import type { Message } from '../../data/types';
 
 export function MessageBubble({
@@ -39,6 +43,7 @@ export function MessageBubble({
           tint={isOwn ? VOICE_NOTE_SURFACE_COLOR : t.accent}
           iconColor={isOwn ? t.accent : ACTION_FOREGROUND_COLOR}
           barColor={isOwn ? ACTION_FOREGROUND_COLOR : t.muted}
+          durationColor={isOwn ? MESSAGE_ON_ACCENT_MUTED_COLOR : t.muted}
         />
       ) : (
         <Text className="text-[15px] leading-[21px]" style={{ color: isOwn ? ACTION_FOREGROUND_COLOR : t.ink }}>
@@ -48,7 +53,7 @@ export function MessageBubble({
 
       <Text
         className="mt-1 self-end text-[11px]"
-        style={{ color: isOwn ? 'rgba(255,255,255,0.75)' : t.muted }}
+        style={{ color: isOwn ? MESSAGE_ON_ACCENT_MUTED_COLOR : t.muted }}
       >
         {formatClock(message.at)}
       </Text>

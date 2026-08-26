@@ -122,3 +122,15 @@ export const PROFILE_PLATE_CHIP_COLOR = 'rgba(255,255,255,0.7)';
  * art-direction list that exists only to vary avatars.
  */
 export const RATING_STAR_COLOR = '#F0A202';
+
+/**
+ * Secondary text drawn on the accent-filled bubble of the user's OWN messages:
+ * the timestamp, and a voice note's duration. Softened white rather than the
+ * `muted` grey those same elements use on a `card` bubble — `muted` against
+ * `accent` is about 1.1:1 and simply cannot be read, which is exactly how the
+ * voice-note duration shipped until the Task 18 screenshot pass.
+ *
+ * Alpha-modified white rather than a flat token because it has to read as
+ * secondary NEXT TO the full-white primary text in the same bubble.
+ */
+export const MESSAGE_ON_ACCENT_MUTED_COLOR = 'rgba(255,255,255,0.75)';

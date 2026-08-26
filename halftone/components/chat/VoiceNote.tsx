@@ -21,6 +21,7 @@ export function VoiceNote({
   tint,
   iconColor = ACTION_FOREGROUND_COLOR,
   barColor,
+  durationColor,
 }: {
   voice: Voice;
   /** Circle background behind the play icon — not the waveform's colour. */
@@ -40,6 +41,13 @@ export function VoiceNote({
    * serve both without accent-tinting bars the comp draws in plain gray.
    */
   barColor: string;
+  /**
+   * Duration colour. A prop for the same reason `barColor` and `iconColor`
+   * are: this text sits on the bubble, whose fill differs between own and
+   * other messages. It was the one colour here left hardcoded to `muted`, and
+   * on an accent-filled own bubble that is roughly 1.1:1 against its ground.
+   */
+  durationColor: string;
 }) {
   const bars = useBars(voice.seed);
   const width = BARS * 5;
@@ -63,7 +71,7 @@ export function VoiceNote({
           />
         ))}
       </Svg>
-      <Text className="text-muted text-[12px]">
+      <Text className="text-[12px]" style={{ color: durationColor }}>
         0:{String(voice.durationSec).padStart(2, '0')}
       </Text>
     </View>
