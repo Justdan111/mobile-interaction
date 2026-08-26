@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { GlassView, isLiquidGlassAvailable } from '../../lib/glass';
+import { useTabBarCollapsed } from './TabBarChrome';
 import { Icon, type IconName } from '../ui/icons';
 import { useTheme } from '../../lib/theme';
 
@@ -34,6 +35,7 @@ export function TabPill({
 }) {
   const { t } = useTheme();
   const glass = isLiquidGlassAvailable();
+  const collapsed = useTabBarCollapsed();
 
   const body = (
     <Animated.View
@@ -48,7 +50,10 @@ export function TabPill({
       }}
     >
       <Icon name={icon} size={22} color={isFocused ? CHIP_FOREGROUND : ICON_INACTIVE} strokeWidth={1.9} />
-      {isFocused ? (
+      {/* The label is what makes the bar wide. Dropping it while the user
+          scrolls is the whole shrink — the LinearTransition above already
+          springs the width change, so nothing else has to animate here. */}
+      {isFocused && !collapsed ? (
         <Animated.View entering={FadeIn.duration(160)} exiting={FadeOut.duration(90)}>
           <Text numberOfLines={1} style={{ color: CHIP_FOREGROUND, fontFamily: 'Inter_600SemiBold', fontSize: 14 }}>
             {label}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Tabs, TabList, TabSlot, TabTrigger, type TabTriggerSlotProps } from 'expo-router/ui';
 import { GlassTabBar, TABS } from '../../components/tabs/GlassTabBar';
+import { TabBarChromeProvider } from '../../components/tabs/TabBarChrome';
 import { TabPill } from '../../components/tabs/TabPill';
 import type { IconName } from '../../components/ui/icons';
 
@@ -40,19 +41,24 @@ Trigger.displayName = 'Trigger';
 
 export default function TabsLayout() {
   return (
-    <Tabs>
-      {/* TabSlot renders before TabList so the bar draws over the screen
-          content — it is a floating pill, not a docked bar. */}
-      <TabSlot />
-      <TabList asChild>
-        <GlassTabBar>
-          {TABS.map((t) => (
-            <TabTrigger key={t.name} name={t.name} href={t.href as never} asChild>
-              <Trigger icon={t.icon} label={t.label} />
-            </TabTrigger>
-          ))}
-        </GlassTabBar>
-      </TabList>
-    </Tabs>
+    // Wraps both the slot and the bar: the screens inside report their scroll
+    // position, and the bar reads it. Anything outside this provider simply
+    // renders the bar at full size.
+    <TabBarChromeProvider>
+      <Tabs>
+        {/* TabSlot renders before TabList so the bar draws over the screen
+            content — it is a floating pill, not a docked bar. */}
+        <TabSlot />
+        <TabList asChild>
+          <GlassTabBar>
+            {TABS.map((t) => (
+              <TabTrigger key={t.name} name={t.name} href={t.href as never} asChild>
+                <Trigger icon={t.icon} label={t.label} />
+              </TabTrigger>
+            ))}
+          </GlassTabBar>
+        </TabList>
+      </Tabs>
+    </TabBarChromeProvider>
   );
 }

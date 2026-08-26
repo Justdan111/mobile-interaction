@@ -12,6 +12,7 @@ import { messages } from '../../data/messages';
 import { people as allPeople } from '../../data/people';
 import { threadPreview } from '../../lib/derive';
 import { useTheme } from '../../lib/theme';
+import { useTabBarScroll } from '../../components/tabs/TabBarChrome';
 
 const SEGMENTS = [
   { key: 'proposals', label: 'Proposals' },
@@ -19,6 +20,9 @@ const SEGMENTS = [
 ];
 
 export default function Chats() {
+  // Feeds this screen's scroll position to the floating tab bar, which
+  // shrinks to icons on the way down and expands again on the way up.
+  const tabBarScroll = useTabBarScroll();
   const router = useRouter();
   const { t } = useTheme();
   const [segment, setSegment] = useState('teams');
@@ -88,6 +92,7 @@ export default function Chats() {
       </View>
 
       <FlatList
+        {...tabBarScroll}
         data={rows}
         keyExtractor={(row) => row.key}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }}

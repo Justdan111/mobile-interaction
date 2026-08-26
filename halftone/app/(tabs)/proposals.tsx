@@ -8,6 +8,7 @@ import { ProposalCard } from '../../components/proposals/ProposalCard';
 import { proposals as source } from '../../data/proposals';
 import { projects } from '../../data/projects';
 import type { ProposalStatus } from '../../data/types';
+import { useTabBarScroll } from '../../components/tabs/TabBarChrome';
 
 const SEGMENTS = [
   { key: 'incoming', label: 'Incoming' },
@@ -15,6 +16,9 @@ const SEGMENTS = [
 ];
 
 export default function Proposals() {
+  // Feeds this screen's scroll position to the floating tab bar, which
+  // shrinks to icons on the way down and expands again on the way up.
+  const tabBarScroll = useTabBarScroll();
   const router = useRouter();
   const [segment, setSegment] = useState<'incoming' | 'outgoing'>('incoming');
   const [statuses, setStatuses] = useState<Record<string, ProposalStatus>>(
@@ -39,7 +43,11 @@ export default function Proposals() {
         />
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        {...tabBarScroll}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+      >
         {visible.map((p) => (
           <ProposalCard
             key={p.id}

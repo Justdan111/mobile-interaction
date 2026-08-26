@@ -14,6 +14,7 @@ import { marksFromProjects, agendaFromProjects } from '../../lib/derive';
 import { formatMonthYear } from '../../lib/format';
 import { todayIso, monthOf } from '../../lib/today';
 import { useTheme } from '../../lib/theme';
+import { useTabBarScroll } from '../../components/tabs/TabBarChrome';
 
 const SEGMENTS = [
   { key: 'active', label: 'Active projects' },
@@ -21,6 +22,9 @@ const SEGMENTS = [
 ];
 
 export default function Projects() {
+  // Feeds this screen's scroll position to the floating tab bar, which
+  // shrinks to icons on the way down and expands again on the way up.
+  const tabBarScroll = useTabBarScroll();
   const router = useRouter();
   const { t } = useTheme();
   const [segment, setSegment] = useState('active');
@@ -64,7 +68,11 @@ export default function Projects() {
         <Segmented options={SEGMENTS} value={segment} onChange={setSegment} />
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        {...tabBarScroll}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+      >
         {segment === 'active' ? (
           projects.map((p) => (
             <ProjectCard

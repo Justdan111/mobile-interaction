@@ -108,3 +108,47 @@ describe('Home', () => {
     });
   });
 });
+
+/**
+ * Walks up from a node collecting each ancestor's displayed type name, so a
+ * test can assert what a element is or is not rendered inside.
+ */
+function ancestorNames(node: any): string[] {
+  const names: string[] = [];
+  let current = node?.parent;
+  while (current) {
+    const t = current.type;
+    const name = typeof t === 'string' ? t : t?.displayName ?? t?.name;
+    if (name) names.push(name);
+    current = current.parent;
+  }
+  return names;
+}
+
+describe('Home pinned header', () => {
+  // The greeting, the search field and the art rail used to be the FlatList's
+  // ListHeaderComponent, so they scrolled away with the projects. They are a
+  // fixed sibling above the list now — which means none of them may have a
+  // virtualized list among their ancestors.
+  it('renders the search field outside the scrolling list', async () => {
+    await wrap();
+    const names = ancestorNames(screen.getByPlaceholderText('Search for project'));
+    expect(names.length).toBeGreaterThan(0);
+    expect(names.some((n) => /VirtualizedList|FlatList|ScrollView/.test(n))).toBe(false);
+  });
+
+  it('renders the greeting outside the scrolling list', async () => {
+    await wrap();
+    const names = ancestorNames(screen.getByText(/Good (morning|afternoon|evening)!/));
+    expect(names.some((n) => /VirtualizedList|FlatList|ScrollView/.test(n))).toBe(false);
+  });
+
+  // The Projects heading was chosen to keep scrolling with the cards, so it
+  // stays inside the list — the counterpart assertion that proves the split is
+  // where it was meant to be and not simply "everything moved out".
+  it('keeps the Projects heading inside the scrolling list', async () => {
+    await wrap();
+    const names = ancestorNames(screen.getByText('Projects'));
+    expect(names.some((n) => /VirtualizedList|FlatList|ScrollView/.test(n))).toBe(true);
+  });
+});

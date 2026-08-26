@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Halftone } from '../components/halftone/Halftone';
+import { OrbitingHalftone } from '../components/halftone/OrbitingHalftone';
 import { PillButton } from '../components/ui/PillButton';
 import { useTheme } from '../lib/theme';
 import type { FieldName } from '../components/halftone/fields';
@@ -57,7 +57,13 @@ export default function Onboarding() {
           <Text className="font-display text-ink text-center text-[38px]">{slide.title}</Text>
           <Text className="text-muted mt-3 text-center text-[15px] leading-[22px]">{slide.body}</Text>
           <View className="mt-10">
-            <Halftone variant={slide.variant} size={art} seed={slide.seed} density={54} dotColor={t.accent} />
+            <OrbitingHalftone
+              variant={slide.variant}
+              size={art}
+              seed={slide.seed}
+              density={54}
+              dotColor={t.accent}
+            />
           </View>
         </Animated.View>
       </View>

@@ -1,7 +1,9 @@
 import React from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, { interpolate, useAnimatedStyle } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
+import { useTabBarCollapseValue } from './TabBarChrome';
 import { GlassContainer, GlassView, isLiquidGlassAvailable } from '../../lib/glass';
 import type { IconName } from '../ui/icons';
 
@@ -21,6 +23,14 @@ const BAR_RADIUS = 34;
 const BAR_GAP = 10;
 const BAR_SIDE_INSET = 16;
 
+/**
+ * How far each side of the bar draws in when it collapses to icons. The pill
+ * narrows toward the centre as the focused tab sheds its label, so the two
+ * movements read as one gesture rather than a label vanishing from a bar that
+ * stayed put.
+ */
+const BAR_COLLAPSED_EXTRA_INSET = 44;
+
 // Glass elements inside a GlassContainer start merging at this distance, so
 // the focused chip visibly fuses into the bar as it slides between tabs.
 const GLASS_MERGE_SPACING = 18;
@@ -28,6 +38,12 @@ const GLASS_MERGE_SPACING = 18;
 export function GlassTabBar({ children }: { children?: React.ReactNode }) {
   const insets = useSafeAreaInsets();
   const glass = isLiquidGlassAvailable();
+  const collapse = useTabBarCollapseValue();
+
+  const shell = useAnimatedStyle(() => {
+    const inset = interpolate(collapse.value, [0, 1], [0, BAR_COLLAPSED_EXTRA_INSET]);
+    return { marginLeft: inset, marginRight: inset };
+  });
 
   const row = (
     <View
@@ -44,14 +60,17 @@ export function GlassTabBar({ children }: { children?: React.ReactNode }) {
   );
 
   return (
-    <View
+    <Animated.View
       pointerEvents="box-none"
-      style={{
-        position: 'absolute',
-        left: BAR_SIDE_INSET,
-        right: BAR_SIDE_INSET,
-        bottom: Math.max(insets.bottom, 12) + BAR_GAP,
-      }}
+      style={[
+        {
+          position: 'absolute',
+          left: BAR_SIDE_INSET,
+          right: BAR_SIDE_INSET,
+          bottom: Math.max(insets.bottom, 12) + BAR_GAP,
+        },
+        shell,
+      ]}
     >
       {glass ? (
         // `GlassContainer` paints nothing itself. Its native implementation
@@ -108,6 +127,6 @@ export function GlassTabBar({ children }: { children?: React.ReactNode }) {
           </BlurView>
         </View>
       )}
-    </View>
+    </Animated.View>
   );
 }

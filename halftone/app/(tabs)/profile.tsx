@@ -9,8 +9,12 @@ import { SettingsRow } from '../../components/profile/SettingsRow';
 import { Toggle } from '../../components/ui/Toggle';
 import { profile } from '../../data/profile';
 import { useTheme } from '../../lib/theme';
+import { useTabBarScroll } from '../../components/tabs/TabBarChrome';
 
 export default function Profile() {
+  // Feeds this screen's scroll position to the floating tab bar, which
+  // shrinks to icons on the way down and expands again on the way up.
+  const tabBarScroll = useTabBarScroll();
   const router = useRouter();
   const { mode, setPreference, t } = useTheme();
   const isDark = mode === 'dark';
@@ -28,7 +32,11 @@ export default function Profile() {
 
   return (
     <SafeAreaView className="flex-1 bg-page" edges={[]}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        {...tabBarScroll}
+        contentContainerStyle={{ paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+      >
         <ProfileHeader profile={profile} />
 
         <View className="px-4 pt-4">
