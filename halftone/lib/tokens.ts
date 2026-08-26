@@ -100,3 +100,25 @@ export const ART_CARD_PALETTES: Record<string, { ground: string; dot: string }> 
  */
 export const ART_CARD_CAPTION_COLOR = '#FFFFFF';
 export const ART_CARD_CAPTION_SCRIM = 'rgba(0,0,0,0.42)';
+
+/**
+ * Profile header plate. Comp 9 is a DARK-MODE capture and its header is still
+ * the pale lavender of the light comps, carrying dark ink — so this is a fixed
+ * art plate like PLATE_COLORS/TILE_GROUNDS above, not a mode-keyed surface.
+ * Keeping one plate in both themes also keeps the contrast honest: dark ink on
+ * pale lavender reads the same either way, where a mode-swapped ground has to
+ * re-derive its foreground and can get it wrong.
+ */
+export const PROFILE_PLATE_COLOR = '#E4E1FB';
+export const PROFILE_PLATE_INK = '#0F0F12';
+
+/** The translucent white pill holding the phone number on that plate. */
+export const PROFILE_PLATE_CHIP_COLOR = 'rgba(255,255,255,0.7)';
+
+/**
+ * The rating star. A gold star is the rating idiom itself rather than a themed
+ * accent, so like the plates above it is fixed across modes. Same value as
+ * PLATE_COLORS' amber, but named for its meaning, not borrowed from an
+ * art-direction list that exists only to vary avatars.
+ */
+export const RATING_STAR_COLOR = '#F0A202';

@@ -8,10 +8,17 @@ export function Toggle({
   value,
   onChange,
   tint,
+  accessibilityLabel,
 }: {
   value: boolean;
   onChange: (next: boolean) => void;
   tint?: string;
+  /**
+   * Names the switch itself. Wrapping a Toggle in a labelled View instead
+   * splits the control in two for assistive tech — the wrapper announces the
+   * name but carries neither the checked state nor the press handler.
+   */
+  accessibilityLabel?: string;
 }) {
   const { t } = useTheme();
   const knob = useAnimatedStyle(() => ({
@@ -21,6 +28,7 @@ export function Toggle({
   return (
     <Pressable
       accessibilityRole="switch"
+      accessibilityLabel={accessibilityLabel}
       accessibilityState={{ checked: value }}
       onPress={() => onChange(!value)}
       hitSlop={8}

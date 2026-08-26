@@ -5,7 +5,7 @@ export type IconName =
   | 'search' | 'mail' | 'chat' | 'target' | 'smiley' | 'heart'
   | 'chevronRight' | 'chevronLeft' | 'filter' | 'bell' | 'exit'
   | 'mic' | 'clip' | 'play' | 'star' | 'lock' | 'shield' | 'moon'
-  | 'edit' | 'pin' | 'briefcase' | 'clock' | 'check' | 'checkDouble' | 'close';
+  | 'edit' | 'pin' | 'briefcase' | 'clock' | 'check' | 'checkDouble' | 'close' | 'phone';
 
 type Props = { name: IconName; size?: number; color: string; strokeWidth?: number; filled?: boolean };
 
@@ -39,6 +39,8 @@ export function Icon({ name, size = 24, color, strokeWidth = 1.8, filled = false
       {name === 'checkDouble' && (<><Polyline points="1,12.5 6,17.5 15,7" {...s} /><Polyline points="7,12.5 12,17.5 21,7" {...s} /></>)}
       {/* Counterpart to `check`: a settled-but-negative status, so a declined
           proposal is not chipped with the clock that means "still waiting". */}
+      {/* A handset, for a phone number. `pin` is a map pin and says "location". */}
+      {name === 'phone' && <Path d="M7.5 4h3l1.4 3.5-2 1.5a10.5 10.5 0 0 0 5.1 5.1l1.5-2L20 13.5v3a2 2 0 0 1-2.2 2A15.5 15.5 0 0 1 5.5 6.2 2 2 0 0 1 7.5 4Z" {...s} />}
       {name === 'close' && (<><Polyline points="6,6 18,18" {...s} /><Polyline points="18,6 6,18" {...s} /></>)}
     </Svg>
   );

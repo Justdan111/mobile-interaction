@@ -20,7 +20,10 @@ export function PillButton({
         onPress();
       }}
       className={`items-center justify-center rounded-2xl py-4 active:opacity-80 ${
-        primary ? 'bg-ink' : 'border border-hairline bg-transparent'
+        // `hairline` is tuned to separate rows on `card`; against the `chip`
+        // surface this button actually sits on it is the same colour and the
+        // outline vanishes. A muted border reads on both.
+        primary ? 'bg-ink' : 'border border-muted/40 bg-transparent'
       }`}
     >
       <Text className={`text-[16px] font-semibold ${primary ? 'text-page' : 'text-ink'}`}>
