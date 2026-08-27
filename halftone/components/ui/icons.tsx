@@ -3,7 +3,7 @@ import Svg, { Circle, Line, Path, Polyline, Rect } from 'react-native-svg';
 
 export type IconName =
   | 'search' | 'mail' | 'chat' | 'target' | 'smiley' | 'heart'
-  | 'chevronRight' | 'chevronLeft' | 'filter' | 'bell' | 'exit'
+  | 'chevronRight' | 'chevronLeft' | 'filter' | 'bell' | 'bellOff' | 'exit'
   | 'mic' | 'clip' | 'play' | 'star' | 'lock' | 'shield' | 'moon'
   | 'edit' | 'pin' | 'briefcase' | 'clock' | 'check' | 'checkDouble' | 'close' | 'phone';
 
@@ -23,6 +23,10 @@ export function Icon({ name, size = 24, color, strokeWidth = 1.8, filled = false
       {name === 'chevronLeft' && <Polyline points="15,5 8,12 15,19" {...s} />}
       {name === 'filter' && (<><Line x1={4} y1={8} x2={20} y2={8} {...s} /><Line x1={4} y1={16} x2={20} y2={16} {...s} /><Circle cx={15} cy={8} r={2.4} {...s} /><Circle cx={9} cy={16} r={2.4} {...s} /></>)}
       {name === 'bell' && (<><Path d="M6.5 10a5.5 5.5 0 0 1 11 0c0 4 1.5 5.5 1.5 5.5H5S6.5 14 6.5 10Z" {...s} /><Path d="M10 18.5a2 2 0 0 0 4 0" {...s} /></>)}
+      {/* The same bell struck through, for a muted thread. Drawn from `bell`'s
+          own paths so the two read as one glyph in two states rather than as
+          two different bells. */}
+      {name === 'bellOff' && (<><Path d="M6.5 10a5.5 5.5 0 0 1 11 0c0 4 1.5 5.5 1.5 5.5H5S6.5 14 6.5 10Z" {...s} /><Path d="M10 18.5a2 2 0 0 0 4 0" {...s} /><Path d="M4 4 20 20" {...s} /></>)}
       {name === 'exit' && (<><Path d="M14 4.5H6.5A1.5 1.5 0 0 0 5 6v12a1.5 1.5 0 0 0 1.5 1.5H14" {...s} /><Polyline points="16,8 20,12 16,16" {...s} /><Line x1={20} y1={12} x2={10} y2={12} {...s} /></>)}
       {name === 'mic' && (<><Rect x={9} y={3} width={6} height={11} rx={3} {...s} /><Path d="M5.5 11.5a6.5 6.5 0 0 0 13 0" {...s} /><Line x1={12} y1={18} x2={12} y2={21} {...s} /></>)}
       {name === 'clip' && <Path d="M16.5 7.5 9 15a2.8 2.8 0 0 0 4 4l7-7a5 5 0 0 0-7-7L5 13a7 7 0 0 0 10 10l5-5" {...s} />}

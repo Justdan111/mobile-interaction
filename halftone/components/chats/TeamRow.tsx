@@ -13,12 +13,16 @@ export function TeamRow({
   name,
   subtitle,
   preview,
+  muted = false,
   onPress,
 }: {
   id: string;
   name: string;
   subtitle: string;
   preview: ThreadPreview | null;
+  /** Draws the struck-through bell, so a muted thread stays legible as muted
+   *  once the swipe action that muted it has slid shut. */
+  muted?: boolean;
   onPress: () => void;
 }) {
   const { t } = useTheme();
@@ -32,6 +36,11 @@ export function TeamRow({
           <Text className="text-ink flex-1 text-[17px] font-semibold" numberOfLines={1}>
             {name}
           </Text>
+          {muted ? (
+            <View className="mr-1.5" accessibilityLabel={`${name} is muted`}>
+              <Icon name="bellOff" size={15} color={t.muted} strokeWidth={1.9} />
+            </View>
+          ) : null}
           {preview ? <Text className="text-muted text-[12px]">{formatClock(preview.at)}</Text> : null}
         </View>
 
