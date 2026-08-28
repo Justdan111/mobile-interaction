@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react-native';
+import { act, render, screen, fireEvent } from '@testing-library/react-native';
 import Chats from '../../app/(tabs)/chats';
 import { ThemeProvider } from '../../lib/theme';
 import { teams } from '../../data/teams';
@@ -7,6 +7,16 @@ import { teams } from '../../data/teams';
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: jest.fn() }) }));
 
 const wrap = () => render(<ThemeProvider><Chats /></ThemeProvider>);
+
+beforeEach(() => jest.useFakeTimers());
+afterEach(() => jest.useRealTimers());
+
+/** Runs the shake-then-close choreography SwipeableRow schedules on a press. */
+const settle = async () => {
+  await act(async () => {
+    jest.advanceTimersByTime(800);
+  });
+};
 
 // react-native-svg's <Polyline> lowers to a host 'RNSVGPath' node under
 // the test renderer, so this walks the rendered JSON tree counting them
@@ -57,11 +67,28 @@ describe('Chats', () => {
     expect(screen.getAllByLabelText(/Leave/).length).toBe(teams.length);
   });
 
+  // The action's effect is deliberately deferred a beat so its icon shakes
+  // before it changes underneath — see SwipeableRow. Pressing and asserting in
+  // the same tick therefore proves nothing; the timers have to be run.
   it('flips the mute action label when pressed', async () => {
     await wrap();
     const first = screen.getAllByLabelText(/Mute .*/)[0];
     await fireEvent.press(first);
+    await settle();
     expect(screen.getAllByLabelText(/Unmute/).length).toBeGreaterThan(0);
+  });
+
+  it('does not fire the action before the shake has begun', async () => {
+    await wrap();
+    const before = screen.queryAllByLabelText(/Unmute/).length;
+    await fireEvent.press(screen.getAllByLabelText(/Mute .*/)[0]);
+    // Still inside the deferral window: nothing has changed yet.
+    await act(async () => {
+      jest.advanceTimersByTime(60);
+    });
+    expect(screen.queryAllByLabelText(/Unmute/).length).toBe(before);
+    await settle();
+    expect(screen.queryAllByLabelText(/Unmute/).length).toBeGreaterThan(before);
   });
 
   it('previews the last message in a thread, not the first', async () => {
@@ -96,5 +123,33 @@ describe('Chats', () => {
     for (const tick of ticks) {
       expect(countHostNodesByType(tick.toJSON(), 'RNSVGPath')).toBe(2);
     }
+  });
+});
+
+describe('Chats mute state on the row', () => {
+  // Before this, muting a thread changed a Set and nothing else: the row that
+  // was muted looked exactly like one that was not, so the whole action was
+  // invisible the moment it slid shut. This is the assertion that would have
+  // caught that.
+  it('marks the row as muted and unmarks it again', async () => {
+    await wrap();
+    const name = teams[0].name;
+    expect(screen.queryByLabelText(`${name} is muted`)).toBeNull();
+
+    await fireEvent.press(screen.getByLabelText(`Mute ${name}`));
+    await settle();
+    expect(screen.getByLabelText(`${name} is muted`)).toBeTruthy();
+
+    await fireEvent.press(screen.getByLabelText(`Unmute ${name}`));
+    await settle();
+    expect(screen.queryByLabelText(`${name} is muted`)).toBeNull();
+  });
+
+  it('mutes only the row whose action was pressed', async () => {
+    await wrap();
+    await fireEvent.press(screen.getByLabelText(`Mute ${teams[0].name}`));
+    await settle();
+    expect(screen.getByLabelText(`${teams[0].name} is muted`)).toBeTruthy();
+    expect(screen.queryByLabelText(`${teams[1].name} is muted`)).toBeNull();
   });
 });

@@ -44,7 +44,9 @@ export default function Chats() {
       key: 'mute',
       label: muted.has(id) ? 'Off' : 'On',
       a11yLabel: muted.has(id) ? `Unmute ${name}` : `Mute ${name}`,
-      icon: 'bell',
+      // Reads the same state the row does, so the action and the row can never
+      // disagree about whether a thread is muted.
+      icon: muted.has(id) ? 'bellOff' : 'bell',
       color: t.info,
       onPress: () =>
         setMuted((prev) => {
@@ -70,6 +72,7 @@ export default function Chats() {
           actions: actionsFor(team.id, team.name),
           id: team.id,
           name: team.name,
+          muted: muted.has(team.id),
           subtitle: `${team.members.length} members`,
           preview: threadPreview(team.id, messages, people),
           onPress: () => router.push(`/chat/${team.id}`),
@@ -79,6 +82,7 @@ export default function Chats() {
           actions: actionsFor(p.threadId, p.counterpartName),
           id: p.counterpartId,
           name: p.counterpartName,
+          muted: muted.has(p.threadId),
           subtitle: p.role,
           preview: threadPreview(p.threadId, messages, people),
           onPress: () => router.push(`/chat/${p.threadId}`),
@@ -104,6 +108,7 @@ export default function Chats() {
               name={item.name}
               subtitle={item.subtitle}
               preview={item.preview}
+              muted={item.muted}
               onPress={item.onPress}
             />
           </SwipeableRow>

@@ -165,3 +165,24 @@ describe('Icon', () => {
     expect(path.props.fill).toBeNull();
   });
 });
+
+describe('bellOff glyph', () => {
+  // Counts the drawn paths in a rendered icon.
+  const paths = (node: any, n = 0): number => {
+    if (node == null) return n;
+    if (Array.isArray(node)) return node.reduce((acc, c) => paths(c, acc), n);
+    const self = node.type === 'RNSVGPath' ? 1 : 0;
+    return (node.children ?? []).reduce((acc: number, c: any) => paths(c, acc), n + self);
+  };
+
+  const draw = (name: 'bell' | 'bellOff') =>
+    render(<ThemeProvider><Icon name={name} color="#fff" /></ThemeProvider>);
+
+  it('is a distinct glyph from the bell it mutes', async () => {
+    const bell = paths((await draw('bell')).toJSON());
+    const off = paths((await draw('bellOff')).toJSON());
+    expect(bell).toBeGreaterThan(0);
+    // The same bell plus the stroke through it.
+    expect(off).toBe(bell + 1);
+  });
+});
