@@ -3,26 +3,11 @@ import type { ComponentType } from 'react';
 import type { GlassContainerProps, GlassViewProps } from 'expo-glass-effect';
 
 /**
- * `expo-glass-effect` was pulled from app.json's `plugins` array in Task 1:
- * it ships no config plugin, and its presence there crashes `expo start`.
- * The package is still a normal dependency and its JS API is importable, but
- * that only covers the module resolving — it says nothing about the native
- * module being present at runtime.
- *
- * On iOS specifically, `GlassView.ios.tsx` and `GlassContainer.ios.tsx` call
- * `requireNativeViewManager('ExpoGlassEffect', ...)` at module *evaluation*
- * time (top level, not inside a function), and `isLiquidGlassAvailable.ios.ts`
- * calls `requireNativeModule('ExpoGlassEffect')` the first time it runs. Both
- * throw if the native module isn't linked — which is exactly the situation in
- * Expo Go, since there is no config plugin to autolink it there. A bare
- * `import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect'`
- * would then throw at import time, before `isLiquidGlassAvailable()` ever
- * gets a chance to return `false` and route around it.
- *
- * This module is the guard: it loads the real package inside a try/catch and
- * falls back to a plain `View` and an always-false availability check if the
- * native module isn't there. Everything else in the app imports glass APIs
- * from here, never directly from `expo-glass-effect`.
+ * On iOS, `expo-glass-effect` calls `requireNativeViewManager` at module
+ * evaluation time, which throws in Expo Go where the native module is not
+ * linked — before `isLiquidGlassAvailable()` ever gets to return false. This
+ * module is the guard: it loads the package inside a try/catch and falls back
+ * to a plain View. Everything else imports glass APIs from here.
  */
 type GlassModule = {
   GlassView: ComponentType<GlassViewProps>;

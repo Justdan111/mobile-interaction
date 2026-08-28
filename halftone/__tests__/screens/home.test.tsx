@@ -71,9 +71,9 @@ describe('Home', () => {
 
   describe('saving a project', () => {
     // p-graphic-ad starts unsaved and p-website-dev starts saved (see
-    // data/projects.ts). Using a project that starts unsaved — rather than
-    // the brief's `getAllByLabelText(/save/i)[0]` — matters: that regex also
-    // matches "saved" inside "Remove ... from saved", so with the
+    // data/projects.ts). Using a project that starts unsaved matters, rather
+    // than `getAllByLabelText(/save/i)[0]`: that regex also matches
+    // "saved" inside "Remove ... from saved", so with the
     // already-saved website-dev project present it would find a match
     // *before any press*, passing even if onToggleSave were a no-op.
     const unsavedTitle = 'Graphic design for new advertising campaign';

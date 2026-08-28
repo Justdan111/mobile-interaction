@@ -165,9 +165,9 @@ describe('monthGrid — a month that fills whole weeks exactly', () => {
   });
 });
 
-// The brief's fixtures are all pre-sorted and duplicate-free, so neither the
-// sort nor the dedup inside projectRanges is exercised by them — both pass with
-// the line deleted. Real marks come from data/marks.ts in no guaranteed order.
+// The shared fixtures are pre-sorted and duplicate-free, so neither the sort
+// nor the dedup inside projectRanges is exercised by them — both pass with the
+// line deleted. Real marks come from data/marks.ts in no guaranteed order.
 describe('projectRanges — input hygiene', () => {
   const unsorted: Mark[] = [
     { date: '2023-08-25', kind: 'project', label: 'D', projectId: 'p1' },

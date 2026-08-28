@@ -1,8 +1,7 @@
 /**
  * The palette, in TS form, for the places NativeWind classes can't reach:
  * SVG fills and strokes, LinearGradient stops, status bar, navigation
- * background. Values are sampled from the comps in
- * `.screenshots/2026-08-07-racket-shop/`. Keep in sync with tailwind.config.js.
+ * background. Keep in sync with tailwind.config.js.
  */
 export const colors = {
   ground: '#F1F1F1',
@@ -10,7 +9,7 @@ export const colors = {
   inset: '#EAEAEA',
 
   // The banner and the drawer are the same teal, falling off toward `tealDeep`
-  // down the panel — flat teal reads noticeably deader than the comps.
+  // down the panel — flat teal reads noticeably deader.
   teal: '#2B5561',
   tealDeep: '#1E3D45',
   tealTint: '#E8EFF1',

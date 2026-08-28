@@ -59,8 +59,8 @@ describe('mock data integrity', () => {
   it('resolves every message sender in the people lookup', () => {
     // The people lookup (data/people.ts) is the one place a sender id turns
     // into a display name and avatar. A sender that resolves to nothing has
-    // no name and no avatar source downstream (Task 12 groups messages by
-    // sender for avatar placement).
+    // no name and no avatar source downstream, where messages are grouped by
+    // sender for avatar placement.
     for (const m of messages) {
       expect(people[m.senderId]).toEqual(expect.any(String));
     }

@@ -1,5 +1,5 @@
 /**
- * Sampled straight off the design comps rather than eyeballed — the paper,
+ * Sampled rather than eyeballed — the paper,
  * the vermilion and the near-black are the whole identity of this app.
  */
 export const colors = {

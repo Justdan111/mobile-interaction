@@ -1,7 +1,7 @@
 /**
  * The palette, in TS form, for the places NativeWind classes can't reach:
  * SVG gradients, LinearGradient stops, status bar, navigation background.
- * Values are sampled from the comps. Keep in sync with tailwind.config.js.
+ * Keep in sync with tailwind.config.js.
  */
 export const colors = {
   void: '#000000',

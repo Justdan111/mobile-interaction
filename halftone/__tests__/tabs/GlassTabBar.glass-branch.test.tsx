@@ -7,9 +7,8 @@ import { ThemeProvider } from '../../lib/theme';
 // jest.setup.js mocks expo-glass-effect globally with isLiquidGlassAvailable
 // hardcoded to false, so GlassTabBar.test.tsx (and every other suite) only
 // ever exercises the BlurView fallback branch. That leaves the glass branch
-// — the one that actually renders on an iOS 26+ device, i.e. wherever the
-// Task 18 screenshots get taken — completely unverified unless a test
-// specifically overrides the mock. This file does that: it re-mocks
+// — the one that actually renders on an iOS 26+ device — completely
+// unverified unless a test specifically overrides the mock. This file does that: it re-mocks
 // expo-glass-effect with isLiquidGlassAvailable() => true *before* requiring
 // TabPill/GlassTabBar, so this test's copies of those modules resolve
 // `glass` to true and take the GlassView/GlassContainer branch instead.

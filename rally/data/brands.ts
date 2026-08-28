@@ -6,9 +6,8 @@ export type Brand = {
 };
 
 /**
- * Four invented house brands. The comps show real manufacturers' marks; these
- * stand in for them so the category rail keeps its logo-tile texture without
- * borrowing anyone's trademarks.
+ * Four invented house brands, standing in for real manufacturers' marks so the
+ * category rail keeps its logo-tile texture without borrowing any trademarks.
  */
 export const brands: Brand[] = [
   { id: 'volara', name: 'VOLARA' },

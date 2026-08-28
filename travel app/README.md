@@ -1,35 +1,23 @@
-# travel — TripGlide 🌍
+# Travel
 
-A travel destination app built with [Expo](https://expo.dev), [expo-router](https://docs.expo.dev/router/introduction/), and [NativeWind](https://www.nativewind.dev) (Tailwind CSS for React Native), replicating the TripGlide home screen design.
+## Demo
 
-## Get started
+<!-- Drop an .mp4 here — drag it into GitHub's editor and paste the link. -->
 
-1. Install dependencies
+A destination app built around a card deck you throw away with your thumb. The
+top card follows the drag and the two behind it sit in their own resting slots,
+offset and scaled down so the stack has depth; let go past the threshold and the
+next one springs forward into the front position.
 
-   ```bash
-   npm install
-   ```
+A black pill tab bar floats over it, and the favourite heart pops whenever it
+becomes active — the small overshoot that makes a like feel registered rather
+than toggled.
 
-2. Start the app
+Expo 57, expo-router, Reanimated, NativeWind, expo-blur.
 
-   ```bash
-   npx expo start
-   ```
+## Run
 
-Then open it on an iOS simulator, Android emulator, or a device with [Expo Go](https://expo.dev/go).
-
-## Features
-
-- **Home screen** (`src/app/index.tsx`) — greeting header with avatar, search bar with filter button, region filter chips, and a snapping destination carousel with scale animation (Reanimated), blurred "See more" bar, ratings, and favorite hearts.
-- **Custom floating tab bar** (`src/components/tab-bar.tsx`) — black pill navigation with an active-tab white circle, driven by expo-router's `Tabs` with a custom `tabBar`.
-- **Styling** — NativeWind v4 (`tailwind.config.js`, `src/global.css`), theme colors `canvas`, `ink`, `muted`.
-
-## Structure
-
+```bash
+npm install
+npx expo start
 ```
-src/
-  app/            # expo-router routes (_layout defines the Tabs navigator)
-  components/     # tab bar, destination carousel + card
-  data/           # destination data (Unsplash imagery)
-```
-# travel-app

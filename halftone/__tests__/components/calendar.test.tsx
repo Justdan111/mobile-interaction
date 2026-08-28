@@ -129,7 +129,7 @@ describe('MonthGrid joined ranges', () => {
 
 describe('MonthGrid speech labels', () => {
   // Today is not a deadline. A single `, ${kind} deadline` template reads out
-  // "1, today deadline", which is what the brief's code produced.
+  // "1, today deadline".
   it('does not call today a deadline', async () => {
     await grid();
     expect(screen.getByLabelText('1, today')).toBeTruthy();

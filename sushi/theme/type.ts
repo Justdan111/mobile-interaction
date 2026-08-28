@@ -1,9 +1,9 @@
 /**
- * Lexend, the geometric sans used throughout the comps. Each weight loads as
+ * Lexend, the geometric sans used throughout. Each weight loads as
  * its own family, so `fontWeight` is never used — pick the family instead.
  *
  * Japanese glyphs aren't in Lexend and fall through to the platform CJK face,
- * which is what the comps show, so vertical runs simply omit `fontFamily`.
+ * which is what the design calls for, so vertical runs omit `fontFamily`.
  */
 export const font = {
   regular: 'Lexend_400Regular',
