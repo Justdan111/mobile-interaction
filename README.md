@@ -38,6 +38,6 @@ Expo Go.
 
 ## Elsewhere
 
-I post these as I build them — [x.com/YOUR_HANDLE](https://x.com/dan_code).
+I post these as I build them — https://x.com/dan_code.
 
 If something here is useful to you, a star is appreciated. Thank you.
