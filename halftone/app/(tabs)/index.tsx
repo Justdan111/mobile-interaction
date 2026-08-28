@@ -39,15 +39,11 @@ export default function Home() {
 
   return (
     <SafeAreaView className="flex-1 bg-page" edges={['top']}>
-      {/* Pinned. The greeting, the search field and the art rail stay put while
-          only the project list scrolls, so search is always in reach. They were
-          the list's ListHeaderComponent and scrolled away with the cards. */}
+      {/* Pinned. Only the greeting and the search field stay put, so search is
+          always in reach. Everything below them travels with the cards. */}
       <View>
         <GreetingHeader />
         <SearchBar value={query} onChange={setQuery} />
-        <View className="py-3">
-          <ArtCardRow />
-        </View>
       </View>
 
       <FlatList
@@ -56,10 +52,15 @@ export default function Home() {
         keyExtractor={(p) => p.id}
         contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
-        // The heading belongs to the list, not the pinned block: it labels the
-        // cards and travels with them.
+        // The art rail and the heading belong to the list, not the pinned
+        // block: they scroll away with the cards they sit above.
         ListHeaderComponent={
-          <Text className="font-display text-ink px-5 pb-3 pt-2 text-[26px]">Projects</Text>
+          <>
+            <View className="py-3">
+              <ArtCardRow />
+            </View>
+            <Text className="font-display text-ink px-5 pb-3 pt-2 text-[26px]">Projects</Text>
+          </>
         }
         ListEmptyComponent={
           <Text className="text-muted px-5 py-10 text-center text-[15px]">
