@@ -83,11 +83,8 @@ export function MonthGrid({
             return (
               <View key={cell.iso} style={{ flex: 1, height: CELL, justifyContent: 'center' }}>
                 <View
-                  // The label stays the plain number while the cell shows a
-                  // zero-padded one: a screen reader should say "five", not
-                  // "oh five", and the brief's own current-date test matches
-                  // `^<day>(,|$)`, which a padded label would fail on the 1st
-                  // through the 9th of any month.
+                  // Plain number while the cell shows a padded one: a screen
+                  // reader should say "five", not "oh five".
                   accessibilityLabel={`${cell.day}${kind ? `, ${MARK_SPEECH[kind]}` : ''}`}
                   style={{
                     height: CELL - 6,

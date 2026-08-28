@@ -1,5 +1,5 @@
 /**
- * `lib/glass.ts` exists to handle a specific risk carried over from Task 1:
+ * `lib/glass.ts` exists to handle one specific risk:
  * `expo-glass-effect` has no config plugin, so it can't be autolinked in
  * Expo Go, and on iOS its `GlassView`/`GlassContainer` modules call
  * `requireNativeViewManager` at *module evaluation* time — a bare

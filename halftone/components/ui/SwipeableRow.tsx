@@ -11,7 +11,7 @@ import { ACTION_FOREGROUND_COLOR } from '../../lib/tokens';
 export type SwipeAction = {
   key: string;
   label: string;
-  /** Accessible name; the visible label stays short like the comps. */
+  /** Accessible name; the visible label stays short. */
   a11yLabel: string;
   icon: IconName;
   color: string;
@@ -20,15 +20,8 @@ export type SwipeAction = {
 
 const ACTION_WIDTH = 84;
 
-/**
- * The confirmation an action gives when it is pressed.
- *
- * The row used to slide shut the instant the action fired, which meant the
- * only evidence anything had happened was a state change with nothing on
- * screen to show for it. Now the icon shakes, the phone taps back, and the row
- * holds open long enough to see the icon settle into its new state before it
- * closes itself.
- */
+// When an action fires the icon shakes, the phone taps back, and the row holds
+// open long enough to see the icon settle before it closes itself.
 
 /** How far the icon swings, and how long each swing takes. */
 const SHAKE_DEGREES = 11;

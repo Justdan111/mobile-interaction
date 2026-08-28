@@ -25,10 +25,9 @@ function lobe(nx: number, ny: number, cx: number, cy: number, radius: number): n
 }
 
 /**
- * Field intensity in [0, 1] at normalized coords, both in [-1, 1].
- * Each variant is a distinct silhouette from the reference comps.
- * Exported so the four fields can be compared directly, since generateDots
- * layers per-variant noise (grain) that masks intensity differences.
+ * Field intensity in [0, 1] at normalized coords, both in [-1, 1]. Exported so
+ * the four fields can be compared directly, since generateDots layers
+ * per-variant grain that masks intensity differences.
  */
 export function intensity(name: FieldName, nx: number, ny: number): number {
   switch (name) {

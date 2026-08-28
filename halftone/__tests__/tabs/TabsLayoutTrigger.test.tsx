@@ -8,9 +8,8 @@ import { ThemeProvider } from '../../lib/theme';
 // whatever `asChild` component we give it — that's expo-router/ui's tested
 // responsibility. What's ours is `Trigger`, the small adapter in
 // app/(tabs)/_layout.tsx that receives that value and must actually forward
-// it to TabPill rather than hardcoding it (the exact class of bug this
-// project shipped last task: a Segmented/Toggle that ignored their own
-// `value` prop and still passed their tests).
+// it to TabPill rather than hardcoding it — a component that ignores its own
+// prop and still passes its tests is the easy bug here.
 const wrap = (ui: React.ReactElement) => render(<ThemeProvider>{ui}</ThemeProvider>);
 
 describe('Trigger (app/(tabs)/_layout adapter)', () => {

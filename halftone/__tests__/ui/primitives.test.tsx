@@ -9,10 +9,8 @@ import { ThemeProvider } from '../../lib/theme';
 import { tokens } from '../../lib/tokens';
 
 // @testing-library/react-native@14 declares `render` as async (it awaits
-// React's `act` internally). The task brief's test code assumes a
-// synchronous `render` — a known plan defect — so every call below is
-// awaited, and the "throws outside a provider" style assertion (added below)
-// uses `rejects.toThrow` rather than a synchronous `toThrow`.
+// React's `act` internally), so every call below is awaited and the
+// "throws outside a provider" assertion uses `rejects.toThrow`.
 const wrap = (ui: React.ReactElement) => render(<ThemeProvider>{ui}</ThemeProvider>);
 
 // Forces the native color scheme so ThemeProvider resolves to a specific,

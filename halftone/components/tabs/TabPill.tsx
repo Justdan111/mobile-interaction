@@ -7,18 +7,11 @@ import { useTabBarCollapsed } from './TabBarChrome';
 import { Icon, type IconName } from '../ui/icons';
 import { useTheme } from '../../lib/theme';
 
-// The tab bar's own surface is light in both themes (as in the comps), so
-// its icon and label colours are fixed rather than token-driven. This is the
-// one deliberate exception to the no-raw-hex rule; it is confined to this
-// file and GlassTabBar.tsx.
+// The bar's surface is light in both themes, so these are fixed rather than
+// token-driven — the one deliberate exception to the no-raw-hex rule.
 const ICON_INACTIVE = '#6B6B72';
-// Icon *and* label of the focused chip share one foreground colour, so they
-// read as a single unit. It deliberately is not `t.accent`: the chip's own
-// surface is tinted with `t.accent` on the glass path, so an accent-coloured
-// icon sat on an accent-tinted chip and vanished into it — the label survived
-// only because it was already this near-black. One value serves both surfaces:
-// it contrasts against the glass path's saturated accent tint and against the
-// fallback chip's light lavender alike.
+// Not `t.accent`: the chip is itself accent-tinted, so an accent icon vanishes
+// into it. This one value contrasts against both the glass and fallback chips.
 const CHIP_FOREGROUND = '#0F0F12';
 const FALLBACK_CHIP_COLOR = '#CFCCF7';
 
@@ -50,9 +43,8 @@ export function TabPill({
       }}
     >
       <Icon name={icon} size={22} color={isFocused ? CHIP_FOREGROUND : ICON_INACTIVE} strokeWidth={1.9} />
-      {/* The label is what makes the bar wide. Dropping it while the user
-          scrolls is the whole shrink — the LinearTransition above already
-          springs the width change, so nothing else has to animate here. */}
+      {/* The label is what makes the bar wide, so dropping it is the whole
+          shrink — LinearTransition above already springs the width change. */}
       {isFocused && !collapsed ? (
         <Animated.View entering={FadeIn.duration(160)} exiting={FadeOut.duration(90)}>
           <Text numberOfLines={1} style={{ color: CHIP_FOREGROUND, fontFamily: 'Inter_600SemiBold', fontSize: 14 }}>

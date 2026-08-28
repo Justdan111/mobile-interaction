@@ -19,11 +19,8 @@ import { profile } from './profile';
 
 // Genuinely additional: senders who hold no other record in the data model.
 const extraPeople: Record<ID, string> = {
-  // Tom sends messages in the Website Development thread (data/messages.ts,
-  // reproducing comp 6) without being one of the six members on that team's
-  // roster (data/teams.ts, reproducing comp 7). The source comps disagree
-  // with each other on this point; both halves are reproduced deliberately
-  // rather than one being dropped to make the other consistent.
+  // Tom sends messages in the Website Development thread (data/messages.ts)
+  // without being one of the six members on that team's roster (data/teams.ts).
   'm-tom': 'Tom',
 };
 

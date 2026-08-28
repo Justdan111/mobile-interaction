@@ -21,7 +21,7 @@ const wrapWithInsets = (ui: React.ReactElement) =>
   );
 
 describe('TABS', () => {
-  it('declares the five tabs from the comps in order', () => {
+  it('declares the five tabs in order', () => {
     expect(TABS.map((t) => t.label)).toEqual([
       'Search', 'Inbox', 'Chats', 'My projects', 'Profile',
     ]);

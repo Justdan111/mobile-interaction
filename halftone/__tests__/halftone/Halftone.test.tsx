@@ -47,9 +47,7 @@ describe('Halftone', () => {
 
     // Real correspondence, not a loose smoke check: the rendered circle
     // count must equal generateDots' own output count for these exact
-    // inputs. This subsumes the brief's `toBeGreaterThan(50)` threshold
-    // (that count is well above 50 for this seed/density) with a stronger,
-    // exact guard against dropped or duplicated dots.
+    // inputs — an exact guard against dropped or duplicated dots.
     const expectedDots = generateDots(variant, { size, density, seed });
     expect(circles.length).toBe(expectedDots.length);
   });

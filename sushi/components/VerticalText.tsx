@@ -69,7 +69,7 @@ function Glyph({
 /**
  * Japanese set top-to-bottom, as tategaki. React Native has no `writing-mode`,
  * so each glyph is laid out as its own line — which is also what lets the
- * comps' generous per-character spacing be dialled in directly.
+ * generous per-character spacing be dialled in directly.
  *
  * Pass `enter` to have the glyphs arrive one by one instead of all at once.
  */

@@ -86,8 +86,8 @@ export const products: Product[] = [
     sold: '7.8K',
     description:
       'The entry frame in the Kestrel line, strung at 22lb and balanced for control. Aluminium head on a steel shaft, forgiving on off-centre hits.',
-    // This slot was a gear bag until Task 4: every free racket-bag photograph
-    // carried a legible manufacturer wordmark, so it became a racket instead.
+    // A racket rather than a gear bag: every free racket-bag photograph
+    // carried a legible manufacturer wordmark.
     images: ['racket-pair', 'racket-drift', 'court-action'],
   },
 ];

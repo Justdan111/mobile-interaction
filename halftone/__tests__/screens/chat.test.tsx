@@ -54,10 +54,9 @@ describe('Chat thread', () => {
 /**
  * The grouping/rendering rules (name on the first bubble only, avatar beside
  * the last bubble, own vs. other fill) are the actual point of this screen.
- * The brief's own screen test never exercises any of them — a component
- * that showed the sender name on every bubble, or hung the avatar off the
- * first bubble instead of the last, would still pass every test above. This
- * block walks the rendered tree in document order to pin those three things
+ * A component that showed the sender name on every bubble, or hung the avatar
+ * off the first bubble instead of the last, would still pass every test above.
+ * This block walks the rendered tree in document order to pin those three things
  * down against the real fixture data (Alice Johnson's 3-message opening
  * group in the Website Development thread).
  */

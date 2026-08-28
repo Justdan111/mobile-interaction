@@ -1,5 +1,5 @@
 /**
- * Sample data for the three comps, reshaped into something the app can compute
+ * Sample data for the three screens, reshaped into something the app can compute
  * against. Nothing here is a headline number: the figures the screens show
  * (72 mg/dL, 93 average, 7.1% HbA1c, 50/30/20) all fall out of these series via
  * `lib/glucose.ts`, so logging a reading moves them.

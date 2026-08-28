@@ -50,10 +50,6 @@ export default function Chat() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Team details"
-          // `/team/[id]` has no screen yet (out of scope for this task) —
-          // this is a genuine forward reference to a route Task 13 builds,
-          // left as a visible TS2345 rather than silenced with a cast (see
-          // Tasks 9 and 11 for the same pattern).
           onPress={() => router.push(`/team/${id}`)}
         >
           <TeamTile teamId={String(id)} name={team?.name ?? ''} size={40} radius={12} />

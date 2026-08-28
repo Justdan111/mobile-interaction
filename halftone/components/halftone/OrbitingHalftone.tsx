@@ -11,11 +11,7 @@ import Animated, {
 import { Halftone } from './Halftone';
 import type { FieldName } from './fields';
 
-/**
- * One turn of the field. Slow enough to read as drift rather than spin — at
- * this speed the dots creep, which is what makes a static seeded field feel
- * like it is orbiting rather than being animated at.
- */
+/** Slow enough that the dots creep rather than spin. */
 export const ORBIT_DURATION_MS = 24000;
 
 /**

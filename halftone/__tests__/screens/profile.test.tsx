@@ -73,10 +73,8 @@ function contrast(a: string, b: string): number {
 }
 
 describe('Profile header plate', () => {
-  // Comp 9 is a dark-mode capture whose header is still the pale lavender of
-  // the light comps. The plate is fixed art direction, not a themed surface, so
-  // it must not be mode-keyed — the brief deepened it on dark and flipped the
-  // text to white, which the comp does not do.
+  // The plate is fixed art direction, not a themed surface, so it must not be
+  // mode-keyed: it stays pale lavender with dark ink in both themes.
   it('paints one fixed plate colour rather than a themed surface', async () => {
     await wrap();
     const heading = screen.getByText('Profile');
