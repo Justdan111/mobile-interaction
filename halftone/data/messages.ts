@@ -3,15 +3,9 @@ import { shiftDays, todayIso } from '../lib/today';
 
 const at = (daysAgo: number, time: string) => `${shiftDays(todayIso(), -daysAgo)}T${time}Z`;
 
-/**
- * Message.threadId matches a team's id directly, or a proposal's threadId —
- * there is no separate thread record (see data/teams.ts, data/proposals.ts).
- * "Tom" sends messages in the Website Development thread without being on that
- * team's roster in data/teams.ts. Every senderId resolves through the `people`
- * lookup in data/people.ts, which is not the same as a team's member roster.
- */
+
 export const messages: Message[] = [
-  // t-website-dev
+  
   {
     id: 'msg-web-1',
     threadId: 't-website-dev',
