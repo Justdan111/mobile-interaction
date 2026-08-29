@@ -3,14 +3,7 @@ import { dayInCurrentMonth, shiftDays, todayIso } from '../lib/today';
 
 const posted = (daysAgo: number) => shiftDays(todayIso(), -daysAgo);
 
-/**
- * Every deadline and task-due date below is a day-of-month position within
- * whatever month the app happens to open in — never a literal date. See
- * lib/today.ts. The Website Development project reproduces the reference
- * comp's exact mark composition (tasks on the 5th/9th, a window on the
- * 23rd-24th); the rest are spread across other days so the calendar shows
- * more than one project marked at a time.
- */
+
 export const projects: Project[] = [
   {
     id: 'p-graphic-ad',
