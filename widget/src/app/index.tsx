@@ -9,8 +9,12 @@ import DeliveryTrackingActivity, {
 
 /** The whole trip runs in ten seconds, so a run can be watched start to finish. */
 const TRIP_MS = 10_000;
-/** How often the app pushes progress. Twenty-five frames reads as movement, not steps. */
-const FRAME_MS = 400;
+/**
+ * How often the app pushes the truck's position. Roughly thirty frames across the trip
+ * reads as travel rather than stepping. `frequentUpdates` is on in app.json, which is
+ * what buys the budget for a burst this dense.
+ */
+const FRAME_MS = 300;
 const START_KM = 5.2;
 
 const DELIVERY = {

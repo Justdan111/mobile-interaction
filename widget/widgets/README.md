@@ -112,6 +112,20 @@ Dynamic Island, losing the final letter. `DeliveryTrackingActivity` pins only in
 Lock Screen card and lets the Dynamic Island variants shrink through
 `minimumScaleFactor` instead.
 
+## Moving something in the collapsed pill
+
+`compactLeading` and `compactTrailing` are two separate regions with the camera between
+them — nothing can span the gap, so travel has to happen inside one region. The truck
+rides a short fixed-width track in the leading region: a travelled rule, the glyph, then
+a remaining rule, the same split the Lock Screen rail uses. The width is hard-coded
+because the region's own width is not knowable from the layout; keep it modest, since
+the pill grows to fit its content but not without limit.
+
+Worth knowing: `Text(timerInterval:)` refreshes its own text without re-evaluating the
+layout, so anything positional only moves when the app pushes an update. That is why
+the trip is short and the push cadence is high — over ten seconds at 300ms the truck
+advances under a point per frame, which reads as travel rather than stepping.
+
 ## Budget the Dynamic Island against the camera, not the screen
 
 The expanded presentation looks roomy and is not. The camera band and the system's own

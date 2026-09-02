@@ -291,6 +291,42 @@ const DeliveryTrackingActivity = (
     );
   };
 
+  /**
+   * The collapsed pill. Its leading and trailing regions sit either side of the camera
+   * and cannot be spanned, so the truck travels inside the leading region alone: a short
+   * track it rides end to end over the trip, arriving as the trailing side flips to
+   * Arrived. The track is a fixed width because the region's own width is not knowable
+   * from here, and it is kept under the space the pill grows to.
+   */
+  const CompactRail = () => {
+    'use no memo';
+    const track = 24;
+    return (
+      <HStack spacing={0} alignment="center">
+        <Rectangle
+          modifiers={[
+            frame({ width: track * travel, height: 2 }),
+            foregroundStyle(color.accent),
+          ]}
+        />
+        <Image
+          systemName="box.truck.fill"
+          size={13}
+          color={arrived ? color.accent : color.primary}
+          modifiers={[
+            symbolEffect({ effect: 'pulse' }, { options: { repeat: 'continuous', speed: 0.7 } }),
+          ]}
+        />
+        <Rectangle
+          modifiers={[
+            frame({ width: track * (1 - travel), height: 2 }),
+            foregroundStyle(color.routeLine),
+          ]}
+        />
+      </HStack>
+    );
+  };
+
   const RouteLeg = (p: { label: string; address: string; labelSize: number; size: number }) => {
     'use no memo';
     return (
@@ -470,16 +506,7 @@ const DeliveryTrackingActivity = (
 
     // Dynamic Island, collapsed. The pill is a few points wide, so the ticking countdown
     // is the whole trailing side.
-    compactLeading: (
-      <Image
-        systemName="box.truck.fill"
-        size={16}
-        color={color.primary}
-        modifiers={[
-          symbolEffect({ effect: 'pulse' }, { options: { repeat: 'continuous', speed: 0.7 } }),
-        ]}
-      />
-    ),
+    compactLeading: <CompactRail />,
     compactTrailing: <Countdown size={14} />,
 
     minimal: (
