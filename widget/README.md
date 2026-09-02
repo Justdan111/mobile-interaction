@@ -12,6 +12,17 @@ From/To route with a yellow origin dot and a rule running down to the
 destination; call and message actions beside the driver's name, reference ID and
 photo along the bottom.
 
+**It runs itself.** The trip is described by when it started and when it is due,
+not by a minute count the app has to decrement, so SwiftUI ticks the ETA down
+every second — on the Lock Screen, in the Dynamic Island, with the app suspended
+or force-quit. The truck badge carries an indefinite SF Symbol pulse the system
+also drives on its own. Start it and end it; nothing in between is required.
+
+The one figure the system cannot work out is the remaining distance, so the app
+refreshes that on a timer while it is in the foreground. That is what the
+**Auto-refresh distance** button toggles — turn it off and the ETA keeps
+counting regardless.
+
 It supplies every presentation the system can ask for: the Lock Screen banner (the
 full card), a cut-down `bannerSmall` for CarPlay and watchOS, the expanded Dynamic
 Island split across leading/trailing/bottom, the collapsed pill (truck on one side,
@@ -55,10 +66,13 @@ it by hand instead: download the `.tar.gz` from the build page, expand it, then
 
 ### Trying it
 
-Open the app, tap **Start activity**, then swipe up to the Home Screen. The
-activity appears in the Dynamic Island — long-press it for the expanded layout —
-and on the Lock Screen. **Advance ETA by 5 min** pushes an update; **End activity**
+Open the app, tap **Start trip**, then swipe up to the Home Screen. The activity
+appears in the Dynamic Island — long-press it for the expanded layout — and on
+the Lock Screen, and the ETA counts down on its own from there. **End trip**
 dismisses it.
+
+To prove it really is running without the app: start a trip, force-quit the app
+from the app switcher, and watch the countdown keep going.
 
 Changing a layout only needs a JS reload. Adding a *home screen* widget changes the
 native target and needs a fresh `eas build`.

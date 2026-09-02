@@ -47,6 +47,35 @@ That is why the colour tokens in `DeliveryTrackingActivity.tsx` are declared ins
 function rather than pulled from a shared file. Shared design tokens have to be
 duplicated per widget, or generated into each file — they cannot be imported.
 
+## Making a widget move on its own
+
+A widget or Live Activity only re-renders when the system decides to, or when the
+app pushes an update — and the app is usually suspended. Do not build motion out
+of repeated `update()` calls; iOS will throttle them and the thing freezes the
+moment the app is killed.
+
+Use the primitives the system animates for you instead. All of them take absolute
+dates, so hand the widget *when something happens*, not *how long is left*:
+
+| Want | Use |
+| --- | --- |
+| A ticking countdown or count-up | `<Text timerInterval={{ lower, upper }} countsDown />` |
+| A relative or absolute time that stays fresh | `<Text date={d} dateStyle="relative" />` |
+| A bar that fills over a known window | `<ProgressView timerInterval={{ lower, upper }} countsDown={false} />` |
+| A continuously animating SF Symbol | `symbolEffect({ effect: 'pulse' }, { options: { repeat: 'continuous' } })` |
+
+Two traps with `timerInterval`:
+
+- If `lower > upper` SwiftUI silently skips the timer branch and falls back to the
+  plain text — which is **empty** if you passed no children. Clamp the range.
+  `DeliveryTrackingActivity` does this with `Math.max`.
+- Pair it with the `monospacedDigit()` modifier, or the text jitters as the digits
+  change width.
+
+`symbolEffect` needs no trigger for indefinite effects — omit `isActive` and it
+runs. Do not reach for `useNativeState` to drive one: hooks do not exist in the
+widget runtime.
+
 ## The second rule: nested components need `'use no memo'`
 
 This project has `experiments.reactCompiler` on. Expo registers `'widget'` as a React

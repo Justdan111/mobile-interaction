@@ -1,12 +1,4 @@
-import {
-  Circle,
-  HStack,
-  Image,
-  Rectangle,
-  Spacer,
-  Text,
-  VStack,
-} from '@expo/ui/swift-ui';
+import { Circle, HStack, Image, Rectangle, Spacer, Text, VStack } from '@expo/ui/swift-ui';
 import {
   activityBackgroundTint,
   background,
@@ -14,24 +6,34 @@ import {
   font,
   foregroundStyle,
   frame,
+  lineLimit,
+  minimumScaleFactor,
+  monospacedDigit,
   padding,
   shapes,
+  symbolEffect,
 } from '@expo/ui/swift-ui/modifiers';
 import { createLiveActivity, type LiveActivityEnvironment } from 'expo-widgets';
 import type { SFSymbol } from 'sf-symbols-typescript';
 
 /**
- * Content shown by the delivery-tracking Live Activity. Every field is supplied by the
- * app on `start()` / `update()` — the layout below is a pure function of it.
+ * Content shown by the delivery-tracking Live Activity.
+ *
+ * The two timestamps are what let the activity run on its own. Rather than a number of
+ * minutes the app has to keep decrementing, the trip is described by when it began and
+ * when it is due, and SwiftUI counts down between them — every second, on the Lock
+ * Screen, with the app suspended or killed. The app only needs to start it and end it.
  */
 export type DeliveryTrackingProps = {
   /** Vehicle registration, shown as the headline. For example `RJ 4567`. */
   vehiclePlate: string;
   /** Vehicle make/model shown under the plate. For example `Volvo max s23`. */
   vehicleModel: string;
-  /** Remaining time to the drop-off, in whole minutes. */
-  etaMinutes: number;
-  /** Remaining distance to the drop-off, in kilometres. */
+  /** Epoch milliseconds when the trip started. Anchors the countdown's range. */
+  startedAt: number;
+  /** Epoch milliseconds the van is due to arrive. The countdown runs to this. */
+  etaAt: number;
+  /** Remaining distance in kilometres. The system cannot derive this, so the app refreshes it. */
   distanceKm: number;
   /** Pickup address. */
   fromAddress: string;
@@ -52,13 +54,11 @@ export type DeliveryTrackingProps = {
 /**
  * `babel-preset-expo` serialises this function to a string and the widget extension
  * re-evaluates it, so the body may only reach for `@expo/ui` components and modifiers,
- * its own declarations, and `props` / `environment`. Colour tokens are declared inline
- * for that reason — importing them from a shared module would type check and then be
- * `undefined` on device. `npm run check:widgets` enforces this. See widgets/README.md.
+ * JS builtins, its own declarations, and `props` / `environment`. Colour tokens are
+ * declared inline for that reason. `npm run check:widgets` enforces this.
  *
  * Every nested component carries `'use no memo'`: Expo opts the `'widget'` function out
- * of the React Compiler, but that does not extend to functions declared inside it, and
- * compiled output calls a `_c` memo-cache helper the widget runtime does not provide.
+ * of the React Compiler, but that does not extend to functions declared inside it.
  */
 const DeliveryTrackingActivity = (
   props: DeliveryTrackingProps,
@@ -77,43 +77,107 @@ const DeliveryTrackingActivity = (
     routeLine: '#48484C',
   };
 
-  const eta = `${props.etaMinutes} Min`;
-  const distance = `${props.distanceKm} km`;
-  // Once the system marks the content stale the ETA is no longer trustworthy, so it drops
-  // back to the secondary colour rather than continuing to read as a live figure.
-  const etaColor = environment.isStale ? color.secondary : color.primary;
+  // SwiftUI drops back to plain (empty) text if the range is inverted, so the upper bound
+  // is clamped rather than trusted. A trip due before it started would otherwise render
+  // a blank space where the ETA should be.
+  const tripStart = new Date(props.startedAt);
+  const tripEnd = new Date(Math.max(props.etaAt, props.startedAt));
+  const trip = { lower: tripStart, upper: tripEnd };
+  const arrived = props.etaAt <= Date.now();
 
-  // A glyph centred in a filled circle — the truck badge and the two action buttons.
-  const CircleIcon = (iconProps: {
-    systemName: SFSymbol;
-    diameter: number;
-    glyphSize: number;
-  }) => {
+  const distance = `${props.distanceKm} km`;
+  // Once the system marks the content stale the figures are no longer trustworthy, so
+  // they drop back to the secondary colour rather than reading as live.
+  const liveColor = environment.isStale ? color.secondary : color.primary;
+
+  /**
+   * The ETA. `timerInterval` hands the countdown to SwiftUI, which ticks it without the
+   * app running. Monospaced digits stop the text jittering as the seconds change width.
+   */
+  const Countdown = (p: { size: number }) => {
+    'use no memo';
+    if (arrived) {
+      return (
+        <Text
+          modifiers={[
+            font({ size: p.size, weight: 'bold' }),
+            foregroundStyle(liveColor),
+            lineLimit(1),
+          ]}>
+          Arriving
+        </Text>
+      );
+    }
+    return (
+      <Text
+        timerInterval={trip}
+        countsDown
+        modifiers={[
+          font({ size: p.size, weight: 'bold' }),
+          monospacedDigit(),
+          foregroundStyle(liveColor),
+          lineLimit(1),
+        ]}
+      />
+    );
+  };
+
+  /** A glyph centred in a filled circle — the truck badge and the two action buttons. */
+  const CircleIcon = (p: { systemName: SFSymbol; diameter: number; glyphSize: number }) => {
     'use no memo';
     return (
       <Image
-        systemName={iconProps.systemName}
-        size={iconProps.glyphSize}
+        systemName={p.systemName}
+        size={p.glyphSize}
         color={color.primary}
         modifiers={[
-          frame({ width: iconProps.diameter, height: iconProps.diameter }),
+          frame({ width: p.diameter, height: p.diameter }),
           background(color.chip, shapes.circle()),
         ]}
       />
     );
   };
 
-  // Plate over model, led by the truck badge. Top-left of the card.
-  const VehicleIdentity = () => {
+  /**
+   * The truck badge. The pulse is an indefinite SF Symbol effect, which the system runs
+   * on its own the way it runs the countdown — no trigger from the app.
+   */
+  const TruckBadge = (p: { diameter: number; glyphSize: number }) => {
     'use no memo';
     return (
-      <HStack spacing={12} alignment="center">
-        <CircleIcon systemName="box.truck.fill" diameter={44} glyphSize={20} />
+      <Image
+        systemName="box.truck"
+        size={p.glyphSize}
+        color={color.primary}
+        modifiers={[
+          symbolEffect({ effect: 'pulse' }, { options: { repeat: 'continuous', speed: 0.7 } }),
+          frame({ width: p.diameter, height: p.diameter }),
+          background(color.chip, shapes.circle()),
+        ]}
+      />
+    );
+  };
+
+  const VehicleIdentity = (p: { compact?: boolean }) => {
+    'use no memo';
+    return (
+      <HStack spacing={p.compact ? 9 : 12} alignment="center">
+        <TruckBadge diameter={p.compact ? 34 : 46} glyphSize={p.compact ? 16 : 21} />
         <VStack alignment="leading" spacing={1}>
-          <Text modifiers={[font({ size: 18, weight: 'bold' }), foregroundStyle(color.primary)]}>
+          <Text
+            modifiers={[
+              font({ size: p.compact ? 16 : 19, weight: 'bold' }),
+              foregroundStyle(color.primary),
+              lineLimit(1),
+            ]}>
             {props.vehiclePlate}
           </Text>
-          <Text modifiers={[font({ size: 14 }), foregroundStyle(color.secondary)]}>
+          <Text
+            modifiers={[
+              font({ size: p.compact ? 12 : 14 }),
+              foregroundStyle(color.secondary),
+              lineLimit(1),
+            ]}>
             {props.vehicleModel}
           </Text>
         </VStack>
@@ -121,43 +185,53 @@ const DeliveryTrackingActivity = (
     );
   };
 
-  // ETA over remaining distance. Top-right of the card.
-  const EtaReadout = () => {
+  const EtaReadout = (p: { compact?: boolean }) => {
     'use no memo';
     return (
       <VStack alignment="trailing" spacing={1}>
-        <Text modifiers={[font({ size: 18, weight: 'bold' }), foregroundStyle(etaColor)]}>
-          {eta}
+        <Countdown size={p.compact ? 16 : 19} />
+        <Text
+          modifiers={[
+            font({ size: p.compact ? 12 : 14 }),
+            foregroundStyle(color.secondary),
+            lineLimit(1),
+          ]}>
+          {distance}
         </Text>
-        <Text modifiers={[font({ size: 14 }), foregroundStyle(color.secondary)]}>{distance}</Text>
       </VStack>
     );
   };
 
-  const RouteLeg = (legProps: { label: string; address: string }) => {
+  const RouteLeg = (p: { label: string; address: string }) => {
     'use no memo';
     return (
       <VStack alignment="leading" spacing={2}>
-        <Text modifiers={[font({ size: 12 }), foregroundStyle(color.routeLabel)]}>
-          {legProps.label}
-        </Text>
-        <Text modifiers={[font({ size: 16 }), foregroundStyle(color.routeAddress)]}>
-          {legProps.address}
+        <Text modifiers={[font({ size: 12 }), foregroundStyle(color.routeLabel)]}>{p.label}</Text>
+        <Text
+          modifiers={[
+            font({ size: 16 }),
+            foregroundStyle(color.routeAddress),
+            lineLimit(1),
+            minimumScaleFactor(0.8),
+          ]}>
+          {p.address}
         </Text>
       </VStack>
     );
   };
 
-  // From/To pair, with the yellow origin dot and the rule running down to the destination.
+  /** From/To pair, with the yellow origin dot and the rule running down to the destination. */
   const Route = () => {
     'use no memo';
     return (
       <HStack spacing={14} alignment="top">
-        <VStack spacing={0} alignment="center" modifiers={[padding({ top: 4 })]}>
+        <VStack spacing={0} alignment="center" modifiers={[padding({ top: 5 })]}>
           <Circle modifiers={[frame({ width: 10, height: 10 }), foregroundStyle(color.accent)]} />
-          <Rectangle modifiers={[frame({ width: 2, height: 52 }), foregroundStyle(color.routeLine)]} />
+          <Rectangle
+            modifiers={[frame({ width: 2, height: 54 }), foregroundStyle(color.routeLine)]}
+          />
         </VStack>
-        <VStack alignment="leading" spacing={16}>
+        <VStack alignment="leading" spacing={18}>
           <RouteLeg label="From" address={props.fromAddress} />
           <RouteLeg label="To" address={props.toAddress} />
         </VStack>
@@ -166,30 +240,48 @@ const DeliveryTrackingActivity = (
     );
   };
 
-  // Call / message actions on the left, driver identity and photo on the right.
+  const Avatar = (p: { diameter: number }) => {
+    'use no memo';
+    if (props.driverAvatarUri) {
+      return (
+        <Image
+          uiImage={props.driverAvatarUri}
+          modifiers={[frame({ width: p.diameter, height: p.diameter }), clipShape('circle')]}
+        />
+      );
+    }
+    return (
+      <CircleIcon systemName="person.fill" diameter={p.diameter} glyphSize={p.diameter * 0.45} />
+    );
+  };
+
+  /** Call / message actions on the left, driver identity and photo on the right. */
   const DriverBar = () => {
     'use no memo';
     return (
       <HStack spacing={12} alignment="center">
         <CircleIcon systemName="phone.fill" diameter={36} glyphSize={15} />
-        <CircleIcon systemName="ellipsis.message.fill" diameter={36} glyphSize={15} />
+        <CircleIcon systemName="ellipsis.bubble.fill" diameter={36} glyphSize={15} />
         <Spacer />
         <VStack alignment="trailing" spacing={1}>
-          <Text modifiers={[font({ size: 17, weight: 'bold' }), foregroundStyle(color.primary)]}>
+          <Text
+            modifiers={[
+              font({ size: 17, weight: 'bold' }),
+              foregroundStyle(color.primary),
+              lineLimit(1),
+            ]}>
             {props.driverName}
           </Text>
-          <Text modifiers={[font({ size: 13 }), foregroundStyle(color.secondary)]}>
+          <Text
+            modifiers={[
+              font({ size: 13 }),
+              foregroundStyle(color.secondary),
+              lineLimit(1),
+            ]}>
             {`ID - ${props.driverId}`}
           </Text>
         </VStack>
-        {props.driverAvatarUri ? (
-          <Image
-            uiImage={props.driverAvatarUri}
-            modifiers={[frame({ width: 38, height: 38 }), clipShape('circle')]}
-          />
-        ) : (
-          <CircleIcon systemName="person.fill" diameter={38} glyphSize={17} />
-        )}
+        <Avatar diameter={38} />
       </HStack>
     );
   };
@@ -199,9 +291,9 @@ const DeliveryTrackingActivity = (
     banner: (
       <VStack
         alignment="leading"
-        spacing={18}
+        spacing={20}
         modifiers={[
-          padding({ horizontal: 16, vertical: 14 }),
+          padding({ horizontal: 18, vertical: 16 }),
           activityBackgroundTint(color.surface),
         ]}>
         <HStack alignment="center">
@@ -217,50 +309,74 @@ const DeliveryTrackingActivity = (
     // CarPlay and watchOS get the headline only — there is no room for the route.
     bannerSmall: (
       <HStack spacing={10} alignment="center" modifiers={[padding({ all: 10 })]}>
-        <CircleIcon systemName="box.truck.fill" diameter={32} glyphSize={15} />
+        <TruckBadge diameter={32} glyphSize={15} />
         <VStack alignment="leading" spacing={1}>
-          <Text modifiers={[font({ size: 15, weight: 'bold' }), foregroundStyle(color.primary)]}>
+          <Text
+            modifiers={[
+              font({ size: 15, weight: 'bold' }),
+              foregroundStyle(color.primary),
+              lineLimit(1),
+            ]}>
             {props.vehiclePlate}
           </Text>
-          <Text modifiers={[font({ size: 12 }), foregroundStyle(color.secondary)]}>
+          <Text
+            modifiers={[font({ size: 12 }), foregroundStyle(color.secondary), lineLimit(1)]}>
             {props.toAddress}
           </Text>
         </VStack>
         <Spacer />
-        <Text modifiers={[font({ size: 15, weight: 'bold' }), foregroundStyle(etaColor)]}>
-          {eta}
-        </Text>
+        <Countdown size={15} />
       </HStack>
     ),
 
-    // Dynamic Island, expanded. Leading and trailing flank the camera; bottom spans the width.
-    expandedLeading: <VehicleIdentity />,
-    expandedTrailing: <EtaReadout />,
+    // Dynamic Island, expanded. The regions are height-constrained, so this is a tightened
+    // cut of the card rather than the whole thing: the route collapses to the destination.
+    expandedLeading: <VehicleIdentity compact />,
+    expandedTrailing: <EtaReadout compact />,
     expandedBottom: (
-      <VStack alignment="leading" spacing={16} modifiers={[padding({ top: 10 })]}>
-        <Route />
-        <DriverBar />
-      </VStack>
-    ),
-
-    // Dynamic Island, collapsed: truck on one side, ETA and a clock on the other.
-    compactLeading: <Image systemName="box.truck.fill" size={16} color={color.primary} />,
-    compactTrailing: (
-      <HStack spacing={5} alignment="center">
-        <Text modifiers={[font({ size: 15, weight: 'semibold' }), foregroundStyle(etaColor)]}>
-          {eta}
+      <HStack spacing={10} alignment="center" modifiers={[padding({ top: 10 })]}>
+        <Circle modifiers={[frame({ width: 8, height: 8 }), foregroundStyle(color.accent)]} />
+        <Text
+          modifiers={[
+            font({ size: 14 }),
+            foregroundStyle(color.routeAddress),
+            lineLimit(1),
+            minimumScaleFactor(0.8),
+          ]}>
+          {props.toAddress}
         </Text>
-        <Image
-          systemName="clock.fill"
-          size={11}
-          color={color.primary}
-          modifiers={[frame({ width: 22, height: 22 }), background(color.chip, shapes.circle())]}
-        />
+        <Spacer />
+        <CircleIcon systemName="phone.fill" diameter={30} glyphSize={13} />
+        <CircleIcon systemName="ellipsis.bubble.fill" diameter={30} glyphSize={13} />
+        <Avatar diameter={30} />
       </HStack>
     ),
+
+    // Dynamic Island, collapsed. The pill is only a few points wide, so the ticking
+    // countdown is the whole trailing side — it reads as the clock the comp draws.
+    compactLeading: (
+      <Image
+        systemName="box.truck.fill"
+        size={16}
+        color={color.primary}
+        modifiers={[
+          symbolEffect({ effect: 'pulse' }, { options: { repeat: 'continuous', speed: 0.7 } }),
+        ]}
+      />
+    ),
+    compactTrailing: <Countdown size={14} />,
 
     // Dynamic Island, minimal: shown when another activity shares the island.
-    minimal: <Image systemName="box.truck.fill" size={14} color={color.primary} />,
+    minimal: (
+      <Image
+        systemName="box.truck.fill"
+        size={14}
+        color={color.primary}
+        modifiers={[
+          symbolEffect({ effect: 'pulse' }, { options: { repeat: 'continuous', speed: 0.7 } }),
+        ]}
+      />
+    ),
   };
 };
 
