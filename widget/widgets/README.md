@@ -98,12 +98,30 @@ is gone.
 Add up line heights (roughly `fontSize × 1.2`), stack heights, and padding before
 building. It is much faster than a round trip through EAS.
 
-## Truncation next to a `Spacer`
+## Truncation next to a `Spacer`, and why pinning is not a blanket fix
 
 `HStack { block; Spacer(); block }` will happily truncate the text in those blocks to
 `RJ…` while most of the row sits empty. Pin the text stacks with
 `fixedSize({ horizontal: true })` — and `layoutPriority(1)` for good measure — so they
 take their natural width and the `Spacer` absorbs the slack.
+
+**Only pin where the row is genuinely wide.** A pinned stack refuses to shrink, so in a
+narrow region it overflows and gets clipped by the presentation's edge rather than
+truncating. Pinning the ETA everywhere pushed `Arrived` straight through the side of the
+Dynamic Island, losing the final letter. `DeliveryTrackingActivity` pins only in the
+Lock Screen card and lets the Dynamic Island variants shrink through
+`minimumScaleFactor` instead.
+
+## Budget the Dynamic Island against the camera, not the screen
+
+The expanded presentation looks roomy and is not. The camera band and the system's own
+padding take about 90pt of the ~160pt before any of your content is drawn, which leaves
+roughly 60pt for `expandedBottom`. That is one band, not a stack of rows — this card
+puts the route and the driver side by side there, and keeps the stacked version for the
+Lock Screen.
+
+Measure it from a screenshot rather than guessing: take the island's pixel height,
+divide by its pixel width, and multiply by 371 (its width in points).
 
 ## The second rule: nested components need `'use no memo'`
 

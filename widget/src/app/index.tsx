@@ -189,9 +189,11 @@ function Preview({ progress, remainingMs }: { progress: number; remainingMs: num
 
       <View style={styles.route}>
         <View style={styles.rail}>
+          <View style={[styles.endDot, styles.endDotDone]} />
           <View style={[styles.railFill, { flex: Math.max(progress, 0.0001) }]} />
-          <View style={styles.dot} />
+          <Text style={styles.truck}>🚚</Text>
           <View style={[styles.railRest, { flex: Math.max(1 - progress, 0.0001) }]} />
+          <View style={[styles.endDot, progress >= 1 && styles.endDotDone]} />
         </View>
         <View style={styles.legs}>
           <Text style={styles.legLabel}>From</Text>
@@ -252,10 +254,12 @@ const styles = StyleSheet.create({
   mono: { fontVariant: ['tabular-nums'] },
   muted: { color: '#8E8E93', fontSize: 13 },
   route: { flexDirection: 'row', gap: 12 },
-  rail: { alignItems: 'center', width: 10, paddingVertical: 4 },
+  rail: { alignItems: 'center', width: 18, paddingVertical: 4 },
   railFill: { width: 2, backgroundColor: '#FFD60A' },
   railRest: { width: 2, backgroundColor: '#48484C' },
-  dot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#FFD60A' },
+  truck: { fontSize: 14, lineHeight: 18 },
+  endDot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: '#48484C' },
+  endDotDone: { backgroundColor: '#FFD60A' },
   legs: { flex: 1 },
   legLabel: { color: '#6E6E73', fontSize: 11 },
   legValue: { color: '#9E9EA3', fontSize: 15 },

@@ -18,10 +18,15 @@ every second — on the Lock Screen, in the Dynamic Island, with the app suspend
 or force-quit. The truck badge carries an indefinite SF Symbol pulse the system
 also drives on its own. Start it and end it; nothing in between is required.
 
-What the system cannot do is walk a dot along a path, so the route's position and
-the remaining distance are pushed from the app while it is in the foreground.
-That is what the **Auto-advance** button toggles — turn it off and the ETA keeps
-counting regardless.
+A truck rides the route rail from the pickup dot to the drop-off dot, arriving as
+the countdown expires. Its position comes from whichever is further along — what
+the app last pushed, or what the clock implies — so it keeps closing on the
+destination even if updates are throttled or the app is suspended, and always
+lands at the drop-off as the ETA runs out.
+
+The remaining distance is the one figure nothing can derive, so the app refreshes
+it while in the foreground. That is what the **Auto-advance** button toggles —
+turn it off and the ETA and the truck carry on regardless.
 
 A trip runs for **ten seconds**, so a whole run can be watched start to finish:
 the dot travels the rail from pickup to drop-off, the distance falls to zero and
