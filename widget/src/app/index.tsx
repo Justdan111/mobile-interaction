@@ -7,10 +7,11 @@ import DeliveryTrackingActivity, {
   type DeliveryTrackingProps,
 } from '../../widgets/DeliveryTrackingActivity';
 
-const TRIP_MINUTES = 32;
+/** The whole trip runs in ten seconds, so a run can be watched start to finish. */
+const TRIP_MS = 10_000;
+/** How often the app pushes progress. Twenty-five frames reads as movement, not steps. */
+const FRAME_MS = 400;
 const START_KM = 5.2;
-/** How often the app refreshes the distance. The countdown does not need us. */
-const REFRESH_MS = 10_000;
 
 const DELIVERY = {
   vehiclePlate: 'RJ 4567',
@@ -23,15 +24,21 @@ const DELIVERY = {
 
 type Trip = { startedAt: number; etaAt: number };
 
-/** Distance shrinks in step with the time left, so the two figures never disagree. */
-function distanceFor(trip: Trip, at: number) {
+function progressFor(trip: Trip, at: number) {
   const total = trip.etaAt - trip.startedAt;
-  const remaining = Math.max(0, trip.etaAt - at);
-  return Math.round(START_KM * (remaining / total) * 10) / 10;
+  if (total <= 0) return 1;
+  return Math.min(1, Math.max(0, (at - trip.startedAt) / total));
 }
 
+/** Distance falls in step with progress, so the two figures can never disagree. */
 function contentFor(trip: Trip, at: number): DeliveryTrackingProps {
-  return { ...DELIVERY, ...trip, distanceKm: distanceFor(trip, at) };
+  const progress = progressFor(trip, at);
+  return {
+    ...DELIVERY,
+    ...trip,
+    progress,
+    distanceKm: Math.round(START_KM * (1 - progress) * 10) / 10,
+  };
 }
 
 export default function ControlScreen() {
@@ -40,13 +47,13 @@ export default function ControlScreen() {
   const [auto, setAuto] = useState(true);
   const [now, setNow] = useState(() => Date.now());
 
-  // Held in a ref so the refresh interval never restarts just because the clock ticked.
+  // Held in refs so the push loop never restarts just because the clock ticked.
   const tripRef = useRef<Trip | null>(null);
   const activityRef = useRef<LiveActivity<DeliveryTrackingProps> | null>(null);
   tripRef.current = trip;
   activityRef.current = activity;
 
-  // Re-attach to an activity still running from a previous launch. The handle comes back
+  // Reattach to an activity still running from a previous launch. The handle comes back
   // but its content does not, so a resumed trip can be ended, not resumed.
   useEffect(() => {
     if (Platform.OS !== 'ios') return;
@@ -54,32 +61,39 @@ export default function ControlScreen() {
     if (existing) setActivity(existing);
   }, []);
 
-  // Drives the preview's own countdown. The widget does not depend on this.
-  useEffect(() => {
-    if (!trip) return;
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, [trip]);
-
   const report = useCallback((error: unknown) => {
     Alert.alert('Live Activity', error instanceof Error ? error.message : String(error));
   }, []);
 
-  // The only thing the app pushes. The ETA counts itself down inside the widget.
+  /**
+   * Pushes the dot along the route. The ETA does not need this — SwiftUI counts that
+   * down on its own — but nothing in SwiftUI can walk a dot down a path, so position
+   * and distance come from here.
+   */
   useEffect(() => {
     if (!auto || !activity || !trip) return;
     const id = setInterval(() => {
       const current = tripRef.current;
       const live = activityRef.current;
       if (!current || !live) return;
-      live.update(contentFor(current, Date.now())).catch(report);
-    }, REFRESH_MS);
+      const at = Date.now();
+      setNow(at);
+      live.update(contentFor(current, at)).catch(report);
+      if (at >= current.etaAt) clearInterval(id);
+    }, FRAME_MS);
     return () => clearInterval(id);
   }, [auto, activity, trip, report]);
 
+  // Keeps the in-app preview honest while auto-advance is switched off.
+  useEffect(() => {
+    if (!trip || auto) return;
+    const id = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(id);
+  }, [trip, auto]);
+
   const start = useCallback(() => {
     const startedAt = Date.now();
-    const next: Trip = { startedAt, etaAt: startedAt + TRIP_MINUTES * 60_000 };
+    const next: Trip = { startedAt, etaAt: startedAt + TRIP_MS };
     try {
       const started = DeliveryTrackingActivity.start(contentFor(next, startedAt));
       setTrip(next);
@@ -95,10 +109,7 @@ export default function ControlScreen() {
     if (!activity) return;
     const current = trip;
     try {
-      await activity.end(
-        'immediate',
-        current ? { ...contentFor(current, current.etaAt), etaAt: Date.now() } : undefined
-      );
+      await activity.end('immediate', current ? contentFor(current, current.etaAt) : undefined);
     } catch (error) {
       report(error);
     }
@@ -108,7 +119,8 @@ export default function ControlScreen() {
 
   const running = activity !== null;
   const resumed = running && trip === null;
-  const remainingMs = trip ? Math.max(0, trip.etaAt - now) : 0;
+  const progress = trip ? progressFor(trip, now) : 0;
+  const remainingMs = trip ? Math.max(0, trip.etaAt - now) : TRIP_MS;
 
   return (
     <View style={styles.screen}>
@@ -125,13 +137,13 @@ export default function ControlScreen() {
               </Text>
             </View>
           ) : (
-            <Preview trip={trip} now={now} remainingMs={remainingMs} />
+            <Preview progress={progress} remainingMs={remainingMs} />
           )}
 
           <View style={styles.buttons}>
             <Button label="Start trip" onPress={start} disabled={running} primary />
             <Button
-              label={`Auto-refresh distance · ${auto ? 'On' : 'Off'}`}
+              label={`Auto-advance · ${auto ? 'On' : 'Off'}`}
               onPress={() => setAuto((v) => !v)}
               disabled={!running || resumed}
               active={auto}
@@ -141,7 +153,7 @@ export default function ControlScreen() {
 
           <Text style={styles.footnote}>
             {running
-              ? 'Leave the app — the ETA keeps counting down in the Dynamic Island and on the Lock Screen on its own, even with the app killed. Auto-refresh only pushes the distance, which the system can’t work out by itself.'
+              ? 'The trip runs for ten seconds. The ETA counts itself down even with the app killed; the dot along the route is pushed from here, so keep the app open to watch it travel.'
               : 'Start the trip, then swipe up to the Home Screen. Long-press the Dynamic Island for the expanded layout.'}
           </Text>
         </ScrollView>
@@ -151,24 +163,14 @@ export default function ControlScreen() {
 }
 
 function formatRemaining(ms: number) {
-  const total = Math.floor(ms / 1000);
-  const minutes = Math.floor(total / 60);
-  const seconds = total % 60;
-  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+  const total = Math.ceil(ms / 1000);
+  return `0:${String(total).padStart(2, '0')}`;
 }
 
-/** A rough RN echo of the widget layout, so the values are visible without leaving the app. */
-function Preview({
-  trip,
-  now,
-  remainingMs,
-}: {
-  trip: Trip | null;
-  now: number;
-  remainingMs: number;
-}) {
-  const km = trip ? distanceFor(trip, now) : START_KM;
-  const eta = trip ? formatRemaining(remainingMs) : `${TRIP_MINUTES}:00`;
+/** An RN echo of the widget layout, so a run is visible without leaving the app. */
+function Preview({ progress, remainingMs }: { progress: number; remainingMs: number }) {
+  const km = Math.round(START_KM * (1 - progress) * 10) / 10;
+  const arrived = remainingMs <= 0;
 
   return (
     <View style={styles.card}>
@@ -178,14 +180,18 @@ function Preview({
           <Text style={styles.muted}>{DELIVERY.vehicleModel}</Text>
         </View>
         <View style={styles.right}>
-          <Text style={[styles.plate, styles.mono]}>{eta}</Text>
+          <Text style={[styles.plate, styles.mono]}>
+            {arrived ? 'Arrived' : formatRemaining(remainingMs)}
+          </Text>
           <Text style={styles.muted}>{km} km</Text>
         </View>
       </View>
+
       <View style={styles.route}>
         <View style={styles.rail}>
+          <View style={[styles.railFill, { flex: Math.max(progress, 0.0001) }]} />
           <View style={styles.dot} />
-          <View style={styles.line} />
+          <View style={[styles.railRest, { flex: Math.max(1 - progress, 0.0001) }]} />
         </View>
         <View style={styles.legs}>
           <Text style={styles.legLabel}>From</Text>
@@ -194,6 +200,7 @@ function Preview({
           <Text style={styles.legValue}>{DELIVERY.toAddress}</Text>
         </View>
       </View>
+
       <View style={styles.cardBottom}>
         <Text style={styles.driver}>{DELIVERY.driverName}</Text>
         <Text style={styles.muted}>ID - {DELIVERY.driverId}</Text>
@@ -238,22 +245,23 @@ const styles = StyleSheet.create({
   kicker: { color: '#FFD60A', fontSize: 12, fontWeight: '700', letterSpacing: 1.4 },
   title: { color: '#FFFFFF', fontSize: 30, fontWeight: '700', marginTop: -14 },
 
-  card: { backgroundColor: '#0E0E10', borderRadius: 28, padding: 18, gap: 18 },
+  card: { backgroundColor: '#0E0E10', borderRadius: 26, padding: 16, gap: 12 },
   cardTop: { flexDirection: 'row', justifyContent: 'space-between' },
   right: { alignItems: 'flex-end' },
-  plate: { color: '#FFFFFF', fontSize: 20, fontWeight: '700' },
+  plate: { color: '#FFFFFF', fontSize: 18, fontWeight: '700' },
   mono: { fontVariant: ['tabular-nums'] },
-  muted: { color: '#8E8E93', fontSize: 14 },
-  route: { flexDirection: 'row', gap: 14 },
-  rail: { alignItems: 'center', paddingTop: 6 },
+  muted: { color: '#8E8E93', fontSize: 13 },
+  route: { flexDirection: 'row', gap: 12 },
+  rail: { alignItems: 'center', width: 10, paddingVertical: 4 },
+  railFill: { width: 2, backgroundColor: '#FFD60A' },
+  railRest: { width: 2, backgroundColor: '#48484C' },
   dot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#FFD60A' },
-  line: { width: 2, flex: 1, backgroundColor: '#48484C' },
   legs: { flex: 1 },
-  legLabel: { color: '#6E6E73', fontSize: 12 },
-  legValue: { color: '#9E9EA3', fontSize: 16 },
-  legSpacer: { marginTop: 14 },
+  legLabel: { color: '#6E6E73', fontSize: 11 },
+  legValue: { color: '#9E9EA3', fontSize: 15 },
+  legSpacer: { marginTop: 10 },
   cardBottom: { alignItems: 'flex-end' },
-  driver: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
+  driver: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
 
   notice: { backgroundColor: '#1F1F22', borderRadius: 18, padding: 16 },
   noticeText: { color: '#9E9EA3', fontSize: 14, lineHeight: 20 },

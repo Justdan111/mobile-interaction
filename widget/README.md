@@ -18,10 +18,14 @@ every second — on the Lock Screen, in the Dynamic Island, with the app suspend
 or force-quit. The truck badge carries an indefinite SF Symbol pulse the system
 also drives on its own. Start it and end it; nothing in between is required.
 
-The one figure the system cannot work out is the remaining distance, so the app
-refreshes that on a timer while it is in the foreground. That is what the
-**Auto-refresh distance** button toggles — turn it off and the ETA keeps
+What the system cannot do is walk a dot along a path, so the route's position and
+the remaining distance are pushed from the app while it is in the foreground.
+That is what the **Auto-advance** button toggles — turn it off and the ETA keeps
 counting regardless.
+
+A trip runs for **ten seconds**, so a whole run can be watched start to finish:
+the dot travels the rail from pickup to drop-off, the distance falls to zero and
+the ETA lands on *Arrived*. `TRIP_MS` in `src/app/index.tsx` is the dial.
 
 It supplies every presentation the system can ask for: the Lock Screen banner (the
 full card), a cut-down `bannerSmall` for CarPlay and watchOS, the expanded Dynamic
@@ -73,6 +77,9 @@ dismisses it.
 
 To prove it really is running without the app: start a trip, force-quit the app
 from the app switcher, and watch the countdown keep going.
+
+The card is sized to the Lock Screen's 160pt ceiling. Anything past that is cut
+off rather than scaled down, so check `widgets/README.md` before adding rows.
 
 Changing a layout only needs a JS reload. Adding a *home screen* widget changes the
 native target and needs a fresh `eas build`.

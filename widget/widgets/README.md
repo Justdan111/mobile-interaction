@@ -76,6 +76,35 @@ Two traps with `timerInterval`:
 runs. Do not reach for `useNativeState` to drive one: hooks do not exist in the
 widget runtime.
 
+## Size budgets: overflow clips, it does not scale
+
+Every presentation has a hard height, and SwiftUI does not shrink a layout to fit one.
+It draws what it can and **silently cuts off the rest** — no warning, no build error.
+The first cut of this card lost its whole driver row that way, and the destination
+address with it.
+
+| Presentation | Roughly |
+| --- | --- |
+| Lock Screen banner | 160pt tall |
+| Dynamic Island expanded | ~160pt across all regions |
+| Dynamic Island compact | ~45pt wide per side |
+
+A comp drawn for a phone screen will not be anywhere near this. The reference for
+`DeliveryTrackingActivity` is about 300pt tall at the same width — twice the budget. The
+card keeps every element and the same hierarchy; what it gives up is the comp's
+whitespace. Spend the air before you drop content, and only shrink type once the air
+is gone.
+
+Add up line heights (roughly `fontSize × 1.2`), stack heights, and padding before
+building. It is much faster than a round trip through EAS.
+
+## Truncation next to a `Spacer`
+
+`HStack { block; Spacer(); block }` will happily truncate the text in those blocks to
+`RJ…` while most of the row sits empty. Pin the text stacks with
+`fixedSize({ horizontal: true })` — and `layoutPriority(1)` for good measure — so they
+take their natural width and the `Spacer` absorbs the slack.
+
 ## The second rule: nested components need `'use no memo'`
 
 This project has `experiments.reactCompiler` on. Expo registers `'widget'` as a React
