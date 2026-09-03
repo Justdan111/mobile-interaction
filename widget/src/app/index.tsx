@@ -28,20 +28,29 @@ const DELIVERY = {
 
 type Trip = { startedAt: number; etaAt: number };
 
-function progressFor(trip: Trip, at: number) {
+/**
+ * Matches the widget: the run completes at 90% of the trip so the truck is parked at the
+ * drop-off before the countdown expires, rather than arriving on the same frame.
+ */
+const ARRIVE_EARLY = 0.9;
+
+/** Plain fraction of the trip elapsed. Distance tracks this, not the early-arrival run. */
+function elapsedFor(trip: Trip, at: number) {
   const total = trip.etaAt - trip.startedAt;
   if (total <= 0) return 1;
   return Math.min(1, Math.max(0, (at - trip.startedAt) / total));
 }
 
-/** Distance falls in step with progress, so the two figures can never disagree. */
+function progressFor(trip: Trip, at: number) {
+  return Math.min(1, elapsedFor(trip, at) / ARRIVE_EARLY);
+}
+
 function contentFor(trip: Trip, at: number): DeliveryTrackingProps {
-  const progress = progressFor(trip, at);
   return {
     ...DELIVERY,
     ...trip,
-    progress,
-    distanceKm: Math.round(START_KM * (1 - progress) * 10) / 10,
+    progress: progressFor(trip, at),
+    distanceKm: Math.round(START_KM * (1 - elapsedFor(trip, at)) * 10) / 10,
   };
 }
 
@@ -141,7 +150,11 @@ export default function ControlScreen() {
               </Text>
             </View>
           ) : (
-            <Preview progress={progress} remainingMs={remainingMs} />
+              <Preview
+              progress={progress}
+              elapsed={trip ? elapsedFor(trip, now) : 0}
+              remainingMs={remainingMs}
+            />
           )}
 
           <View style={styles.buttons}>
@@ -172,8 +185,16 @@ function formatRemaining(ms: number) {
 }
 
 /** An RN echo of the widget layout, so a run is visible without leaving the app. */
-function Preview({ progress, remainingMs }: { progress: number; remainingMs: number }) {
-  const km = Math.round(START_KM * (1 - progress) * 10) / 10;
+function Preview({
+  progress,
+  elapsed,
+  remainingMs,
+}: {
+  progress: number;
+  elapsed: number;
+  remainingMs: number;
+}) {
+  const km = Math.round(START_KM * (1 - elapsed) * 10) / 10;
   const arrived = remainingMs <= 0;
 
   return (

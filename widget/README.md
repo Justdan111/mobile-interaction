@@ -18,11 +18,16 @@ every second — on the Lock Screen, in the Dynamic Island, with the app suspend
 or force-quit. The truck badge carries an indefinite SF Symbol pulse the system
 also drives on its own. Start it and end it; nothing in between is required.
 
-A truck rides the route rail from the pickup dot to the drop-off dot, arriving as
-the countdown expires. Its position comes from whichever is further along — what
-the app last pushed, or what the clock implies — so it keeps closing on the
-destination even if updates are throttled or the app is suspended, and always
-lands at the drop-off as the ETA runs out.
+The route rail fills amber as the van covers ground and the drop-off dot lights
+up on arrival. In the collapsed pill — the part on screen without long-pressing
+the island — a truck rides a short track from one end to the other. It completes
+its run at 90% of the trip, so it is parked at the destination a beat before the
+label flips to *Arrived* rather than landing on the same frame.
+
+Position comes from whichever is further along: what the app last pushed, or what
+the clock implies. Pushes stop when the app is suspended and can be throttled at
+any time, so that floor is what keeps the truck closing on the destination and
+guarantees it lands there.
 
 The remaining distance is the one figure nothing can derive, so the app refreshes
 it while in the foreground. That is what the **Auto-advance** button toggles —

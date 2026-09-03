@@ -108,9 +108,14 @@ take their natural width and the `Spacer` absorbs the slack.
 **Only pin where the row is genuinely wide.** A pinned stack refuses to shrink, so in a
 narrow region it overflows and gets clipped by the presentation's edge rather than
 truncating. Pinning the ETA everywhere pushed `Arrived` straight through the side of the
-Dynamic Island, losing the final letter. `DeliveryTrackingActivity` pins only in the
-Lock Screen card and lets the Dynamic Island variants shrink through
-`minimumScaleFactor` instead.
+Dynamic Island, losing the final letter.
+
+Dropping the pin is not enough on its own, either. `minimumScaleFactor` only engages when
+something proposes a width, and a Dynamic Island region lets its content size itself and
+then clips at the edge — so `Arrived` kept overflowing with the pin gone. The stack needs
+an explicit `frame({ maxWidth })` for the scale factor to have anything to scale against.
+Pick that cap conservatively: too small only renders the text slightly smaller, while too
+large clips it again.
 
 ## Moving something in the collapsed pill
 
