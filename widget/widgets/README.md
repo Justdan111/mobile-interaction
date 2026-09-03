@@ -47,6 +47,96 @@ That is why the colour tokens in `DeliveryTrackingActivity.tsx` are declared ins
 function rather than pulled from a shared file. Shared design tokens have to be
 duplicated per widget, or generated into each file — they cannot be imported.
 
+## Making a widget move on its own
+
+A widget or Live Activity only re-renders when the system decides to, or when the
+app pushes an update — and the app is usually suspended. Do not build motion out
+of repeated `update()` calls; iOS will throttle them and the thing freezes the
+moment the app is killed.
+
+Use the primitives the system animates for you instead. All of them take absolute
+dates, so hand the widget *when something happens*, not *how long is left*:
+
+| Want | Use |
+| --- | --- |
+| A ticking countdown or count-up | `<Text timerInterval={{ lower, upper }} countsDown />` |
+| A relative or absolute time that stays fresh | `<Text date={d} dateStyle="relative" />` |
+| A bar that fills over a known window | `<ProgressView timerInterval={{ lower, upper }} countsDown={false} />` |
+| A continuously animating SF Symbol | `symbolEffect({ effect: 'pulse' }, { options: { repeat: 'continuous' } })` |
+
+Two traps with `timerInterval`:
+
+- If `lower > upper` SwiftUI silently skips the timer branch and falls back to the
+  plain text — which is **empty** if you passed no children. Clamp the range.
+  `DeliveryTrackingActivity` does this with `Math.max`.
+- Pair it with the `monospacedDigit()` modifier, or the text jitters as the digits
+  change width.
+
+`symbolEffect` needs no trigger for indefinite effects — omit `isActive` and it
+runs. Do not reach for `useNativeState` to drive one: hooks do not exist in the
+widget runtime.
+
+## Size budgets: overflow clips, it does not scale
+
+Every presentation has a hard height, and SwiftUI does not shrink a layout to fit one.
+It draws what it can and **silently cuts off the rest** — no warning, no build error.
+The first cut of this card lost its whole driver row that way, and the destination
+address with it.
+
+| Presentation | Roughly |
+| --- | --- |
+| Lock Screen banner | 160pt tall |
+| Dynamic Island expanded | ~160pt across all regions |
+| Dynamic Island compact | ~45pt wide per side |
+
+A comp drawn for a phone screen will not be anywhere near this. The reference for
+`DeliveryTrackingActivity` is about 300pt tall at the same width — twice the budget. The
+card keeps every element and the same hierarchy; what it gives up is the comp's
+whitespace. Spend the air before you drop content, and only shrink type once the air
+is gone.
+
+Add up line heights (roughly `fontSize × 1.2`), stack heights, and padding before
+building. It is much faster than a round trip through EAS.
+
+## Truncation next to a `Spacer`, and why pinning is not a blanket fix
+
+`HStack { block; Spacer(); block }` will happily truncate the text in those blocks to
+`RJ…` while most of the row sits empty. Pin the text stacks with
+`fixedSize({ horizontal: true })` — and `layoutPriority(1)` for good measure — so they
+take their natural width and the `Spacer` absorbs the slack.
+
+**Only pin where the row is genuinely wide.** A pinned stack refuses to shrink, so in a
+narrow region it overflows and gets clipped by the presentation's edge rather than
+truncating. Pinning the ETA everywhere pushed `Arrived` straight through the side of the
+Dynamic Island, losing the final letter. `DeliveryTrackingActivity` pins only in the
+Lock Screen card and lets the Dynamic Island variants shrink through
+`minimumScaleFactor` instead.
+
+## Moving something in the collapsed pill
+
+`compactLeading` and `compactTrailing` are two separate regions with the camera between
+them — nothing can span the gap, so travel has to happen inside one region. The truck
+rides a short fixed-width track in the leading region: a travelled rule, the glyph, then
+a remaining rule, the same split the Lock Screen rail uses. The width is hard-coded
+because the region's own width is not knowable from the layout; keep it modest, since
+the pill grows to fit its content but not without limit.
+
+Worth knowing: `Text(timerInterval:)` refreshes its own text without re-evaluating the
+layout, so anything positional only moves when the app pushes an update. That is why
+the trip is short and the push cadence is high — over ten seconds at 300ms the truck
+advances under a point per frame, which reads as travel rather than stepping.
+
+## Budget the Dynamic Island against the camera, not the screen
+
+The expanded presentation looks roomy and is not. The camera band and the system's own
+padding take about 90pt of the ~160pt before any of your content is drawn, which leaves
+roughly 60pt for `expandedBottom`. That is one band, not a stack of rows — this card
+puts the route and the driver side by side there, and keeps the stacked version for the
+Lock Screen.
+
+Measure it from a screenshot rather than guessing: take the island's pixel height,
+divide by its pixel width, and multiply by 371 (its width in points).
+
 ## The second rule: nested components need `'use no memo'`
 
 This project has `experiments.reactCompiler` on. Expo registers `'widget'` as a React
