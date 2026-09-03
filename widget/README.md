@@ -12,6 +12,31 @@ From/To route with a yellow origin dot and a rule running down to the
 destination; call and message actions beside the driver's name, reference ID and
 photo along the bottom.
 
+**It runs itself.** The trip is described by when it started and when it is due,
+not by a minute count the app has to decrement, so SwiftUI ticks the ETA down
+every second — on the Lock Screen, in the Dynamic Island, with the app suspended
+or force-quit. The truck badge carries an indefinite SF Symbol pulse the system
+also drives on its own. Start it and end it; nothing in between is required.
+
+The route rail fills amber as the van covers ground and the drop-off dot lights
+up on arrival. In the collapsed pill — the part on screen without long-pressing
+the island — a truck rides a short track from one end to the other. It completes
+its run at 90% of the trip, so it is parked at the destination a beat before the
+label flips to *Arrived* rather than landing on the same frame.
+
+Position comes from whichever is further along: what the app last pushed, or what
+the clock implies. Pushes stop when the app is suspended and can be throttled at
+any time, so that floor is what keeps the truck closing on the destination and
+guarantees it lands there.
+
+The remaining distance is the one figure nothing can derive, so the app refreshes
+it while in the foreground. That is what the **Auto-advance** button toggles —
+turn it off and the ETA and the truck carry on regardless.
+
+A trip runs for **ten seconds**, so a whole run can be watched start to finish:
+the dot travels the rail from pickup to drop-off, the distance falls to zero and
+the ETA lands on *Arrived*. `TRIP_MS` in `src/app/index.tsx` is the dial.
+
 It supplies every presentation the system can ask for: the Lock Screen banner (the
 full card), a cut-down `bannerSmall` for CarPlay and watchOS, the expanded Dynamic
 Island split across leading/trailing/bottom, the collapsed pill (truck on one side,
@@ -55,10 +80,16 @@ it by hand instead: download the `.tar.gz` from the build page, expand it, then
 
 ### Trying it
 
-Open the app, tap **Start activity**, then swipe up to the Home Screen. The
-activity appears in the Dynamic Island — long-press it for the expanded layout —
-and on the Lock Screen. **Advance ETA by 5 min** pushes an update; **End activity**
+Open the app, tap **Start trip**, then swipe up to the Home Screen. The activity
+appears in the Dynamic Island — long-press it for the expanded layout — and on
+the Lock Screen, and the ETA counts down on its own from there. **End trip**
 dismisses it.
+
+To prove it really is running without the app: start a trip, force-quit the app
+from the app switcher, and watch the countdown keep going.
+
+The card is sized to the Lock Screen's 160pt ceiling. Anything past that is cut
+off rather than scaled down, so check `widgets/README.md` before adding rows.
 
 Changing a layout only needs a JS reload. Adding a *home screen* widget changes the
 native target and needs a fresh `eas build`.
