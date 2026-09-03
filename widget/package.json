@@ -37,7 +37,9 @@
     "start": "expo start --dev-client",
     "ios": "expo start --dev-client --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "typecheck": "tsc --noEmit",
+    "check:widgets": "node scripts/check-widget-scope.cjs"
   },
   "private": true
 }
