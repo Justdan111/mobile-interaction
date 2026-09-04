@@ -1,4 +1,4 @@
-import { Circle, HStack, Image, Rectangle, Spacer, Text, VStack } from '@expo/ui/swift-ui';
+import { Circle, HStack, Image, Rectangle, Spacer, Text, VStack, ZStack } from '@expo/ui/swift-ui';
 import {
   activityBackgroundTint,
   background,
@@ -11,9 +11,9 @@ import {
   lineLimit,
   minimumScaleFactor,
   monospacedDigit,
+  offset,
   padding,
   shapes,
-  symbolEffect,
 } from '@expo/ui/swift-ui/modifiers';
 import { createLiveActivity, type LiveActivityEnvironment } from 'expo-widgets';
 import type { SFSymbol } from 'sf-symbols-typescript';
@@ -21,10 +21,10 @@ import type { SFSymbol } from 'sf-symbols-typescript';
 /**
  * Content shown by the delivery-tracking Live Activity.
  *
- * The trip is described by when it began and when it is due rather than by a minute
- * count the app decrements, so SwiftUI counts the ETA down by itself — on the Lock
- * Screen, with the app suspended. `progress` positions the truck along the route, which
- * is the one thing SwiftUI cannot work out on its own.
+ * The trip is described by when it began and when it is due rather than a minute count
+ * the app decrements, so SwiftUI counts the ETA down unaided — on the Lock Screen, with
+ * the app suspended. `progress` positions the truck in the collapsed pill, which is the
+ * one thing SwiftUI cannot work out for itself.
  */
 export type DeliveryTrackingProps = {
   /** Vehicle registration, shown as the headline. For example `RJ 4567`. */
@@ -56,16 +56,17 @@ export type DeliveryTrackingProps = {
 };
 
 /**
- * `babel-preset-expo` serialises this function to a string and the widget extension
- * re-evaluates it, so the body may only reach for `@expo/ui` components and modifiers,
- * JS builtins, its own declarations, and `props` / `environment`. Colour tokens are
- * declared inline for that reason, and every nested component carries `'use no memo'`.
- * `npm run check:widgets` enforces both.
+ * Built from `docs/design-spec.md`, which is measured off the comps rather than eyeballed.
+ * Colours, glyph weights and alignment are the comp's; the vertical rhythm is not, because
+ * the comp is 295pt tall at 361pt wide and every Live Activity presentation caps out near
+ * 160pt. SwiftUI clips instead of scaling, so the comp's ~132pt of whitespace is spent
+ * first and the type is trimmed second.
  *
- * On sizing: each presentation has a hard height and SwiftUI clips rather than scales.
- * The Lock Screen card is budgeted near 150pt against a 160pt ceiling, and the expanded
- * Dynamic Island fits its route and driver row into a single band because the camera
- * takes most of that presentation's height. See widgets/README.md.
+ * Two rules govern the code itself. The body is serialised by `babel-preset-expo` and
+ * re-evaluated in the widget extension, so it may only reach for `@expo/ui`, JS builtins
+ * and its own declarations — hence inline colour tokens. And every nested component needs
+ * `'use no memo'`, because Expo's `'widget'` opt-out does not reach inside this function.
+ * `npm run check:widgets` enforces both.
  */
 const DeliveryTrackingActivity = (
   props: DeliveryTrackingProps,
@@ -73,76 +74,82 @@ const DeliveryTrackingActivity = (
 ) => {
   'widget';
 
+  // Sampled from ref-03. p90 equalled max for every one of these, so they are the
+  // comp's real values rather than an antialiased guess.
   const color = {
     surface: '#000000',
-    chip: '#1F1F22',
-    primary: '#FFFFFF',
-    secondary: '#8E8E93',
-    routeLabel: '#6E6E73',
-    routeAddress: '#9E9EA3',
-    accent: '#FFD60A',
-    routeLine: '#48484C',
+    badgeCircle: '#25272D',
+    actionCircle: '#2D2D2F',
+    primary: '#F1F1F1',
+    driverName: '#C8C8C8',
+    secondary: '#63676C',
+    driverId: '#4E5457',
+    address: '#5C5C5C',
+    label: '#2A2C2E',
+    accent: '#FCEE58',
+    rail: '#636A71',
   };
 
-  // SwiftUI drops to plain (empty) text if a timer range is inverted, so the upper bound
-  // is clamped rather than trusted.
+  // SwiftUI falls back to plain (empty) text if a timer range is inverted, so the upper
+  // bound is clamped rather than trusted.
   const tripStart = new Date(props.startedAt);
   const tripEnd = new Date(Math.max(props.etaAt, props.startedAt));
   const trip = { lower: tripStart, upper: tripEnd };
   const now = Date.now();
   const arrived = props.etaAt <= now;
 
-  // The truck's position is taken from whichever is further along: what the app last
-  // pushed, or what the clock implies. Pushes can be throttled or stop when the app is
-  // suspended, and without this floor the truck would park mid-route while the countdown
-  // ran on to zero. Any redraw then puts it where it should be, and it always lands at
-  // the drop-off as the ETA expires.
+  // Position comes from whichever is further along: what the app last pushed, or what the
+  // clock implies. Pushes stop when the app is suspended, and without that floor the truck
+  // would park mid-route while the countdown ran on to zero.
   const span = props.etaAt - props.startedAt;
   const elapsed = span > 0 ? (now - props.startedAt) / span : 1;
-  // The run finishes a little ahead of the clock so the truck is already parked at the
-  // drop-off when the label flips to Arrived, rather than landing on the same frame.
-  // `props.progress` already carries this scaling from the app, so only the local
-  // fallback is scaled here — dividing both would run the truck ahead of the app's.
-  const arriveEarly = 0.9;
-  const travel = Math.min(1, Math.max(0, Math.max(props.progress, elapsed / arriveEarly)));
+  const travel = Math.min(1, Math.max(0, Math.max(props.progress, elapsed)));
 
   const distance = `${props.distanceKm} km`;
   // Once the system marks the content stale the figures are no longer trustworthy.
   const liveColor = environment.isStale ? color.secondary : color.primary;
 
+  /**
+   * Each presentation gets its own measured sizes rather than one scale factor, because
+   * they have very different budgets: the card clears 160pt at about 151, while the
+   * expanded island loses roughly 47pt to the camera band before anything is drawn.
+   */
+  const CARD = {
+    badge: 38, badgeGlyph: 18, plate: 12.5, model: 10.5,
+    label: 10, address: 11.5, legGap: 5, dot: 8, railW: 2,
+    action: 28, actionGlyph: 12.5, driverName: 12.5, driverId: 9.2, avatar: 28,
+    gutter: 11, rowGap: 8, pad: 6,
+  };
+  const ISLAND = {
+    badge: 32, badgeGlyph: 15, plate: 11.5, model: 9,
+    label: 8.5, address: 12, legGap: 5, dot: 8, railW: 2,
+    action: 24, actionGlyph: 11, driverName: 11, driverId: 8, avatar: 24,
+    gutter: 9, rowGap: 5, pad: 4,
+  };
+  type Sizes = typeof CARD;
+
   /** The ETA. `timerInterval` hands the countdown to SwiftUI, which ticks it unaided. */
-  const Countdown = (p: { size: number }) => {
+  const Countdown = (p: { size: number; weight?: 'bold' | 'semibold' }) => {
     'use no memo';
+    const style = [
+      font({ size: p.size, weight: p.weight ?? 'bold' }),
+      foregroundStyle(liveColor),
+      lineLimit(1),
+      minimumScaleFactor(0.6),
+    ];
     if (arrived) {
-      return (
-        <Text
-          modifiers={[
-            font({ size: p.size, weight: 'bold' }),
-            foregroundStyle(liveColor),
-            lineLimit(1),
-            minimumScaleFactor(0.6),
-          ]}>
-          Arrived
-        </Text>
-      );
+      return <Text modifiers={style}>Arrived</Text>;
     }
-    return (
-      <Text
-        timerInterval={trip}
-        countsDown
-        modifiers={[
-          font({ size: p.size, weight: 'bold' }),
-          monospacedDigit(),
-          foregroundStyle(liveColor),
-          lineLimit(1),
-          minimumScaleFactor(0.6),
-        ]}
-      />
-    );
+    return <Text timerInterval={trip} countsDown modifiers={[...style, monospacedDigit()]} />;
   };
 
-  /** A glyph centred in a filled circle — the truck badge and the action buttons. */
-  const CircleIcon = (p: { systemName: SFSymbol; diameter: number; glyphSize: number }) => {
+  /** A glyph centred in a filled circle — the truck badge and the two action buttons. */
+  const CircleIcon = (p: {
+    systemName: SFSymbol;
+    diameter: number;
+    glyphSize: number;
+    fill: string;
+  }) => {
     'use no memo';
     return (
       <Image
@@ -151,33 +158,33 @@ const DeliveryTrackingActivity = (
         color={color.primary}
         modifiers={[
           frame({ width: p.diameter, height: p.diameter }),
-          background(color.chip, shapes.circle()),
+          background(p.fill, shapes.circle()),
         ]}
       />
     );
   };
 
-  const TruckBadge = (p: { diameter: number; glyphSize: number }) => {
+  const Line = (p: { size: number; bold?: boolean; tint: string; text: string }) => {
     'use no memo';
     return (
-      <Image
-        systemName="box.truck.fill"
-        size={p.glyphSize}
-        color={color.primary}
+      <Text
         modifiers={[
-          symbolEffect({ effect: 'pulse' }, { options: { repeat: 'continuous', speed: 0.7 } }),
-          frame({ width: p.diameter, height: p.diameter }),
-          background(color.chip, shapes.circle()),
-        ]}
-      />
+          font(p.bold ? { size: p.size, weight: 'bold' } : { size: p.size }),
+          foregroundStyle(p.tint),
+          lineLimit(1),
+          minimumScaleFactor(0.6),
+        ]}>
+        {p.text}
+      </Text>
     );
   };
 
   /**
-   * `pin` stops "RJ 4567" rendering as "RJ…" beside a Spacer, which hands these stacks a
-   * width well below their ideal. It is only safe where the row is wide: pinning inside
-   * the Dynamic Island pushed "Arrived" straight through the island's edge, because a
-   * pinned stack overflows instead of shrinking. Narrow regions scale down instead.
+   * `pin` stops `RJ 4567` rendering as `RJ…` beside a Spacer, which otherwise hands these
+   * stacks a width well below their ideal. It is only safe where the row is wide: a pinned
+   * stack refuses to shrink, so inside the Dynamic Island it overflows and the presentation
+   * clips it — that is what cut the last letter off `Arrived`. Narrow regions take a width
+   * cap instead, which is what gives `minimumScaleFactor` something to scale against.
    */
   const StackedPair = (p: {
     top: React.ReactNode;
@@ -204,185 +211,76 @@ const DeliveryTrackingActivity = (
     );
   };
 
-  const VehicleIdentity = (p: { compact?: boolean }) => {
+  /** Truck badge, then plate over model. The comp uses the outline truck here. */
+  const VehicleIdentity = (p: { s: Sizes; pin?: boolean; cap?: number }) => {
     'use no memo';
     return (
-      <HStack spacing={p.compact ? 9 : 11} alignment="center">
-        <TruckBadge diameter={p.compact ? 28 : 34} glyphSize={p.compact ? 13 : 16} />
+      <HStack spacing={p.s.gutter} alignment="center">
+        <CircleIcon
+          systemName="box.truck"
+          diameter={p.s.badge}
+          glyphSize={p.s.badgeGlyph}
+          fill={color.badgeCircle}
+        />
         <StackedPair
           align="leading"
-          pin={!p.compact}
-          cap={p.compact ? 124 : undefined}
-          top={
-            <Text
-              modifiers={[
-                font({ size: p.compact ? 14 : 17, weight: 'bold' }),
-                foregroundStyle(color.primary),
-                lineLimit(1),
-                minimumScaleFactor(0.7),
-              ]}>
-              {props.vehiclePlate}
-            </Text>
-          }
-          bottom={
-            <Text
-              modifiers={[
-                font({ size: p.compact ? 10 : 12 }),
-                foregroundStyle(color.secondary),
-                lineLimit(1),
-                minimumScaleFactor(0.7),
-              ]}>
-              {props.vehicleModel}
-            </Text>
-          }
+          pin={p.pin}
+          cap={p.cap}
+          top={<Line size={p.s.plate} bold tint={color.primary} text={props.vehiclePlate} />}
+          bottom={<Line size={p.s.model} tint={color.secondary} text={props.vehicleModel} />}
         />
       </HStack>
     );
   };
 
-  const EtaReadout = (p: { compact?: boolean }) => {
+  /** ETA over remaining distance, right-aligned. */
+  const EtaReadout = (p: { s: Sizes; pin?: boolean; cap?: number }) => {
     'use no memo';
     return (
       <StackedPair
         align="trailing"
-        pin={!p.compact}
-        cap={p.compact ? 68 : undefined}
-        top={<Countdown size={p.compact ? 14 : 17} />}
-        bottom={
-          <Text
-            modifiers={[
-              font({ size: p.compact ? 10 : 12 }),
-              foregroundStyle(color.secondary),
-              lineLimit(1),
-              minimumScaleFactor(0.7),
-            ]}>
-            {distance}
-          </Text>
-        }
+        pin={p.pin}
+        cap={p.cap}
+        top={<Countdown size={p.s.plate} />}
+        bottom={<Line size={p.s.model} tint={color.secondary} text={distance} />}
       />
     );
   };
 
   /**
-   * The route rail, with the truck riding it. Splitting the line into a travelled
-   * segment, the truck, and a remaining segment puts the truck exactly at `travel`
-   * without an offset, and keeps the rail's overall height constant as it moves.
+   * The route. The comp puts the origin dot level with the *address*, not the `From` label,
+   * and runs a thin rule from it down beside `To`. There is no second dot and no vehicle on
+   * the rail — a truck there read as an amber smear against the dot and rule.
    */
-  /**
-   * The route rail. The comp draws a dot and a rule, so that is what this is: the rule
-   * is amber for the distance already covered and grey for what is left, and the
-   * drop-off dot fills in on arrival. The truck does not ride this one — a yellow glyph
-   * on a yellow rule between two yellow dots collapsed into a single amber smear. It
-   * rides the collapsed pill instead, where there is nothing else to confuse it with.
-   */
-  const Rail = (p: { length: number; dot: number }) => {
+  const Route = (p: { s: Sizes }) => {
     'use no memo';
+    const labelLine = p.s.label * 1.2;
+    const addressLine = p.s.address * 1.2;
     return (
-      <VStack spacing={0} alignment="center" modifiers={[padding({ top: 4 })]}>
-        <Circle
-          modifiers={[frame({ width: p.dot, height: p.dot }), foregroundStyle(color.accent)]}
-        />
-        <Rectangle
-          modifiers={[
-            frame({ width: 2, height: p.length * travel }),
-            foregroundStyle(color.accent),
-          ]}
-        />
-        <Rectangle
-          modifiers={[
-            frame({ width: 2, height: p.length * (1 - travel) }),
-            foregroundStyle(color.routeLine),
-          ]}
-        />
-        <Circle
-          modifiers={[
-            frame({ width: p.dot, height: p.dot }),
-            foregroundStyle(travel >= 1 ? color.accent : color.routeLine),
-          ]}
-        />
-      </VStack>
-    );
-  };
-
-  /**
-   * The collapsed pill. Its leading and trailing regions sit either side of the camera
-   * and cannot be spanned, so the truck travels inside the leading region alone: a short
-   * track it rides end to end over the trip, arriving as the trailing side flips to
-   * Arrived. The track is a fixed width because the region's own width is not knowable
-   * from here, and it is kept under the space the pill grows to.
-   */
-  const CompactRail = () => {
-    'use no memo';
-    const track = 24;
-    return (
-      <HStack spacing={0} alignment="center">
-        <Rectangle
-          modifiers={[
-            frame({ width: track * travel, height: 2 }),
-            foregroundStyle(color.accent),
-          ]}
-        />
-        <Image
-          systemName="box.truck.fill"
-          size={13}
-          color={arrived ? color.accent : color.primary}
-          modifiers={[
-            symbolEffect({ effect: 'pulse' }, { options: { repeat: 'continuous', speed: 0.7 } }),
-          ]}
-        />
-        <Rectangle
-          modifiers={[
-            frame({ width: track * (1 - travel), height: 2 }),
-            foregroundStyle(color.routeLine),
-          ]}
-        />
-      </HStack>
-    );
-  };
-
-  const RouteLeg = (p: { label: string; address: string; labelSize: number; size: number }) => {
-    'use no memo';
-    return (
-      <VStack alignment="leading" spacing={0}>
-        <Text
-          modifiers={[
-            font({ size: p.labelSize }),
-            foregroundStyle(color.routeLabel),
-            lineLimit(1),
-          ]}>
-          {p.label}
-        </Text>
-        <Text
-          modifiers={[
-            font({ size: p.size }),
-            foregroundStyle(color.routeAddress),
-            lineLimit(1),
-            minimumScaleFactor(0.6),
-          ]}>
-          {p.address}
-        </Text>
-      </VStack>
-    );
-  };
-
-  const Route = (p: { compact?: boolean }) => {
-    'use no memo';
-    return (
-      <HStack spacing={p.compact ? 10 : 12} alignment="top">
-        <Rail length={p.compact ? 22 : 30} dot={p.compact ? 8 : 9} />
-        <VStack alignment="leading" spacing={p.compact ? 0 : 3}>
-          <RouteLeg
-            label="From"
-            address={props.fromAddress}
-            labelSize={p.compact ? 9 : 10}
-            size={p.compact ? 11 : 13}
+      <HStack spacing={p.s.gutter + 3} alignment="top">
+        <VStack spacing={0} alignment="center" modifiers={[padding({ top: labelLine })]}>
+          <Circle
+            modifiers={[
+              frame({ width: p.s.dot, height: p.s.dot }),
+              foregroundStyle(color.accent),
+            ]}
           />
-          <RouteLeg
-            label="To"
-            address={props.toAddress}
-            labelSize={p.compact ? 9 : 10}
-            size={p.compact ? 11 : 13}
+          <Rectangle
+            modifiers={[
+              frame({ width: p.s.railW, height: addressLine + p.s.legGap + labelLine }),
+              foregroundStyle(color.rail),
+            ]}
           />
+        </VStack>
+        <VStack alignment="leading" spacing={p.s.legGap}>
+          <VStack alignment="leading" spacing={0}>
+            <Line size={p.s.label} tint={color.label} text="From" />
+            <Line size={p.s.address} tint={color.address} text={props.fromAddress} />
+          </VStack>
+          <VStack alignment="leading" spacing={0}>
+            <Line size={p.s.label} tint={color.label} text="To" />
+            <Line size={p.s.address} tint={color.address} text={props.toAddress} />
+          </VStack>
         </VStack>
         <Spacer />
       </HStack>
@@ -400,140 +298,166 @@ const DeliveryTrackingActivity = (
       );
     }
     return (
-      <CircleIcon systemName="person.fill" diameter={p.diameter} glyphSize={p.diameter * 0.45} />
-    );
-  };
-
-  const DriverIdentity = (p: { compact?: boolean }) => {
-    'use no memo';
-    return (
-      <StackedPair
-        align="trailing"
-        pin={!p.compact}
-        top={
-          <Text
-            modifiers={[
-              font({ size: p.compact ? 12 : 13, weight: 'bold' }),
-              foregroundStyle(color.primary),
-              lineLimit(1),
-              minimumScaleFactor(0.7),
-            ]}>
-            {props.driverName}
-          </Text>
-        }
-        bottom={
-          <Text
-            modifiers={[
-              font({ size: p.compact ? 9 : 10 }),
-              foregroundStyle(color.secondary),
-              lineLimit(1),
-              minimumScaleFactor(0.7),
-            ]}>
-            {`ID - ${props.driverId}`}
-          </Text>
-        }
+      <CircleIcon
+        systemName="person.fill"
+        diameter={p.diameter}
+        glyphSize={p.diameter * 0.45}
+        fill={color.actionCircle}
       />
     );
   };
 
-  const DriverBar = (p: { compact?: boolean }) => {
+  /** Call and message on the left, driver identity and photo on the right. Outline glyphs. */
+  const DriverBar = (p: { s: Sizes; pin?: boolean; cap?: number }) => {
     'use no memo';
-    const d = p.compact ? 23 : 28;
     return (
-      <HStack spacing={p.compact ? 8 : 10} alignment="center">
-        <CircleIcon systemName="phone.fill" diameter={d} glyphSize={p.compact ? 10 : 12} />
+      <HStack spacing={p.s.gutter} alignment="center">
         <CircleIcon
-          systemName="ellipsis.bubble.fill"
-          diameter={d}
-          glyphSize={p.compact ? 10 : 12}
+          systemName="phone.connection"
+          diameter={p.s.action}
+          glyphSize={p.s.actionGlyph}
+          fill={color.actionCircle}
+        />
+        <CircleIcon
+          systemName="ellipsis.bubble"
+          diameter={p.s.action}
+          glyphSize={p.s.actionGlyph}
+          fill={color.actionCircle}
         />
         <Spacer />
-        <DriverIdentity compact={p.compact} />
-        <Avatar diameter={d} />
+        <StackedPair
+          align="trailing"
+          pin={p.pin}
+          cap={p.cap}
+          top={
+            <Line size={p.s.driverName} bold tint={color.driverName} text={props.driverName} />
+          }
+          bottom={
+            <Line size={p.s.driverId} tint={color.driverId} text={`ID - ${props.driverId}`} />
+          }
+        />
+        <Avatar diameter={p.s.avatar} />
       </HStack>
     );
   };
 
+  /**
+   * The collapsed pill, straight from ref-02: a grey capsule in the leading region with the
+   * truck at its right-hand end, then the ETA, then a grey circle holding a clock.
+   *
+   * Reading that capsule as a track explains the comp — a truck parked at the right end is
+   * the arrived state — so the truck rides it, sitting further left earlier in the trip.
+   * The two regions flank the camera and cannot be spanned, so this is the only place in
+   * the collapsed presentation where travel can be shown.
+   */
+  const CompactRail = () => {
+    'use no memo';
+    const capW = 60;
+    // The truck is positioned by an offset measured from the capsule's centre, not from
+    // its leading edge. A ZStack centres its child regardless of the alignment asked for
+    // here, so a leading-relative offset landed the glyph 19pt further right than
+    // intended and the capsule clipped it down to a sliver at travel 1. Measuring from
+    // the centre cancels the glyph's own width out of the sum, which also means a wrong
+    // estimate of it only shortens the run rather than pushing the truck off the end.
+    const run = 26;
+    return (
+      <ZStack
+        modifiers={[
+          frame({ width: capW, height: 26 }),
+          background(color.badgeCircle, shapes.capsule()),
+          clipShape('capsule'),
+        ]}>
+        <Image
+          systemName="box.truck.fill"
+          size={14}
+          color={color.primary}
+          modifiers={[offset({ x: (travel - 0.5) * run })]}
+        />
+      </ZStack>
+    );
+  };
+
   return {
-    // Lock Screen and Notification Centre: the full card, inside the 160pt cap.
+    // Lock Screen and Notification Centre. The widest presentation, so it carries the
+    // comp's proportions most closely.
     banner: (
       <VStack
         alignment="leading"
-        spacing={7}
+        spacing={CARD.rowGap}
         modifiers={[
-          padding({ horizontal: 16, vertical: 6 }),
+          padding({ horizontal: 14, vertical: CARD.pad }),
           activityBackgroundTint(color.surface),
         ]}>
         <HStack alignment="center">
-          <VehicleIdentity />
+          <VehicleIdentity s={CARD} pin />
           <Spacer />
-          <EtaReadout />
+          <EtaReadout s={CARD} pin />
         </HStack>
-        <Route />
-        <DriverBar />
+        <Route s={CARD} />
+        <DriverBar s={CARD} pin />
       </VStack>
     ),
 
-    // CarPlay and watchOS get the headline only — there is no room for the route.
+    // CarPlay and watchOS: the headline only, there is no room for the route.
     bannerSmall: (
       <HStack spacing={10} alignment="center" modifiers={[padding({ all: 10 })]}>
-        <TruckBadge diameter={30} glyphSize={14} />
+        <CircleIcon
+          systemName="box.truck"
+          diameter={32}
+          glyphSize={15}
+          fill={color.badgeCircle}
+        />
         <StackedPair
           align="leading"
-          top={
-            <Text
-              modifiers={[
-                font({ size: 14, weight: 'bold' }),
-                foregroundStyle(color.primary),
-                lineLimit(1),
-                minimumScaleFactor(0.7),
-              ]}>
-              {props.vehiclePlate}
-            </Text>
-          }
-          bottom={
-            <Text
-              modifiers={[
-                font({ size: 11 }),
-                foregroundStyle(color.secondary),
-                lineLimit(1),
-                minimumScaleFactor(0.7),
-              ]}>
-              {props.toAddress}
-            </Text>
-          }
+          cap={150}
+          top={<Line size={14} bold tint={color.primary} text={props.vehiclePlate} />}
+          bottom={<Line size={11} tint={color.secondary} text={props.toAddress} />}
         />
         <Spacer />
         <Countdown size={14} />
       </HStack>
     ),
 
-    // Dynamic Island, expanded. The camera band takes most of this presentation's height,
-    // so the route and the driver share a single band rather than stacking.
-    expandedLeading: <VehicleIdentity compact />,
-    expandedTrailing: <EtaReadout compact />,
+    // Dynamic Island, expanded — the presentation ref-03 was drawn for. The camera band
+    // takes roughly 90 of its ~160pt, so the bottom region gets about 60 and everything
+    // below the top row is compressed harder than in the card.
+    expandedLeading: (
+      <HStack modifiers={[padding({ leading: 4 })]}>
+        <VehicleIdentity s={ISLAND} cap={150} />
+        <Spacer />
+      </HStack>
+    ),
+    // The island's rounded corner clips whatever hugs the edge, and the trailing content
+    // was landing 5pt from it — which is what kept cutting the last letter off `Arrived`.
+    expandedTrailing: (
+      <HStack modifiers={[padding({ trailing: 12 })]}>
+        <Spacer />
+        <EtaReadout s={ISLAND} cap={90} />
+      </HStack>
+    ),
     expandedBottom: (
-      <VStack alignment="leading" spacing={4} modifiers={[padding({ top: 4 })]}>
-        <Route compact />
-        <DriverBar compact />
+      <VStack alignment="leading" spacing={ISLAND.rowGap} modifiers={[padding({ top: ISLAND.pad })]}>
+        <Route s={ISLAND} />
+        <DriverBar s={ISLAND} cap={104} />
       </VStack>
     ),
 
-    // Dynamic Island, collapsed. The pill is a few points wide, so the ticking countdown
-    // is the whole trailing side.
+    // Dynamic Island, collapsed — ref-01 and ref-02.
     compactLeading: <CompactRail />,
-    compactTrailing: <Countdown size={14} />,
-
-    minimal: (
-      <Image
-        systemName="box.truck.fill"
-        size={14}
-        color={color.primary}
-        modifiers={[
-          symbolEffect({ effect: 'pulse' }, { options: { repeat: 'continuous', speed: 0.7 } }),
-        ]}
-      />
+    compactTrailing: (
+      <HStack spacing={6} alignment="center">
+        <Countdown size={13} weight="semibold" />
+        <Image
+          systemName="clock"
+          size={9}
+          color={color.primary}
+          modifiers={[frame({ width: 18, height: 18 }), background(color.actionCircle, shapes.circle())]}
+        />
+      </HStack>
     ),
+
+    // Shown when another activity shares the island.
+    minimal: <Image systemName="box.truck.fill" size={14} color={color.primary} />,
   };
 };
 
