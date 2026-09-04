@@ -22,6 +22,22 @@ The card is **295pt tall at 361pt wide**. Every Live Activity presentation caps 
 About 132pt of those 295 are whitespace, so the compression comes out of the gaps first
 and the type second. Colours, glyph weights, alignment and hierarchy are reproduced exactly.
 
+## Measured budgets (from `device-06-expanded.png`, not assumed)
+
+The expanded island renders **371 x 132pt** with the sizes that shipped in `b0fab75`.
+Working backwards from its known content, the camera band and system padding take about
+**30pt** before anything of ours is drawn — not the ~47pt earlier passes guessed. That
+left 28pt unused, which is why the island read as cramped.
+
+Its rounded corner also clips whatever hugs the edge: `Arrived` was landing **5.2pt** from
+the right edge and losing its last letter. The trailing region needs an explicit inset;
+the comp keeps its ETA 22pt clear of the card edge.
+
+| Presentation | Budget | Now |
+| --- | --- | --- |
+| Lock Screen card | ~160pt | 151pt |
+| Expanded island | ~160pt | 149pt |
+
 ## Colours (sampled, p90 == max, so these are the true values)
 
 | Token | Value | Used by |

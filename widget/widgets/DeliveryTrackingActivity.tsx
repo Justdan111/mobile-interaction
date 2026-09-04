@@ -1,4 +1,4 @@
-import { Circle, HStack, Image, Rectangle, Spacer, Text, VStack } from '@expo/ui/swift-ui';
+import { Circle, HStack, Image, Rectangle, Spacer, Text, VStack, ZStack } from '@expo/ui/swift-ui';
 import {
   activityBackgroundTint,
   background,
@@ -11,7 +11,7 @@ import {
   lineLimit,
   minimumScaleFactor,
   monospacedDigit,
-  opacity,
+  offset,
   padding,
   shapes,
 } from '@expo/ui/swift-ui/modifiers';
@@ -121,10 +121,10 @@ const DeliveryTrackingActivity = (
     gutter: 11, rowGap: 8, pad: 6,
   };
   const ISLAND = {
-    badge: 28, badgeGlyph: 13, plate: 9, model: 7.5,
-    label: 7.5, address: 10.5, legGap: 3, dot: 7, railW: 1.5,
-    action: 20, actionGlyph: 9, driverName: 9, driverId: 6.5, avatar: 20,
-    gutter: 8, rowGap: 4, pad: 4,
+    badge: 32, badgeGlyph: 15, plate: 11.5, model: 9,
+    label: 8.5, address: 12, legGap: 5, dot: 8, railW: 2,
+    action: 24, actionGlyph: 11, driverName: 11, driverId: 8, avatar: 24,
+    gutter: 9, rowGap: 5, pad: 4,
   };
   type Sizes = typeof CARD;
 
@@ -352,24 +352,29 @@ const DeliveryTrackingActivity = (
    */
   const CompactRail = () => {
     'use no memo';
-    const capW = 54;
-    const pad = 4;
-    const glyph = 16;
-    const run = capW - pad * 2 - glyph;
+    const capW = 60;
+    const pad = 5;
+    // The glyph's rendered width is not knowable from here, so the run is computed against
+    // a generous estimate and the capsule clips anything that overshoots. Positioning by
+    // offset rather than by flanking spacers is what makes the truck actually reach the
+    // end: spacer widths were being squeezed to fit the capsule, parking it mid-track.
+    const glyphW = 21;
+    const run = Math.max(0, capW - pad * 2 - glyphW);
     return (
-      <HStack
-        spacing={0}
-        alignment="center"
+      <ZStack
+        alignment="leading"
         modifiers={[
           frame({ width: capW, height: 26 }),
           background(color.badgeCircle, shapes.capsule()),
+          clipShape('capsule'),
         ]}>
-        <Rectangle modifiers={[frame({ width: pad + run * travel, height: 1 }), opacity(0)]} />
-        <Image systemName="box.truck.fill" size={13} color={color.primary} />
-        <Rectangle
-          modifiers={[frame({ width: pad + run * (1 - travel), height: 1 }), opacity(0)]}
+        <Image
+          systemName="box.truck.fill"
+          size={14}
+          color={color.primary}
+          modifiers={[offset({ x: pad + run * travel })]}
         />
-      </HStack>
+      </ZStack>
     );
   };
 
@@ -417,8 +422,20 @@ const DeliveryTrackingActivity = (
     // Dynamic Island, expanded — the presentation ref-03 was drawn for. The camera band
     // takes roughly 90 of its ~160pt, so the bottom region gets about 60 and everything
     // below the top row is compressed harder than in the card.
-    expandedLeading: <VehicleIdentity s={ISLAND} cap={132} />,
-    expandedTrailing: <EtaReadout s={ISLAND} cap={72} />,
+    expandedLeading: (
+      <HStack modifiers={[padding({ leading: 4 })]}>
+        <VehicleIdentity s={ISLAND} cap={150} />
+        <Spacer />
+      </HStack>
+    ),
+    // The island's rounded corner clips whatever hugs the edge, and the trailing content
+    // was landing 5pt from it — which is what kept cutting the last letter off `Arrived`.
+    expandedTrailing: (
+      <HStack modifiers={[padding({ trailing: 12 })]}>
+        <Spacer />
+        <EtaReadout s={ISLAND} cap={90} />
+      </HStack>
+    ),
     expandedBottom: (
       <VStack alignment="leading" spacing={ISLAND.rowGap} modifiers={[padding({ top: ISLAND.pad })]}>
         <Route s={ISLAND} />

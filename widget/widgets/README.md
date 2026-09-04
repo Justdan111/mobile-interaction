@@ -133,6 +133,16 @@ an explicit `frame({ maxWidth })` for the scale factor to have anything to scale
 Pick that cap conservatively: too small only renders the text slightly smaller, while too
 large clips it again.
 
+## Position by offset, not by flanking spacers
+
+Placing something at a fraction along a fixed-width container by putting spacers either
+side of it does not work: the spacers' widths depend on knowing the content's rendered
+width, and when the total overshoots the container SwiftUI squeezes them both, parking the
+content in the middle. That is what stopped the pill's truck reaching the end of its run.
+
+Use a `ZStack` aligned to the leading edge and `offset({ x })` on the child instead, with
+`clipShape` on the container so a bad width estimate is trimmed rather than escaping.
+
 ## Moving something in the collapsed pill
 
 `compactLeading` and `compactTrailing` are two separate regions with the camera between
@@ -156,7 +166,13 @@ puts the route and the driver side by side there, and keeps the stacked version 
 Lock Screen.
 
 Measure it from a screenshot rather than guessing: take the island's pixel height,
-divide by its pixel width, and multiply by 371 (its width in points).
+divide by its pixel width, and multiply by 371 (its width in points). Measured that way,
+the chrome is about **30pt**, not the ~47 first assumed — worth re-deriving after any
+change rather than carrying the old number forward.
+
+Its rounded corner clips content that hugs the edge, so give the leading and trailing
+regions an explicit inset. A width cap alone does not help: the frame is happily placed
+past the corner and the glyphs are cut there.
 
 ## The second rule: nested components need `'use no memo'`
 
