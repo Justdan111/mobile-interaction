@@ -140,8 +140,15 @@ side of it does not work: the spacers' widths depend on knowing the content's re
 width, and when the total overshoots the container SwiftUI squeezes them both, parking the
 content in the middle. That is what stopped the pill's truck reaching the end of its run.
 
-Use a `ZStack` aligned to the leading edge and `offset({ x })` on the child instead, with
-`clipShape` on the container so a bad width estimate is trimmed rather than escaping.
+Use a `ZStack` and `offset({ x })` on the child instead, with `clipShape` on the container
+so a bad width estimate is trimmed rather than escaping.
+
+**Measure that offset from the centre, not the leading edge.** A `ZStack` here centres its
+child whatever `alignment` is asked for, so a leading-relative offset lands the child
+`(containerWidth - childWidth) / 2` further along than intended — which clipped the pill's
+truck to a sliver at the end of its run. `(t - 0.5) * run` cancels the child's own width
+out of the sum, so a wrong estimate of it only shortens the travel instead of pushing the
+child off the end.
 
 ## Moving something in the collapsed pill
 

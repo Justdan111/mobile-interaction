@@ -353,16 +353,15 @@ const DeliveryTrackingActivity = (
   const CompactRail = () => {
     'use no memo';
     const capW = 60;
-    const pad = 5;
-    // The glyph's rendered width is not knowable from here, so the run is computed against
-    // a generous estimate and the capsule clips anything that overshoots. Positioning by
-    // offset rather than by flanking spacers is what makes the truck actually reach the
-    // end: spacer widths were being squeezed to fit the capsule, parking it mid-track.
-    const glyphW = 21;
-    const run = Math.max(0, capW - pad * 2 - glyphW);
+    // The truck is positioned by an offset measured from the capsule's centre, not from
+    // its leading edge. A ZStack centres its child regardless of the alignment asked for
+    // here, so a leading-relative offset landed the glyph 19pt further right than
+    // intended and the capsule clipped it down to a sliver at travel 1. Measuring from
+    // the centre cancels the glyph's own width out of the sum, which also means a wrong
+    // estimate of it only shortens the run rather than pushing the truck off the end.
+    const run = 26;
     return (
       <ZStack
-        alignment="leading"
         modifiers={[
           frame({ width: capW, height: 26 }),
           background(color.badgeCircle, shapes.capsule()),
@@ -372,7 +371,7 @@ const DeliveryTrackingActivity = (
           systemName="box.truck.fill"
           size={14}
           color={color.primary}
-          modifiers={[offset({ x: pad + run * travel })]}
+          modifiers={[offset({ x: (travel - 0.5) * run })]}
         />
       </ZStack>
     );
