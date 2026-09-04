@@ -3,9 +3,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import DeliveryTrackingActivity, {
+import {
+  DeliveryTrackingActivity,
+  widgetsUnavailable,
   type DeliveryTrackingProps,
-} from '../../widgets/DeliveryTrackingActivity';
+} from '../../widgets';
 
 /** The whole trip runs in ten seconds, so a run can be watched start to finish. */
 const TRIP_MS = 10_000;
@@ -69,7 +71,7 @@ export default function ControlScreen() {
   // Reattach to an activity still running from a previous launch. The handle comes back
   // but its content does not, so a resumed trip can be ended, not resumed.
   useEffect(() => {
-    if (Platform.OS !== 'ios') return;
+    if (Platform.OS !== 'ios' || !DeliveryTrackingActivity) return;
     const [existing] = DeliveryTrackingActivity.getInstances();
     if (existing) setActivity(existing);
   }, []);
@@ -105,6 +107,7 @@ export default function ControlScreen() {
   }, [trip, auto]);
 
   const start = useCallback(() => {
+    if (!DeliveryTrackingActivity) return;
     const startedAt = Date.now();
     const next: Trip = { startedAt, etaAt: startedAt + TRIP_MS };
     try {
@@ -142,7 +145,18 @@ export default function ControlScreen() {
           <Text style={styles.kicker}>LIVE ACTIVITY</Text>
           <Text style={styles.title}>Delivery Tracking</Text>
 
-          {resumed ? (
+          {widgetsUnavailable ? (
+            <View style={styles.notice}>
+              <Text style={styles.noticeTitle}>Needs the development build</Text>
+              <Text style={styles.noticeText}>
+                The `expo-widgets` native module isn&apos;t in this client, so Live
+                Activities can&apos;t run. Expo Go never has it — open{' '}
+                <Text style={styles.noticeStrong}>Widget Lab</Text> on the simulator
+                instead, and start Metro with `npm start`.
+              </Text>
+              <Text style={styles.noticeDetail}>{widgetsUnavailable}</Text>
+            </View>
+          ) : resumed ? (
             <View style={styles.notice}>
               <Text style={styles.noticeText}>
                 Reattached to an activity from a previous launch. Its trip times can&apos;t be
@@ -158,7 +172,12 @@ export default function ControlScreen() {
           )}
 
           <View style={styles.buttons}>
-            <Button label="Start trip" onPress={start} disabled={running} primary />
+            <Button
+              label="Start trip"
+              onPress={start}
+              disabled={running || !DeliveryTrackingActivity}
+              primary
+            />
             <Button
               label={`Auto-advance · ${auto ? 'On' : 'Off'}`}
               onPress={() => setAuto((v) => !v)}
@@ -170,7 +189,7 @@ export default function ControlScreen() {
 
           <Text style={styles.footnote}>
             {running
-              ? 'The trip runs for ten seconds. The ETA counts itself down even with the app killed; the dot along the route is pushed from here, so keep the app open to watch it travel.'
+              ? 'The trip runs for ten seconds. The ETA counts itself down even with the app killed; the truck and the route rail are pushed from here, so keep the app open to watch them travel.'
               : 'Start the trip, then swipe up to the Home Screen. Long-press the Dynamic Island for the expanded layout.'}
           </Text>
         </ScrollView>
@@ -292,8 +311,11 @@ const styles = StyleSheet.create({
   cardBottom: { alignItems: 'flex-end' },
   driver: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
 
-  notice: { backgroundColor: '#1F1F22', borderRadius: 18, padding: 16 },
+  notice: { backgroundColor: '#1F1F22', borderRadius: 18, padding: 16, gap: 8 },
+  noticeTitle: { color: '#FFD60A', fontSize: 16, fontWeight: '700' },
   noticeText: { color: '#9E9EA3', fontSize: 14, lineHeight: 20 },
+  noticeStrong: { color: '#FFFFFF', fontWeight: '700' },
+  noticeDetail: { color: '#6E6E73', fontSize: 12, fontFamily: 'Menlo' },
 
   buttons: { gap: 10 },
   button: {

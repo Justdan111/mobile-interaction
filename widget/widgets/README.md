@@ -76,6 +76,22 @@ Two traps with `timerInterval`:
 runs. Do not reach for `useNativeState` to drive one: hooks do not exist in the
 widget runtime.
 
+## Register behind a guard, or the wrong client takes the app down
+
+`expo-widgets` resolves its native module the moment it is imported, so importing it in
+a client that does not carry it throws while the root layout is still evaluating. Expo
+Router then finds an undefined route module and fails again reading `ErrorBoundary` off
+it — so the visible error points at router internals and the real cause is buried.
+
+`widgets/index.ts` therefore pulls each widget in through a guarded `require` and
+exports `widgetsUnavailable` alongside the factory. The app still boots, and the control
+screen says plainly that this needs a development build. Follow the same shape when
+adding a widget, and null-check the factory before calling it.
+
+Expo Go will never have this module. Nor will any build made before `expo-widgets` was
+added. If `Cannot find native module 'ExpoWidgets'` appears, check which client is
+running before suspecting the config.
+
 ## Size budgets: overflow clips, it does not scale
 
 Every presentation has a hard height, and SwiftUI does not shrink a layout to fit one.
