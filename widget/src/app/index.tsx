@@ -5,8 +5,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
   DeliveryTrackingActivity,
+  FoodDeliveryActivity,
   widgetsUnavailable,
   type DeliveryTrackingProps,
+  type FoodDeliveryProps,
 } from '../../widgets';
 
 /** The whole trip runs in ten seconds, so a run can be watched start to finish. */
@@ -29,6 +31,25 @@ const DELIVERY = {
 };
 
 type Trip = { startedAt: number; etaAt: number };
+
+const FOODY = {
+  brand: 'Foody',
+  orderItem: 'Pizza Napolitana',
+  amount: '25$',
+  paymentMethod: 'Cash',
+  courierName: 'George K.',
+};
+/** Minutes the Foody order starts at, counted down across the same ten-second trip. */
+const FOODY_START_MINUTES = 8;
+
+function foodyContentFor(trip: Trip, at: number): FoodDeliveryProps {
+  const progress = progressFor(trip, at);
+  return {
+    ...FOODY,
+    progress,
+    etaMinutes: Math.ceil(FOODY_START_MINUTES * (1 - elapsedFor(trip, at))),
+  };
+}
 
 /**
  * Matches the widget: the run completes at 90% of the trip so the truck is parked at the
@@ -74,7 +95,16 @@ export default function ControlScreen() {
     if (Platform.OS !== 'ios' || !DeliveryTrackingActivity) return;
     const [existing] = DeliveryTrackingActivity.getInstances();
     if (existing) setActivity(existing);
+    const [food] = FoodDeliveryActivity?.getInstances() ?? [];
+    if (food) setFoodActivity(food);
   }, []);
+
+  const [foodActivity, setFoodActivity] = useState<LiveActivity<FoodDeliveryProps> | null>(null);
+  const [foodTrip, setFoodTrip] = useState<Trip | null>(null);
+  const foodTripRef = useRef<Trip | null>(null);
+  const foodActivityRef = useRef<LiveActivity<FoodDeliveryProps> | null>(null);
+  foodTripRef.current = foodTrip;
+  foodActivityRef.current = foodActivity;
 
   const report = useCallback((error: unknown) => {
     Alert.alert('Live Activity', error instanceof Error ? error.message : String(error));
@@ -105,6 +135,45 @@ export default function ControlScreen() {
     const id = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(id);
   }, [trip, auto]);
+
+  // The Foody order runs on the same ten-second clock, pushing progress for the bar and
+  // the scooter riding it — neither of which the system can advance on its own.
+  useEffect(() => {
+    if (!foodActivity || !foodTrip) return;
+    const id = setInterval(() => {
+      const current = foodTripRef.current;
+      const live = foodActivityRef.current;
+      if (!current || !live) return;
+      const at = Date.now();
+      live.update(foodyContentFor(current, at)).catch(report);
+      if (at >= current.etaAt) clearInterval(id);
+    }, FRAME_MS);
+    return () => clearInterval(id);
+  }, [foodActivity, foodTrip, report]);
+
+  const startFoody = useCallback(() => {
+    if (!FoodDeliveryActivity) return;
+    const startedAt = Date.now();
+    const next: Trip = { startedAt, etaAt: startedAt + TRIP_MS };
+    try {
+      const began = FoodDeliveryActivity.start(foodyContentFor(next, startedAt));
+      setFoodTrip(next);
+      setFoodActivity(began);
+    } catch (error) {
+      report(error);
+    }
+  }, [report]);
+
+  const endFoody = useCallback(async () => {
+    if (!foodActivity) return;
+    try {
+      await foodActivity.end('immediate');
+    } catch (error) {
+      report(error);
+    }
+    setFoodActivity(null);
+    setFoodTrip(null);
+  }, [foodActivity, report]);
 
   const start = useCallback(() => {
     if (!DeliveryTrackingActivity) return;
@@ -187,6 +256,28 @@ export default function ControlScreen() {
             <Button label="End trip" onPress={end} disabled={!running} />
           </View>
 
+          <View style={styles.divider} />
+
+          <Text style={styles.kicker}>LIVE ACTIVITY</Text>
+          <Text style={styles.title}>Foody order</Text>
+          <FoodyPreview
+            progress={foodTrip ? progressFor(foodTrip, now) : 0}
+            minutes={
+              foodTrip
+                ? Math.ceil(FOODY_START_MINUTES * (1 - elapsedFor(foodTrip, now)))
+                : FOODY_START_MINUTES
+            }
+          />
+          <View style={styles.buttons}>
+            <Button
+              label="Start order"
+              onPress={startFoody}
+              disabled={foodActivity !== null || !FoodDeliveryActivity}
+              primary
+            />
+            <Button label="End order" onPress={endFoody} disabled={foodActivity === null} />
+          </View>
+
           <Text style={styles.footnote}>
             {running
               ? 'The trip runs for ten seconds. The ETA counts itself down even with the app killed; the truck and the route rail are pushed from here, so keep the app open to watch them travel.'
@@ -250,6 +341,41 @@ function Preview({
       <View style={styles.cardBottom}>
         <Text style={styles.driver}>{DELIVERY.driverName}</Text>
         <Text style={styles.muted}>ID - {DELIVERY.driverId}</Text>
+      </View>
+    </View>
+  );
+}
+
+/** An RN echo of the Foody card, so a run is visible without leaving the app. */
+function FoodyPreview({ progress, minutes }: { progress: number; minutes: number }) {
+  return (
+    <View style={styles.foodyCard}>
+      <View style={styles.cardTop}>
+        <View>
+          <Text style={styles.foodyBrand}>{FOODY.brand}</Text>
+          <Text style={styles.foodyItem}>{FOODY.orderItem}</Text>
+        </View>
+        <View style={styles.right}>
+          <Text style={styles.foodyBrand}>{FOODY.amount}</Text>
+          <Text style={styles.foodyPay}>{FOODY.paymentMethod}</Text>
+        </View>
+      </View>
+
+      <View style={styles.foodyBarRow}>
+        <Text style={[styles.scooter, { marginLeft: `${progress * 82}%` }]}>🛵</Text>
+      </View>
+      <View style={styles.foodyTrack}>
+        <View style={[styles.foodyFill, { flex: Math.max(progress, 0.0001) }]} />
+        <View style={{ flex: Math.max(1 - progress, 0.0001) }} />
+      </View>
+
+      <View style={styles.cardTop}>
+        <View>
+          <Text style={styles.foodyBrand}>{FOODY.courierName}</Text>
+          <Text style={styles.foodyItem}>
+            Will arrive in <Text style={styles.foodyEta}>{minutes} min</Text>
+          </Text>
+        </View>
       </View>
     </View>
   );
@@ -332,4 +458,15 @@ const styles = StyleSheet.create({
   buttonLabelPrimary: { color: '#000000' },
 
   footnote: { color: '#6E6E73', fontSize: 13, lineHeight: 19 },
+
+  divider: { height: 1, backgroundColor: '#17181B', marginVertical: 4 },
+  foodyCard: { backgroundColor: '#06161C', borderRadius: 26, padding: 16, gap: 10 },
+  foodyBrand: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
+  foodyItem: { color: '#B8C3CE', fontSize: 13 },
+  foodyPay: { color: '#C9D0DB', fontSize: 12, textAlign: 'right' },
+  foodyBarRow: { height: 26, justifyContent: 'flex-end' },
+  scooter: { fontSize: 20 },
+  foodyTrack: { flexDirection: 'row', height: 7, borderRadius: 4, overflow: 'hidden', backgroundColor: '#323235' },
+  foodyFill: { backgroundColor: '#77FBDA' },
+  foodyEta: { color: '#77FBDA', fontWeight: '700' },
 });

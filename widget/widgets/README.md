@@ -5,6 +5,9 @@ One file per widget or Live Activity, re-exported from `index.ts`.
 | File | Kind | Registered name | Config entry needed? |
 | --- | --- | --- | --- |
 | `DeliveryTrackingActivity.tsx` | Live Activity | `DeliveryTrackingActivity` | No |
+| `FoodDeliveryActivity.tsx` | Live Activity | `FoodDeliveryActivity` | No |
+
+Each is measured off its own comps: `docs/design-spec.md` and `docs/design-spec-foody.md`.
 
 ## Adding the next one
 
