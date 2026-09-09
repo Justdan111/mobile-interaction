@@ -7,14 +7,16 @@
  * `src/app/_layout.tsx`, so the layouts are in place before any screen tries to start
  * an activity.
  *
- * To add widget 2, drop a sibling file next to `DeliveryTrackingActivity.tsx` and
- * re-export it here, following the same guarded shape.
+ * To add another, drop a sibling file next to the existing ones and register it here in
+ * the same guarded shape.
  */
 import type { LiveActivityFactory } from 'expo-widgets';
 
 import type { DeliveryTrackingProps } from './DeliveryTrackingActivity';
+import type { FoodDeliveryProps } from './FoodDeliveryActivity';
 
 export type { DeliveryTrackingProps } from './DeliveryTrackingActivity';
+export type { FoodDeliveryProps } from './FoodDeliveryActivity';
 
 /**
  * `expo-widgets` resolves its native module the moment it is imported, so in a client
@@ -23,28 +25,33 @@ export type { DeliveryTrackingProps } from './DeliveryTrackingActivity';
  * fails again reading `ErrorBoundary` off it, which buries the real cause under a stack
  * pointing at router internals.
  *
- * Requiring it behind a guard keeps that failure legible: the app still boots, and the
- * control screen can say plainly that this needs a development build.
+ * Requiring each one behind a guard keeps that failure legible: the app still boots, and
+ * the control screen can say plainly that this needs a development build.
  */
-function load(): {
-  activity: LiveActivityFactory<DeliveryTrackingProps> | null;
+function load<T extends object>(require_: () => { default: LiveActivityFactory<T> }): {
+  activity: LiveActivityFactory<T> | null;
   unavailable: string | null;
 } {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return { activity: require('./DeliveryTrackingActivity').default, unavailable: null };
+    return { activity: require_().default, unavailable: null };
   } catch (error) {
     return { activity: null, unavailable: error instanceof Error ? error.message : String(error) };
   }
 }
 
-const loaded = load();
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const delivery = load<DeliveryTrackingProps>(() => require('./DeliveryTrackingActivity'));
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const food = load<FoodDeliveryProps>(() => require('./FoodDeliveryActivity'));
 
-/** The Live Activity factory, or `null` when the native module is not in this client. */
-export const DeliveryTrackingActivity = loaded.activity;
+/** Van-tracking Live Activity, or `null` when the native module is not in this client. */
+export const DeliveryTrackingActivity = delivery.activity;
+
+/** Foody order-tracking Live Activity, or `null` when the native module is missing. */
+export const FoodDeliveryActivity = food.activity;
 
 /**
  * Why the widgets could not be registered, or `null` when everything is in place.
  * Non-null means the app is running somewhere without the `expo-widgets` native module.
  */
-export const widgetsUnavailable = loaded.unavailable;
+export const widgetsUnavailable = delivery.unavailable ?? food.unavailable;
