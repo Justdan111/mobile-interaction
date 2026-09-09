@@ -11,9 +11,7 @@ import {
   lineLimit,
   minimumScaleFactor,
   opacity,
-  padding,
-  shapes,
-} from '@expo/ui/swift-ui/modifiers';
+  padding, shapes, } from '@expo/ui/swift-ui/modifiers';
 import { createLiveActivity, type LiveActivityEnvironment } from 'expo-widgets';
 import type { SFSymbol } from 'sf-symbols-typescript';
 
