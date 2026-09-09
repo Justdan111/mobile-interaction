@@ -8,10 +8,7 @@ import {
   foregroundStyle,
   frame,
   layoutPriority,
-  lineLimit,
-  minimumScaleFactor,
-  opacity,
-  padding, shapes, } from '@expo/ui/swift-ui/modifiers';
+  lineLimit, minimumScaleFactor, opacity, padding, shapes, } from '@expo/ui/swift-ui/modifiers';
 import { createLiveActivity, type LiveActivityEnvironment } from 'expo-widgets';
 import type { SFSymbol } from 'sf-symbols-typescript';
 
