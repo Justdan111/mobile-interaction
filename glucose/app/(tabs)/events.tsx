@@ -20,8 +20,6 @@ export default function Events() {
   const [editOpen, setEditOpen] = useState(false);
   const { days, fortnight, loggedReadings } = useAppState();
 
-  // The bars behind each figure are that band's last six days, so the card
-  // shows both where you are and how you got here.
   const recent = days.slice(-6);
   const cards = [
     {
