@@ -14,10 +14,6 @@ const TABS = [
   { name: 'events', href: '/events', label: 'Events', Icon: LayersIcon },
 ] as const;
 
-/**
- * The headless tabs from `expo-router/ui` rather than the stock bar: the app is
- * unlit black, and every ready-made tab bar brings its own background with it.
- */
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
