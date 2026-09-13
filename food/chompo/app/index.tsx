@@ -3,8 +3,7 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import WaveWordmark from "../components/WaveWordmark";
 
-// High-res clean macro (Pexels #15623451). burger_full.jpg has "CHOMPO"
-// baked in; burger_top.jpg is clean but low-res/soft.
+
 const burger = require("../assets/img/burger_hero.jpg");
 
 export default function Splash() {
