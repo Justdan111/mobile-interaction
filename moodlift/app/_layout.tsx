@@ -18,6 +18,7 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
+import { MoodProvider } from '../lib/mood-context';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -46,13 +47,15 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <StatusBar style="light" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: '#0E0E10' },
-          }}
-        />
+        <MoodProvider>
+          <StatusBar style="light" />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: '#0E0E10' },
+            }}
+          />
+        </MoodProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
