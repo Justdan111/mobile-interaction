@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Moodlift is a dark-only app — the comps have no light counterpart — so the
+   palette is declared once on :root with no theme swap. */
+@layer base {
+  :root {
+    --color-page: 14 14 16;
+    --color-card: 27 27 29;
+    --color-chip: 42 42 44;
+    --color-ink: 255 255 255;
+    --color-muted: 142 142 147;
+    --color-accent: 232 114 76;
+    --color-sage: 95 115 89;
+  }
+}
+
+/* expo-google-fonts registers each weight and each italic as its own family,
+   so `font-weight: 600` alone selects nothing on Android — the family has to
+   be named. Binding family and weight together here, rather than declaring
+   them as `fontFamily` keys in the Tailwind config, avoids emitting two
+   competing rules for the same class (one fontFamily, one fontWeight) where
+   the winner is undefined. */
+@layer components {
+  .font-display             { font-family: Fraunces_400Regular; }
+  .font-display-italic      { font-family: Fraunces_400Regular_Italic; }
+  .font-display-semi        { font-family: Fraunces_600SemiBold; }
+  .font-display-semi-italic { font-family: Fraunces_600SemiBold_Italic; }
+  .font-sans                { font-family: Inter_400Regular; font-weight: 400; }
+  .font-medium              { font-family: Inter_500Medium;   font-weight: 500; }
+  .font-semibold            { font-family: Inter_600SemiBold; font-weight: 600; }
+  .font-bold                { font-family: Inter_700Bold;     font-weight: 700; }
+}
