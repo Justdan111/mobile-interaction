@@ -14,14 +14,36 @@ export default function MoodScreen() {
   const insets = useSafeAreaInsets();
   const { moodId, setMood } = useMood();
 
-  // The picker holds its own draft so scrolling the wheel doesn't re-sort the
-  // rest of the app underneath; the choice only commits on the CTA.
-  const [draft, setDraft] = useState<MoodId>(moodId ?? 'balanced');
-  const mood = getMood(draft);
+  /**
+   * Two pieces of state, not one.
+   *
+   * `preview` is what you are looking at — it moves as you swipe and drives the
+   * card colour, the mascot and the blurb. `selected` is what you have chosen,
+   * and stays null until you tap the centred label. Only `selected` draws the
+   * ring and activates the CTA.
+   *
+   * Swiping clears the selection: otherwise the ring would sit on a mood you
+   * had already swiped away from, and would stop meaning "this is your choice".
+   */
+  const [preview, setPreview] = useState<MoodId>(moodId ?? 'balanced');
+  const [selected, setSelected] = useState<MoodId | null>(moodId);
+
+  const mood = getMood(preview);
+
+  const handlePreview = (id: MoodId) => {
+    setPreview(id);
+    setSelected(null);
+  };
+
+  const handleSelect = (id: MoodId) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSelected(id);
+  };
 
   const commit = () => {
+    if (!selected) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setMood(draft);
+    setMood(selected);
     router.back();
   };
 
@@ -41,15 +63,24 @@ export default function MoodScreen() {
       </View>
 
       <View className="flex-1 pb-3 pt-4">
-        <MoodCard mood={mood} name={USER_FIRST_NAME} onChange={setDraft} />
+        <MoodCard
+          preview={mood}
+          selected={selected}
+          name={USER_FIRST_NAME}
+          onPreviewChange={handlePreview}
+          onSelect={handleSelect}
+        />
       </View>
 
       <Pressable
         onPress={commit}
+        disabled={!selected}
         accessibilityRole="button"
         accessibilityLabel="Let's find workout"
+        accessibilityState={{ disabled: !selected }}
+        accessibilityHint={selected ? undefined : 'Choose a mood first by tapping its name'}
         className="mb-2 items-center justify-center rounded-full bg-accent py-[18px] active:opacity-90"
-        style={{ marginBottom: insets.bottom + 8 }}
+        style={{ marginBottom: insets.bottom + 8, opacity: selected ? 1 : 0.35 }}
       >
         <Text className="font-display text-lg text-ink">Let&apos;s find workout</Text>
       </Pressable>

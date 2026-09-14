@@ -1,91 +1,85 @@
-import React, { useEffect, useRef } from 'react';
-import { ScrollView, Text, View, Pressable, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native';
-import * as Haptics from 'expo-haptics';
+import React from 'react';
+import { Pressable, Text, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { MOODS, type MoodId } from '../../data/moods';
 import { HandDrawnEllipse } from './HandDrawnEllipse';
 
 /**
- * Every item is the same width so the wheel can snap on a single interval and
- * the centre of the track is always a whole number of items from the start.
- * Sizing each label to its own text would make the snap offsets uneven and the
- * selected index ambiguous mid-scroll.
+ * Every item is the same width so the track can be centred by index alone.
  */
 const ITEM_WIDTH = 150;
 const RING_WIDTH = 138;
 const RING_HEIGHT = 46;
 
 export type MoodWheelProps = {
-  value: MoodId;
-  onChange: (id: MoodId) => void;
-  /** Colour of the selected label and its ring. */
+  /** The mood currently under the centre — changes as you swipe. */
+  preview: MoodId;
+  /** The mood the user has committed to, or null while still browsing. */
+  selected: MoodId | null;
+  /** Tapping the centred label selects it. */
+  onSelect: (id: MoodId) => void;
+  /** Colour of the centred label and its ring. */
   ink: string;
   /** Colour of the labels either side. */
   mutedInk: string;
-  /** Total width available, needed to centre the first and last items. */
+  /** Total width available, needed to centre the track. */
   trackWidth: number;
   fontSize?: number;
 };
 
+/**
+ * The label track.
+ *
+ * Not a ScrollView any more: the card owns a pan gesture, and a ScrollView
+ * underneath it would compete for the same horizontal drag. This is a pure
+ * indicator that slides to centre `preview`.
+ *
+ * The ring draws only around `selected`. While you are swiping, nothing is
+ * ringed and the CTA stays inactive — the ring means "this is your choice",
+ * not "this is what you happen to be looking at".
+ */
 export function MoodWheel({
-  value,
-  onChange,
+  preview,
+  selected,
+  onSelect,
   ink,
   mutedInk,
   trackWidth,
   fontSize = 21,
 }: MoodWheelProps) {
-  const ref = useRef<ScrollView>(null);
-  const index = MOODS.findIndex((m) => m.id === value);
-  const sidePad = Math.max((trackWidth - ITEM_WIDTH) / 2, 0);
+  const index = MOODS.findIndex((m) => m.id === preview);
+  const offset = useSharedValue(index);
 
-  // Follow the value when it changes from outside the wheel — a mood restored
-  // from context, or a label tapped rather than scrolled to.
-  useEffect(() => {
-    ref.current?.scrollTo({ x: index * ITEM_WIDTH, animated: true });
-  }, [index]);
+  React.useEffect(() => {
+    offset.value = withSpring(index, { damping: 18, stiffness: 140 });
+  }, [index, offset]);
 
-  const handleSettle = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const next = Math.round(e.nativeEvent.contentOffset.x / ITEM_WIDTH);
-    const clamped = Math.min(Math.max(next, 0), MOODS.length - 1);
-    const mood = MOODS[clamped];
-    if (mood && mood.id !== value) {
-      Haptics.selectionAsync();
-      onChange(mood.id);
-    }
-  };
+  const trackStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: trackWidth / 2 - ITEM_WIDTH / 2 - offset.value * ITEM_WIDTH },
+    ],
+  }));
 
   return (
-    <View style={{ height: RING_HEIGHT + 14 }}>
-      <ScrollView
-        ref={ref}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        snapToInterval={ITEM_WIDTH}
-        decelerationRate="fast"
-        contentContainerStyle={{ paddingHorizontal: sidePad, alignItems: 'center' }}
-        onMomentumScrollEnd={handleSettle}
-        // A slow drag that never gains momentum fires no momentum event, and
-        // the wheel would silently keep the old selection.
-        onScrollEndDrag={handleSettle}
-      >
+    <View style={{ height: RING_HEIGHT + 14, overflow: 'hidden' }}>
+      <Animated.View style={[{ flexDirection: 'row' }, trackStyle]}>
         {MOODS.map((m) => {
-          const selected = m.id === value;
+          const isPreview = m.id === preview;
+          const isSelected = m.id === selected;
           return (
             <Pressable
               key={m.id}
-              onPress={() => {
-                if (!selected) {
-                  Haptics.selectionAsync();
-                  onChange(m.id);
-                }
-              }}
+              // Only the centred label is selectable: tapping a neighbour you
+              // can barely see would be an accident, not a choice.
+              disabled={!isPreview}
+              onPress={() => onSelect(m.id)}
               accessibilityRole="button"
               accessibilityLabel={m.label}
-              accessibilityState={{ selected }}
+              accessibilityState={{ selected: isSelected, disabled: !isPreview }}
               style={{ width: ITEM_WIDTH, height: RING_HEIGHT + 14 }}
               className="items-center justify-center"
             >
-              {selected && (
+              {isSelected && (
                 <View className="absolute items-center justify-center">
                   <HandDrawnEllipse
                     width={RING_WIDTH}
@@ -97,15 +91,15 @@ export function MoodWheel({
               )}
               <Text
                 numberOfLines={1}
-                className={selected ? 'font-display-italic' : 'font-display'}
-                style={{ fontSize, color: selected ? ink : mutedInk }}
+                className={isPreview ? 'font-display-italic' : 'font-display'}
+                style={{ fontSize, color: isPreview ? ink : mutedInk }}
               >
                 {m.label}
               </Text>
             </Pressable>
           );
         })}
-      </ScrollView>
+      </Animated.View>
     </View>
   );
 }

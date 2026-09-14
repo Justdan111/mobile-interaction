@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { Icon, type IconName } from '../ui/icons';
+import { Entrance } from '../ui/Entrance';
 import type { Category } from '../../data/workouts';
 
 const CATEGORIES: { id: Category; label: string; icon: IconName }[] = [
@@ -13,7 +14,14 @@ const CATEGORIES: { id: Category; label: string; icon: IconName }[] = [
 ];
 
 /** The horizontal category tiles from `.design/comps/home-no-mood.png`. */
-export function CategoryRail({ onSelect }: { onSelect: (id: Category) => void }) {
+export function CategoryRail({
+  onSelect,
+  index = 0,
+}: {
+  onSelect: (id: Category) => void;
+  /** Where this rail starts in Home's cascade; tiles continue from here. */
+  index?: number;
+}) {
   return (
     <ScrollView
       horizontal
@@ -21,9 +29,9 @@ export function CategoryRail({ onSelect }: { onSelect: (id: Category) => void })
       className="-mx-4"
       contentContainerStyle={{ paddingHorizontal: 16 }}
     >
-      {CATEGORIES.map((c) => (
+      {CATEGORIES.map((c, i) => (
+        <Entrance key={c.id} index={index + i}>
         <Pressable
-          key={c.id}
           onPress={() => onSelect(c.id)}
           accessibilityRole="button"
           accessibilityLabel={c.label}
@@ -32,6 +40,7 @@ export function CategoryRail({ onSelect }: { onSelect: (id: Category) => void })
           <Icon name={c.icon} color="#FFFFFF" size={26} strokeWidth={1.5} />
           <Text className="mt-3 font-body text-[13px] text-muted">{c.label}</Text>
         </Pressable>
+        </Entrance>
       ))}
     </ScrollView>
   );
