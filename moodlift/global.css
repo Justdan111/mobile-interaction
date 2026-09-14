@@ -12,6 +12,9 @@
     --color-ink: 255 255 255;
     --color-muted: 142 142 147;
     --color-accent: 232 114 76;
+    /* The accent deepened to 37% luminance. The brand coral sits at 57%,
+       which a QR scanner's binarisation reads as white — see QrCanvas. */
+    --color-accent-deep: 168 68 42;
     --color-sage: 95 115 89;
   }
 }

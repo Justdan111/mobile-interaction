@@ -11,6 +11,7 @@ module.exports = {
         ink: 'rgb(var(--color-ink) / <alpha-value>)',
         muted: 'rgb(var(--color-muted) / <alpha-value>)',
         accent: 'rgb(var(--color-accent) / <alpha-value>)',
+        'accent-deep': 'rgb(var(--color-accent-deep) / <alpha-value>)',
         sage: 'rgb(var(--color-sage) / <alpha-value>)',
       },
     },
