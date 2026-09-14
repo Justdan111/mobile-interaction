@@ -27,7 +27,10 @@
   .font-display-italic      { font-family: Fraunces_400Regular_Italic; }
   .font-display-semi        { font-family: Fraunces_600SemiBold; }
   .font-display-semi-italic { font-family: Fraunces_600SemiBold_Italic; }
-  .font-sans                { font-family: Inter_400Regular; font-weight: 400; }
+  /* Named `font-body`, not `font-sans`: Tailwind ships its own `font-sans`
+     utility and it wins over this rule, leaving body text in the display
+     serif. The weight classes below have no such conflict. */
+  .font-body                { font-family: Inter_400Regular; font-weight: 400; }
   .font-medium              { font-family: Inter_500Medium;   font-weight: 500; }
   .font-semibold            { font-family: Inter_600SemiBold; font-weight: 600; }
   .font-bold                { font-family: Inter_700Bold;     font-weight: 700; }
