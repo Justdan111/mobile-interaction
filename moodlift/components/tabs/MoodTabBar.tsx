@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from '../ui/icons';
+import { Entrance } from '../ui/Entrance';
 
 export type TabDef = {
   name: string;
@@ -28,6 +29,8 @@ export type TabItemProps = {
   label: string;
   isFocused: boolean;
   onPress: () => void;
+  /** Position in the entrance cascade. */
+  index?: number;
 };
 
 /**
@@ -35,7 +38,8 @@ export type TabItemProps = {
  * tabs are a muted outline with no chrome, matching the comps.
  */
 export const TabItem = React.forwardRef<View, TabItemProps>(
-  ({ icon, label, isFocused, onPress }, ref) => (
+  ({ icon, label, isFocused, onPress, index = 0 }, ref) => (
+    <Entrance index={index}>
     <Pressable
       ref={ref}
       onPress={onPress}
@@ -56,6 +60,7 @@ export const TabItem = React.forwardRef<View, TabItemProps>(
         />
       </View>
     </Pressable>
+    </Entrance>
   )
 );
 TabItem.displayName = 'TabItem';

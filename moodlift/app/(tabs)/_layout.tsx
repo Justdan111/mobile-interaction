@@ -3,7 +3,14 @@ import { Tabs, TabList, TabSlot, TabTrigger, type TabTriggerSlotProps } from 'ex
 import { MoodTabBar, TabItem, TABS } from '../../components/tabs/MoodTabBar';
 import type { IconName } from '../../components/ui/icons';
 
-export type TriggerProps = TabTriggerSlotProps & { icon: IconName; label: string };
+export type TriggerProps = TabTriggerSlotProps & {
+  icon: IconName;
+  label: string;
+  index?: number;
+};
+
+/** Where the tab bar picks up Home's cascade. */
+const TAB_BAR_CASCADE_START = 17;
 
 // expo-router/ui's own `onPress` calls `event.isDefaultPrevented()` and reads
 // `event.defaultPrevented` before it will switch tabs, but TabItem's `onPress`
@@ -15,10 +22,11 @@ const PRESS_EVENT_STUB = {
 } as never;
 
 export const Trigger = React.forwardRef<React.ComponentRef<typeof TabItem>, TriggerProps>(
-  ({ icon, label, isFocused, onPress }, _ref) => (
+  ({ icon, label, index, isFocused, onPress }, _ref) => (
     <TabItem
       icon={icon}
       label={label}
+      index={index}
       isFocused={Boolean(isFocused)}
       onPress={() => onPress?.(PRESS_EVENT_STUB)}
     />
@@ -33,9 +41,11 @@ export default function TabsLayout() {
       <TabSlot />
       <TabList asChild>
         <MoodTabBar>
-          {TABS.map((t) => (
+          {TABS.map((t, i) => (
             <TabTrigger key={t.name} name={t.name} href={t.href as never} asChild>
-              <Trigger icon={t.icon} label={t.label} />
+              {/* The bar lands after the page content, so the tabs continue
+                  the cascade rather than starting their own. */}
+              <Trigger icon={t.icon} label={t.label} index={TAB_BAR_CASCADE_START + i} />
             </TabTrigger>
           ))}
         </MoodTabBar>
