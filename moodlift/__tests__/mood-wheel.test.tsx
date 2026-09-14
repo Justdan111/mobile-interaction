@@ -2,21 +2,22 @@ import React from 'react';
 import { render, screen, fireEvent, renderHook, act } from '@testing-library/react-native';
 import { MoodWheel } from '../components/mood/MoodWheel';
 import { MoodProvider, useMood } from '../lib/mood-context';
-import { MOODS } from '../data/moods';
+import { MOODS, type MoodId } from '../data/moods';
 
 describe('MoodWheel', () => {
-  const setup = async (value: Parameters<typeof MoodWheel>[0]['value'] = 'calm') => {
-    const onChange = jest.fn();
+  const setup = async (preview: MoodId = 'calm', selected: MoodId | null = null) => {
+    const onSelect = jest.fn();
     await render(
       <MoodWheel
-        value={value}
-        onChange={onChange}
+        preview={preview}
+        selected={selected}
+        onSelect={onSelect}
         ink="#FFFFFF"
         mutedInk="#888888"
         trackWidth={360}
       />
     );
-    return onChange;
+    return onSelect;
   };
 
   it('offers every mood', async () => {
@@ -24,24 +25,41 @@ describe('MoodWheel', () => {
     for (const m of MOODS) expect(screen.getByLabelText(m.label)).toBeTruthy();
   });
 
-  it('marks only the current mood selected', async () => {
-    await setup('calm');
+  // The ring means "this is your choice", not "this is what you're looking at".
+  it('marks nothing selected while you are only browsing', async () => {
+    await setup('calm', null);
+    const selected = MOODS.filter(
+      (m) => screen.getByLabelText(m.label).props.accessibilityState?.selected
+    );
+    expect(selected).toHaveLength(0);
+  });
+
+  it('marks only the chosen mood selected', async () => {
+    await setup('calm', 'calm');
     const selected = MOODS.filter(
       (m) => screen.getByLabelText(m.label).props.accessibilityState?.selected
     );
     expect(selected.map((m) => m.id)).toEqual(['calm']);
   });
 
-  it('reports a different mood when one is tapped', async () => {
-    const onChange = await setup('calm');
-    fireEvent.press(screen.getByLabelText('Energized'));
-    expect(onChange).toHaveBeenCalledWith('energized');
+  it('selects the centred label when it is tapped', async () => {
+    const onSelect = await setup('calm');
+    await fireEvent.press(screen.getByLabelText('Calm'));
+    expect(onSelect).toHaveBeenCalledWith('calm');
   });
 
-  it('stays quiet when the current mood is tapped again', async () => {
-    const onChange = await setup('calm');
-    fireEvent.press(screen.getByLabelText('Calm'));
-    expect(onChange).not.toHaveBeenCalled();
+  // Tapping a label you can barely see at the edge of the card would be an
+  // accident, not a choice.
+  it('ignores taps on labels that are not centred', async () => {
+    const onSelect = await setup('calm');
+    await fireEvent.press(screen.getByLabelText('Energized'));
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('marks the off-centre labels disabled', async () => {
+    await setup('calm');
+    expect(screen.getByLabelText('Energized').props.accessibilityState?.disabled).toBe(true);
+    expect(screen.getByLabelText('Calm').props.accessibilityState?.disabled).toBe(false);
   });
 });
 

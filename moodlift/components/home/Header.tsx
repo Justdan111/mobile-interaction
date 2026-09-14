@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Icon } from '../ui/icons';
+import { Entrance } from '../ui/Entrance';
 
 const ACCENT = '#E8724C';
 
@@ -36,15 +37,22 @@ export function Header({
 }) {
   return (
     <View className="mb-6 flex-row items-center">
-      <Avatar name={name} />
+      <Entrance index={0}>
+        <Avatar name={name} />
+      </Entrance>
 
       <View className="ml-3 flex-1">
-        <Text className="font-body text-[13px] text-muted">Welcome back</Text>
-        <Text className="font-display text-[19px] text-ink" numberOfLines={1}>
-          {name}
-        </Text>
+        <Entrance index={1} from="down">
+          <Text className="font-body text-[13px] text-muted">Welcome back</Text>
+        </Entrance>
+        <Entrance index={2} from="down">
+          <Text className="font-display text-[19px] text-ink" numberOfLines={1}>
+            {name}
+          </Text>
+        </Entrance>
       </View>
 
+      <Entrance index={3}>
       <Pressable
         onPress={onNotifications}
         accessibilityRole="button"
@@ -54,7 +62,9 @@ export function Header({
       >
         <Icon name="bell" color="#FFFFFF" size={22} />
       </Pressable>
+      </Entrance>
 
+      <Entrance index={4}>
       <View
         className="flex-row items-center rounded-2xl bg-card px-3 py-2"
         accessibilityLabel={`${streak} day streak`}
@@ -62,6 +72,7 @@ export function Header({
         <Icon name="crown" color={ACCENT} size={18} />
         <Text className="ml-1.5 font-semibold text-[15px] text-ink">{streak}</Text>
       </View>
+      </Entrance>
     </View>
   );
 }

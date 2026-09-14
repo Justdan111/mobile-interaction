@@ -2,17 +2,19 @@ import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { getMood } from '../../data/moods';
 import { MascotFor } from '../mascots';
+import { Entrance } from '../ui/Entrance';
 
 /**
  * The no-mood state: the sage card that asks what you want to train and sends
  * you to the picker. Matches `.design/comps/home-no-mood.png`.
  */
-export function PromoCard({ onPress }: { onPress: () => void }) {
+export function PromoCard({ onPress, index = 0 }: { onPress: () => void; index?: number }) {
   const energized = getMood('energized');
   const Mascot = MascotFor('energized');
 
   return (
-    <View className="mb-7 overflow-hidden rounded-3xl bg-sage px-5 pb-5 pt-6">
+    <Entrance index={index}>
+      <View className="mb-7 overflow-hidden rounded-3xl bg-sage px-5 pb-5 pt-6">
       <View className="flex-row">
         <View className="flex-1 pr-2">
           <Text className="font-display text-[30px] leading-[38px] text-ink">
@@ -38,8 +40,9 @@ export function PromoCard({ onPress }: { onPress: () => void }) {
         accessibilityLabel="Find my match"
         className="mt-6 items-center rounded-full bg-ink py-4 active:opacity-90"
       >
-        <Text className="font-display text-[17px] text-page">Find my match</Text>
-      </Pressable>
-    </View>
+          <Text className="font-display text-[17px] text-page">Find my match</Text>
+        </Pressable>
+      </View>
+    </Entrance>
   );
 }
