@@ -16,6 +16,12 @@ export type Mood = {
   blurbSurface: string;
   /** The mascot's body fill. */
   mascotFill: string;
+  /**
+   * The mascot's line work. Near-black on every mood: in the comps the faces
+   * and limbs are drawn in black ink whatever colour the card is, so this is
+   * deliberately NOT `onSurface`.
+   */
+  mascotInk: string;
   blurb: string;
 };
 
@@ -37,6 +43,7 @@ export const MOODS: readonly Mood[] = [
     mutedOnSurface: 'rgba(255,255,255,0.45)',
     blurbSurface: 'rgba(255,255,255,0.14)',
     mascotFill: '#8E86B8',
+    mascotInk: '#16161A',
     blurb: 'Running on empty. Something gentle, and short.',
   },
   {
@@ -48,6 +55,7 @@ export const MOODS: readonly Mood[] = [
     mutedOnSurface: 'rgba(255,255,255,0.45)',
     blurbSurface: 'rgba(255,255,255,0.14)',
     mascotFill: '#E8A48C',
+    mascotInk: '#16161A',
     blurb: 'Wound tight. Time to shake it loose and release.',
   },
   {
@@ -59,6 +67,7 @@ export const MOODS: readonly Mood[] = [
     mutedOnSurface: 'rgba(255,255,255,0.45)',
     blurbSurface: 'rgba(255,255,255,0.14)',
     mascotFill: '#F0A8C8',
+    mascotInk: '#16161A',
     blurb: 'You feel relaxed and grounded. Looking for mindful movement.',
   },
   {
@@ -70,6 +79,7 @@ export const MOODS: readonly Mood[] = [
     mutedOnSurface: 'rgba(255,255,255,0.45)',
     blurbSurface: 'rgba(255,255,255,0.16)',
     mascotFill: '#8CC08A',
+    mascotInk: '#16161A',
     blurb: 'You focused. A good moment for controlled, full-body training.',
   },
   {
@@ -81,6 +91,7 @@ export const MOODS: readonly Mood[] = [
     mutedOnSurface: 'rgba(255,255,255,0.45)',
     blurbSurface: 'rgba(255,255,255,0.16)',
     mascotFill: '#F2C230',
+    mascotInk: '#16161A',
     blurb: 'You feel active. Time for dynamic workouts and higher intensity.',
   },
   {
@@ -92,6 +103,7 @@ export const MOODS: readonly Mood[] = [
     mutedOnSurface: 'rgba(255,255,255,0.5)',
     blurbSurface: 'rgba(255,255,255,0.18)',
     mascotFill: '#FFD84D',
+    mascotInk: '#16161A',
     blurb: "Everything's firing. Go hard and spend it.",
   },
 ] as const;
