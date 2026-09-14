@@ -25,7 +25,9 @@ export type IconName =
   | 'hiker'
   | 'runner'
   | 'swimmer'
-  | 'bike';
+  | 'bike'
+  | 'dance'
+  | 'tennis';
 
 export type IconProps = {
   name: IconName;
@@ -219,6 +221,22 @@ export function Icon({ name, color, size = 24, strokeWidth = 1.6, fill = 'none' 
           <Path d="m5.4 16.6 4-8.4h4.4l4.8 8.4" {...common} />
           <Path d="M9.4 8.2h5.2" {...common} />
           <Path d="M11.8 16.6 14.6 9" {...common} />
+        </>
+      )}
+
+      {name === 'dance' && (
+        <>
+          <Circle cx="13.6" cy="4" r="1.9" {...common} />
+          <Path d="M13.6 6.2 11.4 11l1.6 3.2-1.2 6.3" {...common} />
+          <Path d="M13 14.2 16.4 16l-.6 4.5" {...common} />
+          <Path d="M11.4 11 6.4 8.6M12.6 8.6l4.6 1 2.6-3.4" {...common} />
+        </>
+      )}
+
+      {name === 'tennis' && (
+        <>
+          <Circle cx="12" cy="12" r="8.5" {...common} />
+          <Path d="M5 6.4c3 2 4.2 5.6 3.4 9.4M19 6.4c-3 2-4.2 5.6-3.4 9.4" {...common} />
         </>
       )}
 
