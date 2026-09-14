@@ -20,7 +20,12 @@ export type IconName =
   | 'plus'
   | 'intensity'
   | 'steps'
-  | 'flame';
+  | 'flame'
+  | 'yoga'
+  | 'hiker'
+  | 'runner'
+  | 'swimmer'
+  | 'bike';
 
 export type IconProps = {
   name: IconName;
@@ -102,12 +107,7 @@ export function Icon({ name, color, size = 24, strokeWidth = 1.6, fill = 'none' 
       )}
 
       {name === 'crown' && (
-        <Path
-          d="M4 17.5 5.2 7.8l4 3.3L12 5.5l2.8 5.6 4-3.3L20 17.5z"
-          {...common}
-          fill={fill === 'none' ? color : fill}
-          stroke={fill === 'none' ? color : common.stroke}
-        />
+        <Path d="M4.5 17.5 5.6 8.2l3.9 3.2L12 6l2.5 5.4 3.9-3.2 1.1 9.3z" {...common} />
       )}
 
       {name === 'chevron-right' && <Path d="m9.5 5 7 7-7 7" {...common} />}
@@ -172,6 +172,53 @@ export function Icon({ name, color, size = 24, strokeWidth = 1.6, fill = 'none' 
           <Circle cx="13" cy="4.8" r="2" {...common} />
           <Path d="M9 20.5 11.5 14l-2.2-2.4 1.4-3.6 3.3 2.2 2.6.8" {...common} />
           <Path d="M13.6 13.4 16 20.5" {...common} />
+        </>
+      )}
+
+      {name === 'yoga' && (
+        <>
+          <Circle cx="12" cy="5.2" r="2.2" {...common} />
+          <Path d="M12 7.8v6" {...common} />
+          <Path d="M12 13.8c-3 0-5.5 1.6-5.5 3.4S9 20.5 12 20.5s5.5-1.5 5.5-3.3-2.5-3.4-5.5-3.4z" {...common} />
+          <Path d="M12 10.2 7.5 12.6M12 10.2l4.5 2.4" {...common} />
+        </>
+      )}
+
+      {name === 'hiker' && (
+        <>
+          <Circle cx="13.2" cy="4.4" r="2" {...common} />
+          <Path d="M13.2 6.6 11 11l-2.4 2 1.2 3.2-2.3 4.3" {...common} />
+          <Path d="M11.4 13.6 14 16.3l1 4.2" {...common} />
+          <Path d="M11 11h3.6l2.3 1.6" {...common} />
+          <Path d="M18.6 3.5v17" {...common} />
+        </>
+      )}
+
+      {name === 'runner' && (
+        <>
+          <Circle cx="14.4" cy="4.3" r="2" {...common} />
+          <Path d="M14.4 6.6 11 9.6l1.4 3.6-3.4 3.2-1.6 4" {...common} />
+          <Path d="M12.4 13.2 16 15l.8 5.4" {...common} />
+          <Path d="M11 9.6 6.6 9M13.4 8.2l4 1.6 2.4-1.2" {...common} />
+        </>
+      )}
+
+      {name === 'swimmer' && (
+        <>
+          <Circle cx="9" cy="7.6" r="2" {...common} />
+          <Path d="M10.6 9 14 12l4-1.6" {...common} />
+          <Path d="M2.8 17.2c1.6-1.3 3-1.3 4.6 0s3 1.3 4.6 0 3-1.3 4.6 0 3 1.3 4.6 0" {...common} />
+          <Path d="M2.8 20.6c1.6-1.3 3-1.3 4.6 0s3 1.3 4.6 0 3-1.3 4.6 0 3 1.3 4.6 0" {...common} />
+        </>
+      )}
+
+      {name === 'bike' && (
+        <>
+          <Circle cx="5.4" cy="16.6" r="3.6" {...common} />
+          <Circle cx="18.6" cy="16.6" r="3.6" {...common} />
+          <Path d="m5.4 16.6 4-8.4h4.4l4.8 8.4" {...common} />
+          <Path d="M9.4 8.2h5.2" {...common} />
+          <Path d="M11.8 16.6 14.6 9" {...common} />
         </>
       )}
 
