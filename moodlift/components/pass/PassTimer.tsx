@@ -40,12 +40,15 @@ export function PassTimer({
   ink,
   mutedInk,
   surface,
+  onExpiredChange,
 }: {
   expiresAt: number;
   totalMs: number;
   ink: string;
   mutedInk: string;
   surface: string;
+  /** Lets the screen dim the code once it stops being valid. */
+  onExpiredChange?: (expired: boolean) => void;
 }) {
   const [remaining, setRemaining] = useState(() => expiresAt - Date.now());
 
@@ -55,6 +58,10 @@ export function PassTimer({
   }, [expiresAt]);
 
   const expired = remaining <= 0;
+
+  useEffect(() => {
+    onExpiredChange?.(expired);
+  }, [expired, onExpiredChange]);
 
   return (
     <View

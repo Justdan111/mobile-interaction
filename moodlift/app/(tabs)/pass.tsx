@@ -30,6 +30,7 @@ const PAGE = '#0E0E10';
 export default function PassScreen() {
   const { width } = useWindowDimensions();
   const [issuedAt, setIssuedAt] = useState(() => Date.now());
+  const [expired, setExpired] = useState(false);
 
   const totalMs = PASS_MINUTES * 60_000;
   const expiresAt = issuedAt + totalMs;
@@ -84,7 +85,9 @@ export default function PassScreen() {
           </Pressable>
         </View>
 
-        <View className="items-center py-7">
+        {/* An expired code must not look like a live one — a member would hold
+            a dead pass to the reader and not know why nothing happened. */}
+        <View className="items-center py-7" style={{ opacity: expired ? 0.25 : 1 }}>
           <QrCanvas
             payload={payload}
             size={qrSize}
@@ -101,18 +104,29 @@ export default function PassScreen() {
           ink={INK}
           mutedInk={MUTED_INK}
           surface={CARD_INNER}
+          onExpiredChange={setExpired}
         />
 
-        <Pressable
-          onPress={() => setIssuedAt(Date.now())}
-          accessibilityRole="button"
-          accessibilityLabel="Issue a new code"
-          className="mt-3 items-center py-1 active:opacity-70"
-        >
-          <Text className="font-body text-[13.5px]" style={{ color: MUTED_INK }}>
+        {expired ? (
+          <Pressable
+            onPress={() => setIssuedAt(Date.now())}
+            accessibilityRole="button"
+            accessibilityLabel="Get a new code"
+            className="mt-3 items-center rounded-full py-3 active:opacity-80"
+            style={{ backgroundColor: ACCENT }}
+          >
+            <Text className="font-display text-[15px]" style={{ color: PAGE }}>
+              Get a new code
+            </Text>
+          </Pressable>
+        ) : (
+          <Text
+            className="mt-3 py-1 text-center font-body text-[13.5px]"
+            style={{ color: MUTED_INK }}
+          >
             Scan at the entrance
           </Text>
-        </Pressable>
+        )}
       </View>
     </Screen>
   );
