@@ -6,6 +6,7 @@ One file per widget or Live Activity, re-exported from `index.ts`.
 | --- | --- | --- | --- |
 | `DeliveryTrackingActivity.tsx` | Live Activity | `DeliveryTrackingActivity` | No |
 | `FoodDeliveryActivity.tsx` | Live Activity | `FoodDeliveryActivity` | No |
+| `assets.ts` | App-side helper | — | — |
 
 Each is measured off its own comps: `docs/design-spec.md` and `docs/design-spec-foody.md`.
 
@@ -78,6 +79,37 @@ Two traps with `timerInterval`:
 `symbolEffect` needs no trigger for indefinite effects — omit `isActive` and it
 runs. Do not reach for `useNativeState` to drive one: hooks do not exist in the
 widget runtime.
+
+## Photos and illustrations: stage them, then pass a `file://` URI
+
+The extension cannot see the app bundle. `Image uiImage` reads a plain `file://` URL, so
+every photo or illustration has to be copied into `widgetsDirectory` — the app-group
+folder `expo-widgets` exposes — before the activity starts. `assets.ts` does that for the
+files in `assets/widgets/`, which are cut straight from the comps, and the control screen
+passes the resulting URIs as props. Inside the layout, put `resizable()` first and then a
+`frame`, or the PNG renders at its pixel size.
+
+Two things follow from the app group being the channel. A build signed without
+entitlements (`CODE_SIGNING_ALLOWED=NO`) has no app group, so `widgetsDirectory` is
+`null`, nothing is staged and no activity can even register. And a `-rw-------` file in
+that folder is readable by the extension on the simulator, so do not chase permissions.
+
+## A countdown inside `fixedSize` renders nothing at all
+
+`Text` with `timerInterval` inside a stack pinned with `fixedSize({ horizontal: true })`
+is a layout WidgetKit refuses to render. Nothing warns: the whole banner comes up as an
+empty tinted card, and only turns into the design once the timer expires and the text
+becomes a plain string. The compact pill is unaffected because nothing there is pinned.
+Cap the width with `frame({ maxWidth })` instead — and add
+`multilineTextAlignment('trailing')`, because a timer text takes every point it is
+offered and lays the digits out from the leading edge.
+
+## Ended activities linger as blank cards
+
+An activity ended with `'immediate'` can stay on the Lock Screen for a while as an empty
+card, and several stack up if a run is repeated. A blank card is therefore not evidence
+that the layout failed — a real failure draws a red box. Before judging a screenshot, end
+every instance (`widget:///?autostart=end` does it from the terminal) and start one.
 
 ## Register behind a guard, or the wrong client takes the app down
 
@@ -157,10 +189,22 @@ child off the end.
 
 `compactLeading` and `compactTrailing` are two separate regions with the camera between
 them — nothing can span the gap, so travel has to happen inside one region. The truck
-rides a short fixed-width track in the leading region: a travelled rule, the glyph, then
-a remaining rule, the same split the Lock Screen rail uses. The width is hard-coded
-because the region's own width is not knowable from the layout; keep it modest, since
-the pill grows to fit its content but not without limit.
+rides a fixed-width capsule in the leading region. The width is hard-coded because the
+region's own width is not knowable from the layout. It is **96pt**: the region clips
+anything past about 100pt, flattening the capsule's rounded end, and anything much
+narrower fails the design — a 24pt glyph on a 60pt track parks at 70% of the way along
+at travel 1 and never reads as arrived. The run is symmetric about the capsule's centre,
+`capW - truckW - 2 * endGap`, so the truck starts 5pt from the left end and finishes 5pt
+from the right, as ref-02 draws it. `docs/screenshots/device-16-pill-run.png` shows a
+whole trip.
+
+**The black stretch between the truck and the ETA is hardware.** The compact regions
+flank the Dynamic Island's cutout, which is 126pt wide on every Pro iPhone, and iOS pins
+each region's content to the pill's outer edge — a Spacer does not expand, and a
+fixed-width row only clips the timer while the pill animates. On the simulator that
+stretch is plain black; on a phone it is the camera. The truck flush at the right end of
+its track is as close to `Arrived` as the device allows. ref-02's 47pt camera gap is a
+drawing, not a device.
 
 Worth knowing: `Text(timerInterval:)` refreshes its own text without re-evaluating the
 layout, so anything positional only moves when the app pushes an update. That is why

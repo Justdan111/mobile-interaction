@@ -41,9 +41,16 @@ fails on any identifier the extension will not have. Run it after editing anythi
 
 ## Builds
 
-EAS only — `eas build --profile development --platform ios` (simulator build).
+EAS — `eas build --profile development --platform ios` (simulator build).
 `ios/` and `android/` are gitignored; EAS prebuilds them server-side. If you run
 `npx expo prebuild` locally to inspect generated Swift, delete the directories
 afterwards.
+
+A local `xcodebuild` works too, but this repo's path has a space in it and three
+generated script phases break on that: the EXConstants and ExpoWidgets `bash -l -c`
+phases in `Pods/Pods.xcodeproj` and the react-native-xcode call in the app target.
+Quote their paths, run `node node_modules/expo-widgets/scripts/build-bundle.mjs .`
+once by hand, and **keep code signing on** — `CODE_SIGNING_ALLOWED=NO` strips the
+app-group entitlement, and without it no activity registers and no image stages.
 
 Expo Go cannot run widgets or Live Activities.

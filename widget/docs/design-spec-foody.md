@@ -53,14 +53,18 @@ Note the two action glyphs are **different colours** — the call is cyan, the m
 
 Vertical rhythm: 25.5 top row, gap 16, scooter, gap 2, bar, gap 17, driver row, 13 bottom.
 
-## Substitutions
+## Artwork
 
-The comp's courier is a colour illustration and the avatar a photograph. Neither can be
-drawn from SF Symbols, and putting real images in a widget needs them staged into the
-shared app group — which needs `expo-file-system` and therefore a native rebuild. Until
-then: `moped.fill` for the courier, `person.fill` for the avatar, and
-`takeoutbag.and.cup.and.straw.fill` for the badge, which is close to the comp's
-burger-and-drink mark. `courierAvatarUri` is already wired for the photo.
+The comp's courier is a colour illustration, the avatar a photograph and the badge a
+burger-and-cup mark. None can be drawn from SF Symbols, so all three are cut from the
+comps themselves (`assets/widgets/`) and staged into the shared app group at launch by
+`stageWidgetAssets` — see `widgets/assets.ts`. The layout takes their `file://` URIs as
+props and falls back to `moped.fill`, `person.fill` and
+`takeoutbag.and.cup.and.straw.fill` only when they are missing.
+
+The mint halo behind the rider is a radial gradient on a circle three times the rider's
+width, centred on it by a `ZStack`. Anything fainter than about 40% alpha at the centre
+does not read on the dark surface at all.
 
 `7 min` is a string the app supplies rather than a live timer: SwiftUI's relative date
 style renders "6 minutes, 59 seconds" and its timer style renders "6:59", neither of
