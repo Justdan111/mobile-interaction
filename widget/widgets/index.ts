@@ -17,6 +17,7 @@ import type { FoodDeliveryProps } from './FoodDeliveryActivity';
 
 export type { DeliveryTrackingProps } from './DeliveryTrackingActivity';
 export type { FoodDeliveryProps } from './FoodDeliveryActivity';
+export { stageWidgetAssets, type WidgetAssetUris } from './assets';
 
 /**
  * `expo-widgets` resolves its native module the moment it is imported, so in a client
@@ -49,6 +50,19 @@ export const DeliveryTrackingActivity = delivery.activity;
 
 /** Foody order-tracking Live Activity, or `null` when the native module is missing. */
 export const FoodDeliveryActivity = food.activity;
+
+/**
+ * The app-group directory both the app and the widget extension can read, or `null`
+ * without the native module. Images the widgets draw are staged here — see `assets.ts`.
+ */
+export const widgetsDirectory: string | null = (() => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return (require('expo-widgets') as { widgetsDirectory: string | null }).widgetsDirectory;
+  } catch {
+    return null;
+  }
+})();
 
 /**
  * Why the widgets could not be registered, or `null` when everything is in place.
