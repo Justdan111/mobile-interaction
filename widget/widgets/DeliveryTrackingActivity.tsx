@@ -11,8 +11,12 @@ import {
   lineLimit,
   minimumScaleFactor,
   monospacedDigit,
+  multilineTextAlignment,
   offset,
-  padding, shapes, } from '@expo/ui/swift-ui/modifiers';
+  padding,
+  resizable,
+  shapes,
+} from '@expo/ui/swift-ui/modifiers';
 import { createLiveActivity, type LiveActivityEnvironment } from 'expo-widgets';
 import type { SFSymbol } from 'sf-symbols-typescript';
 
@@ -46,19 +50,20 @@ export type DeliveryTrackingProps = {
   /** Driver's reference code, shown as `ID - <driverId>`. */
   driverId: string;
   /**
-   * Optional `file://` URI for the driver's photo. It must sit somewhere both the app and
-   * the widget extension can read, so write it into `widgetsDirectory` from `expo-widgets`.
-   * Falls back to a person glyph when omitted.
+   * `file://` URI for the driver's photo, staged into `widgetsDirectory` by
+   * `stageWidgetAssets` so the extension can read it. Falls back to a person glyph when
+   * omitted.
    */
   driverAvatarUri?: string;
 };
 
 /**
  * Built from `docs/design-spec.md`, which is measured off the comps rather than eyeballed.
- * Colours, glyph weights and alignment are the comp's; the vertical rhythm is not, because
- * the comp is 295pt tall at 361pt wide and every Live Activity presentation caps out near
- * 160pt. SwiftUI clips instead of scaling, so the comp's ~132pt of whitespace is spent
- * first and the type is trimmed second.
+ * Colours, glyph weights, alignment and the driver's photo are the comp's; the vertical
+ * rhythm is not, because the comp is 295pt tall at 361pt wide and every Live Activity
+ * presentation caps out near 160pt. SwiftUI clips instead of scaling, so the comp's
+ * ~132pt of whitespace is spent first and the type is trimmed second — but only as far
+ * as the cap demands, so every size here is the largest the budget allows.
  *
  * Two rules govern the code itself. The body is serialised by `babel-preset-expo` and
  * re-evaluated in the widget extension, so it may only reach for `@expo/ui`, JS builtins
@@ -109,31 +114,43 @@ const DeliveryTrackingActivity = (
 
   /**
    * Each presentation gets its own measured sizes rather than one scale factor, because
-   * they have very different budgets: the card clears 160pt at about 151, while the
-   * expanded island loses roughly 47pt to the camera band before anything is drawn.
+   * they have different budgets. The Lock Screen card owns all ~160pt; the expanded
+   * island loses about 30pt to the camera band and system padding before anything of
+   * ours is drawn, and its top row has to sit beside the camera.
+   *
+   * The comp's sizes are: badge 54, plate 16, model 13.5, labels 13.5, addresses 15.5,
+   * dot 10, actions 35.5, name 16, id 11.8, avatar 35. The card runs at ~0.8 of that,
+   * the island at ~0.72 — the most either budget holds without dropping a row.
    */
   const CARD = {
-    badge: 38, badgeGlyph: 18, plate: 12.5, model: 10.5,
-    label: 10, address: 11.5, legGap: 5, dot: 8, railW: 2,
-    action: 28, actionGlyph: 12.5, driverName: 12.5, driverId: 9.2, avatar: 28,
-    gutter: 11, rowGap: 8, pad: 6,
+    badge: 44, badgeGlyph: 21, plate: 13.5, model: 11.5,
+    label: 10.5, address: 12.5, legGap: 4, dot: 8, railW: 2,
+    action: 29, actionGlyph: 13, driverName: 13.5, driverId: 9.8, avatar: 29,
+    gutter: 11, rowGap: 6, pad: 5,
   };
   const ISLAND = {
-    badge: 32, badgeGlyph: 15, plate: 11.5, model: 9,
-    label: 8.5, address: 12, legGap: 5, dot: 8, railW: 2,
-    action: 24, actionGlyph: 11, driverName: 11, driverId: 8, avatar: 24,
-    gutter: 9, rowGap: 5, pad: 4,
+    badge: 38, badgeGlyph: 18, plate: 12.5, model: 10.5,
+    label: 9.5, address: 12, legGap: 3, dot: 8, railW: 2,
+    action: 26, actionGlyph: 12, driverName: 12, driverId: 8.8, avatar: 26,
+    gutter: 10, rowGap: 4, pad: 3,
   };
   type Sizes = typeof CARD;
 
-  /** The ETA. `timerInterval` hands the countdown to SwiftUI, which ticks it unaided. */
-  const Countdown = (p: { size: number; weight?: 'bold' | 'semibold' }) => {
+  /**
+   * The ETA. `timerInterval` hands the countdown to SwiftUI, which ticks it unaided.
+   *
+   * A timer text takes every point of width it is offered and lays its digits out from
+   * the leading edge, so where it sits at the end of a row it needs `trailing` to keep
+   * the digits flush with the distance under them.
+   */
+  const Countdown = (p: { size: number; weight?: 'bold' | 'semibold'; trailing?: boolean }) => {
     'use no memo';
     const style = [
       font({ size: p.size, weight: p.weight ?? 'bold' }),
       foregroundStyle(liveColor),
       lineLimit(1),
       minimumScaleFactor(0.6),
+      multilineTextAlignment(p.trailing ? 'trailing' : 'leading'),
     ];
     if (arrived) {
       return <Text modifiers={style}>Arrived</Text>;
@@ -239,7 +256,7 @@ const DeliveryTrackingActivity = (
         align="trailing"
         pin={p.pin}
         cap={p.cap}
-        top={<Countdown size={p.s.plate} />}
+        top={<Countdown size={p.s.plate} trailing />}
         bottom={<Line size={p.s.model} tint={color.secondary} text={distance} />}
       />
     );
@@ -249,13 +266,16 @@ const DeliveryTrackingActivity = (
    * The route. The comp puts the origin dot level with the *address*, not the `From` label,
    * and runs a thin rule from it down beside `To`. There is no second dot and no vehicle on
    * the rail — a truck there read as an amber smear against the dot and rule.
+   *
+   * The comp indents the whole block: the dot sits 34pt in from the card's edge and the
+   * text 52pt, well inside the badge's left edge. `inset` reproduces that.
    */
-  const Route = (p: { s: Sizes }) => {
+  const Route = (p: { s: Sizes; inset: number }) => {
     'use no memo';
     const labelLine = p.s.label * 1.2;
     const addressLine = p.s.address * 1.2;
     return (
-      <HStack spacing={p.s.gutter + 3} alignment="top">
+      <HStack spacing={p.s.gutter + 3} alignment="top" modifiers={[padding({ leading: p.inset })]}>
         <VStack spacing={0} alignment="center" modifiers={[padding({ top: labelLine })]}>
           <Circle
             modifiers={[
@@ -265,7 +285,8 @@ const DeliveryTrackingActivity = (
           />
           <Rectangle
             modifiers={[
-              frame({ width: p.s.railW, height: addressLine + p.s.legGap + labelLine }),
+              // Runs from the dot to beside `To`, stopping short of the second address.
+              frame({ width: p.s.railW, height: addressLine + p.s.legGap + labelLine * 0.6 }),
               foregroundStyle(color.rail),
             ]}
           />
@@ -285,13 +306,18 @@ const DeliveryTrackingActivity = (
     );
   };
 
+  /** The driver's photo — the comp's, cut to a circle — with a glyph only if it is missing. */
   const Avatar = (p: { diameter: number }) => {
     'use no memo';
     if (props.driverAvatarUri) {
       return (
         <Image
           uiImage={props.driverAvatarUri}
-          modifiers={[frame({ width: p.diameter, height: p.diameter }), clipShape('circle')]}
+          modifiers={[
+            resizable(),
+            frame({ width: p.diameter, height: p.diameter }),
+            clipShape('circle'),
+          ]}
         />
       );
     }
@@ -305,11 +331,14 @@ const DeliveryTrackingActivity = (
     );
   };
 
-  /** Call and message on the left, driver identity and photo on the right. Outline glyphs. */
-  const DriverBar = (p: { s: Sizes; pin?: boolean; cap?: number }) => {
+  /**
+   * Call and message on the left, driver identity and photo on the right. Outline glyphs.
+   * The comp's two buttons sit 27pt apart, wider than the gutter elsewhere.
+   */
+  const DriverBar = (p: { s: Sizes; pin?: boolean; cap?: number; inset: number }) => {
     'use no memo';
     return (
-      <HStack spacing={p.s.gutter} alignment="center">
+      <HStack spacing={p.s.gutter} alignment="center" modifiers={[padding({ leading: p.inset })]}>
         <CircleIcon
           systemName="phone.connection"
           diameter={p.s.action}
@@ -321,7 +350,7 @@ const DeliveryTrackingActivity = (
           diameter={p.s.action}
           glyphSize={p.s.actionGlyph}
           fill={color.actionCircle}
-        />
+          />
         <Spacer />
         <StackedPair
           align="trailing"
@@ -350,14 +379,22 @@ const DeliveryTrackingActivity = (
    */
   const CompactRail = () => {
     'use no memo';
-    const capW = 60;
+    // The comp's capsule is 119.5pt with an 18.6pt truck ending 6.6pt short of its right
+    // end. The pill already stretches to ~250pt with a 60pt track, so the track goes as
+    // wide as the region will take; a narrow one leaves a 24pt glyph parked at 70% of
+    // the way along at travel 1, which does not read as arrived.
+    // The region clips anything past about 100pt, flattening the capsule's right end.
+    const capW = 96;
+    const truckW = 24;
+    const endGap = 5;
     // The truck is positioned by an offset measured from the capsule's centre, not from
     // its leading edge. A ZStack centres its child regardless of the alignment asked for
-    // here, so a leading-relative offset landed the glyph 19pt further right than
-    // intended and the capsule clipped it down to a sliver at travel 1. Measuring from
-    // the centre cancels the glyph's own width out of the sum, which also means a wrong
-    // estimate of it only shortens the run rather than pushing the truck off the end.
-    const run = 26;
+    // here, so a leading-relative offset landed the glyph further right than intended and
+    // the capsule clipped it to a sliver at travel 1. Measuring from the centre cancels the
+    // glyph's own width out of the sum, so a wrong estimate of it only shortens the run
+    // rather than pushing the truck off the end. The run is symmetric: at travel 0 the
+    // truck sits `endGap` from the left end, at travel 1 `endGap` from the right.
+    const run = capW - truckW - endGap * 2;
     return (
       <ZStack
         modifiers={[
@@ -366,7 +403,7 @@ const DeliveryTrackingActivity = (
           clipShape('capsule'),
         ]}>
         <Image
-          systemName="box.truck.fill"
+          systemName="box.truck"
           size={14}
           color={color.primary}
           modifiers={[offset({ x: (travel - 0.5) * run })]}
@@ -377,22 +414,26 @@ const DeliveryTrackingActivity = (
 
   return {
     // Lock Screen and Notification Centre. The widest presentation, so it carries the
-    // comp's proportions most closely.
+    // comp's proportions most closely: badge in the corner, route indented under it,
+    // actions and driver along the bottom.
     banner: (
       <VStack
         alignment="leading"
         spacing={CARD.rowGap}
         modifiers={[
-          padding({ horizontal: 14, vertical: CARD.pad }),
+          padding({ horizontal: 12, vertical: CARD.pad }),
           activityBackgroundTint(color.surface),
         ]}>
         <HStack alignment="center">
           <VehicleIdentity s={CARD} pin />
           <Spacer />
-          <EtaReadout s={CARD} pin />
+          {/* Never `pin` the countdown: a `timerInterval` text inside a horizontally
+              fixed-size stack is a layout WidgetKit refuses to render, and the whole
+              card comes up blank until the timer ends and it turns into plain text. */}
+          <EtaReadout s={CARD} cap={110} />
         </HStack>
-        <Route s={CARD} />
-        <DriverBar s={CARD} pin />
+        <Route s={CARD} inset={18} />
+        <DriverBar s={CARD} pin inset={14} />
       </VStack>
     ),
 
@@ -417,8 +458,8 @@ const DeliveryTrackingActivity = (
     ),
 
     // Dynamic Island, expanded — the presentation ref-03 was drawn for. The camera band
-    // takes roughly 90 of its ~160pt, so the bottom region gets about 60 and everything
-    // below the top row is compressed harder than in the card.
+    // and system padding take about 30pt of its ~160, and the top row sits beside the
+    // camera, so the bottom region gets what is left for the route and the driver.
     expandedLeading: (
       <HStack modifiers={[padding({ leading: 4 })]}>
         <VehicleIdentity s={ISLAND} cap={150} />
@@ -435,13 +476,17 @@ const DeliveryTrackingActivity = (
     ),
     expandedBottom: (
       <VStack alignment="leading" spacing={ISLAND.rowGap} modifiers={[padding({ top: ISLAND.pad })]}>
-        <Route s={ISLAND} />
-        <DriverBar s={ISLAND} cap={104} />
+        <Route s={ISLAND} inset={14} />
+        <DriverBar s={ISLAND} cap={110} inset={10} />
       </VStack>
     ),
 
     // Dynamic Island, collapsed — ref-01 and ref-02.
     compactLeading: <CompactRail />,
+    // The ETA sits where iOS puts it: the compact regions flank the 126pt hardware
+    // island and each pins its content to the pill's outer edge, and neither a Spacer
+    // nor a fixed-width row moves it inward. The black stretch between the track and
+    // the ETA is the camera on a real phone; the comp's 47pt camera gap is not physical.
     compactTrailing: (
       <HStack spacing={6} alignment="center">
         <Countdown size={13} weight="semibold" />
