@@ -1,4 +1,4 @@
-import { HStack, Image, Rectangle, Spacer, Text, VStack } from '@expo/ui/swift-ui';
+import { Circle, HStack, Image, Rectangle, Spacer, Text, VStack, ZStack } from '@expo/ui/swift-ui';
 import {
   activityBackgroundTint,
   background,
@@ -8,16 +8,22 @@ import {
   foregroundStyle,
   frame,
   layoutPriority,
-  lineLimit, minimumScaleFactor, opacity, padding, shapes, } from '@expo/ui/swift-ui/modifiers';
+  lineLimit,
+  minimumScaleFactor,
+  opacity,
+  padding,
+  resizable,
+  shapes,
+} from '@expo/ui/swift-ui/modifiers';
 import { createLiveActivity, type LiveActivityEnvironment } from 'expo-widgets';
 import type { SFSymbol } from 'sf-symbols-typescript';
 
 /**
  * Content shown by the Foody order-tracking Live Activity.
  *
- * `progress` drives both the bar and the scooter riding it, and is the one thing the
- * system cannot work out for itself. The arrival figure is a string rather than a live
- * timer because the comp reads `7 min`, which is neither of the two shapes SwiftUI's
+ * `progress` drives both the bar and the rider on it, and is the one thing the system
+ * cannot work out for itself. The arrival figure is a string rather than a live timer
+ * because the comp reads `7 min`, which is neither of the two shapes SwiftUI's
  * self-updating date styles produce — see docs/design-spec-foody.md.
  */
 export type FoodDeliveryProps = {
@@ -36,17 +42,21 @@ export type FoodDeliveryProps = {
   /** Courier's display name. For example `George K.`. */
   courierName: string;
   /**
-   * Optional `file://` URI for the courier's photo, which must sit somewhere both the app
-   * and the widget extension can read — write it into `widgetsDirectory` from
-   * `expo-widgets`. Falls back to a person glyph when omitted.
+   * `file://` URIs staged into `widgetsDirectory` by `stageWidgetAssets`, so the extension
+   * can read them. Each falls back to an SF Symbol when omitted.
    */
+  /** The courier's photo, cut to a circle. */
   courierAvatarUri?: string;
+  /** The rider-on-a-scooter illustration that travels along the bar. */
+  courierImageUri?: string;
+  /** Foody's burger-and-cup mark, white on transparent, for the badge. */
+  brandGlyphUri?: string;
 };
 
 /**
  * Built from `docs/design-spec-foody.md`. The comp measures 371 x 174pt against a ~160pt
  * ceiling, so this only needs trimming rather than the near-halving the delivery card
- * wanted; colours, weights and alignment are the comp's.
+ * wanted; colours, weights, alignment and the artwork are the comp's.
  *
  * The body is serialised by `babel-preset-expo` and re-evaluated in the widget extension,
  * so it may only reach for `@expo/ui`, JS builtins and its own declarations — hence the
@@ -66,25 +76,31 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
     primary: '#FFFFFF',
     secondary: '#B8C3CE',
     tertiary: '#C9D0DB',
+    // The soft mint halo behind the rider, fading to nothing.
+    glow: '#77FBDA66',
+    glowEnd: '#77FBDA00',
   };
 
   /**
    * The card and the island differ mostly in what the camera band leaves behind, so they
-   * carry separate size sets rather than one scale factor. `bar` is the width the fill and
-   * the scooter's run are measured against; being a little off only shifts the fill by the
-   * same fraction, and the scooter is clamped by its own trailing Spacer either way.
+   * carry separate size sets rather than one scale factor. The card runs at the comp's
+   * own sizes; the island at ~0.92 of them.
+   *
+   * `bar` is the width the fill and the rider's run are measured against; being a little
+   * off only shifts the fill by the same fraction, and the rider is clamped by its own
+   * trailing Spacer either way. `rider` keeps the illustration's 138:111 aspect.
    */
   const CARD = {
-    badge: 40, badgeGlyph: 20, brand: 15, item: 13, amount: 19, payment: 12,
-    scooter: 26, barH: 7, bar: 330,
-    avatar: 36, courier: 15, eta: 14, action: 36, actionGlyph: 17,
-    gutter: 11, pad: 10, rowGap: 10,
+    badge: 44, badgeGlyph: 22, brand: 15, item: 13, amount: 19, payment: 12,
+    riderW: 39, riderH: 31, barH: 7.5, bar: 335,
+    avatar: 37, courier: 16, eta: 15, action: 37, actionGlyph: 17,
+    gutter: 11, pad: 8, rowGap: 8, barGap: 2,
   };
   const ISLAND = {
-    badge: 36, badgeGlyph: 18, brand: 14, item: 12, amount: 17, payment: 11,
-    scooter: 24, barH: 6, bar: 340,
-    avatar: 34, courier: 14, eta: 13, action: 34, actionGlyph: 16,
-    gutter: 10, pad: 6, rowGap: 8,
+    badge: 40, badgeGlyph: 20, brand: 14.5, item: 12.5, amount: 18, payment: 11.5,
+    riderW: 36, riderH: 29, barH: 7, bar: 340,
+    avatar: 34, courier: 15, eta: 14, action: 34, actionGlyph: 16,
+    gutter: 10, pad: 4, rowGap: 7, barGap: 2,
   };
   type Sizes = typeof CARD;
 
@@ -108,7 +124,7 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
     );
   };
 
-  /** A glyph centred in a filled circle — the badge and the two action buttons. */
+  /** A glyph centred in a filled circle — the two action buttons and fallbacks. */
   const CircleIcon = (p: {
     systemName: SFSymbol;
     diameter: number;
@@ -125,6 +141,39 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
           frame({ width: p.diameter, height: p.diameter }),
           background(color.chip, shapes.circle()),
         ]}
+      />
+    );
+  };
+
+  /**
+   * The Foody mark: the comp's burger-and-cup, white on the chip. The PNG is 69 x 60, so
+   * the frame keeps that ratio. A takeout-bag symbol stands in if it is not staged.
+   */
+  const Badge = (p: { diameter: number; glyphSize: number }) => {
+    'use no memo';
+    if (props.brandGlyphUri) {
+      return (
+        <ZStack
+          modifiers={[
+            frame({ width: p.diameter, height: p.diameter }),
+            background(color.chip, shapes.circle()),
+          ]}>
+          <Image
+            uiImage={props.brandGlyphUri}
+            modifiers={[
+              resizable(),
+              frame({ width: p.glyphSize, height: p.glyphSize * (60 / 69) }),
+            ]}
+          />
+        </ZStack>
+      );
+    }
+    return (
+      <CircleIcon
+        systemName="takeoutbag.and.cup.and.straw.fill"
+        diameter={p.diameter}
+        glyphSize={p.glyphSize * 0.9}
+        tint={color.primary}
       />
     );
   };
@@ -165,12 +214,7 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
     'use no memo';
     return (
       <HStack spacing={p.s.gutter} alignment="center">
-        <CircleIcon
-          systemName="takeoutbag.and.cup.and.straw.fill"
-          diameter={p.s.badge}
-          glyphSize={p.s.badgeGlyph}
-          tint={color.primary}
-        />
+        <Badge diameter={p.s.badge} glyphSize={p.s.badgeGlyph} />
         <StackedPair
           align="leading"
           pin={p.pin}
@@ -196,17 +240,52 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
   };
 
   /**
-   * The courier rides the bar. Position comes from a transparent leading spacer with a
-   * Spacer taking the remainder, so overshooting `bar` only pushes the scooter up against
-   * the trailing edge rather than off it.
+   * The rider, with the comp's mint halo behind it. The halo is a radial gradient on a
+   * circle far larger than the rider's frame; a ZStack centres it on the rider and, since
+   * nothing here clips, it spills softly into the rows either side exactly as drawn.
+   */
+  const Rider = (p: { s: Sizes }) => {
+    'use no memo';
+    const halo = p.s.riderW * 3.2;
+    return (
+      <ZStack modifiers={[frame({ width: p.s.riderW, height: p.s.riderH })]}>
+        <Circle
+          modifiers={[
+            frame({ width: halo, height: halo }),
+            foregroundStyle({
+              type: 'radialGradient',
+              colors: [color.glow, color.glowEnd],
+              center: { x: 0.5, y: 0.5 },
+              startRadius: 0,
+              endRadius: halo / 2,
+            }),
+          ]}
+        />
+        {props.courierImageUri ? (
+          <Image
+            uiImage={props.courierImageUri}
+            modifiers={[resizable(), frame({ width: p.s.riderW, height: p.s.riderH })]}
+          />
+        ) : (
+          <Image systemName="moped.fill" size={p.s.riderH * 0.9} color={color.primary} />
+        )}
+      </ZStack>
+    );
+  };
+
+  /**
+   * The rider rides the bar, sitting just behind the fill's leading edge: in both comps
+   * its rear wheel trails the edge by about 4pt. Position comes from a transparent leading
+   * spacer with a Spacer taking the remainder, so overshooting `bar` only pushes the rider
+   * up against the trailing edge rather than off it.
    */
   const Courier = (p: { s: Sizes }) => {
     'use no memo';
-    const run = Math.max(0, p.s.bar - p.s.scooter * 1.6);
+    const lead = Math.max(0, p.s.bar * travel - p.s.riderW - 4);
     return (
       <HStack spacing={0} alignment="bottom">
-        <Rectangle modifiers={[frame({ width: run * travel, height: 1 }), opacity(0)]} />
-        <Image systemName="moped.fill" size={p.s.scooter} color={color.primary} />
+        <Rectangle modifiers={[frame({ width: lead, height: 1 }), opacity(0)]} />
+        <Rider s={p.s} />
         <Spacer />
       </HStack>
     );
@@ -216,26 +295,44 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
    * Two rectangles clipped to a capsule: rounded outer ends with a clean straight junction,
    * which is what the comp draws. A ProgressView would fill proportionally on its own but
    * leaves the unfilled track the system's grey, and the comp's is a specific dark grey.
+   *
+   * `bar` is an estimate of the track's real width, so at the end of the run the fill is
+   * allowed to take the whole track rather than leave a sliver of it showing.
    */
   const ProgressBar = (p: { s: Sizes }) => {
     'use no memo';
+    const done = travel >= 0.995;
+    // No conditional children: the serialised tree must not contain `null` nodes.
     return (
       <HStack spacing={0} modifiers={[frame({ height: p.s.barH }), clipShape('capsule')]}>
         <Rectangle
-          modifiers={[frame({ width: p.s.bar * travel }), foregroundStyle(color.mint)]}
+          modifiers={
+            done
+              ? [foregroundStyle(color.mint)]
+              : [frame({ width: p.s.bar * travel }), foregroundStyle(color.mint)]
+          }
         />
-        <Rectangle modifiers={[foregroundStyle(color.track)]} />
+        <Rectangle
+          modifiers={
+            done ? [frame({ width: 0 }), foregroundStyle(color.track)] : [foregroundStyle(color.track)]
+          }
+        />
       </HStack>
     );
   };
 
+  /** The courier's photo — the comp's, cut to a circle — with a glyph only if it is missing. */
   const Avatar = (p: { diameter: number }) => {
     'use no memo';
     if (props.courierAvatarUri) {
       return (
         <Image
           uiImage={props.courierAvatarUri}
-          modifiers={[frame({ width: p.diameter, height: p.diameter }), clipShape('circle')]}
+          modifiers={[
+            resizable(),
+            frame({ width: p.diameter, height: p.diameter }),
+            clipShape('circle'),
+          ]}
         />
       );
     }
@@ -271,13 +368,13 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
         </VStack>
         <Spacer />
         <CircleIcon
-          systemName="phone.connection.fill"
+          systemName="phone.connection"
           diameter={p.s.action}
           glyphSize={p.s.actionGlyph}
           tint={color.cyan}
         />
         <CircleIcon
-          systemName="ellipsis.bubble.fill"
+          systemName="ellipsis.bubble"
           diameter={p.s.action}
           glyphSize={p.s.actionGlyph}
           tint={color.mint}
@@ -289,7 +386,7 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
   const Body = (p: { s: Sizes }) => {
     'use no memo';
     return (
-      <VStack alignment="leading" spacing={0}>
+      <VStack alignment="leading" spacing={p.s.barGap}>
         <Courier s={p.s} />
         <ProgressBar s={p.s} />
       </VStack>
@@ -297,7 +394,7 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
   };
 
   return {
-    // Lock Screen and Notification Centre.
+    // Lock Screen and Notification Centre — the comp at its own sizes.
     banner: (
       <VStack
         alignment="leading"
@@ -319,12 +416,7 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
     // CarPlay and watchOS: the headline only.
     bannerSmall: (
       <HStack spacing={10} alignment="center" modifiers={[padding({ all: 10 })]}>
-        <CircleIcon
-          systemName="takeoutbag.and.cup.and.straw.fill"
-          diameter={30}
-          glyphSize={15}
-          tint={color.primary}
-        />
+        <Badge diameter={30} glyphSize={15} />
         <StackedPair
           align="leading"
           cap={150}
@@ -362,13 +454,8 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
 
     // Dynamic Island, collapsed — ref-01 and ref-02: badge and brand, then the ETA in mint.
     compactLeading: (
-      <HStack spacing={6} alignment="center">
-        <CircleIcon
-          systemName="takeoutbag.and.cup.and.straw.fill"
-          diameter={24}
-          glyphSize={12}
-          tint={color.primary}
-        />
+      <HStack spacing={7} alignment="center">
+        <Badge diameter={26} glyphSize={13} />
         <Line size={14} bold tint={color.primary} text={props.brand} />
       </HStack>
     ),
@@ -378,13 +465,7 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
       </HStack>
     ),
 
-    minimal: (
-      <Image
-        systemName="takeoutbag.and.cup.and.straw.fill"
-        size={14}
-        color={color.mint}
-      />
-    ),
+    minimal: <Badge diameter={24} glyphSize={12} />,
   };
 };
 
