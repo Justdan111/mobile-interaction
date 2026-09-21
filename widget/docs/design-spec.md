@@ -89,6 +89,10 @@ as far brighter and flatter than the comp.
 | `ID - JSQRW01202` | 182.3 .. 277.9 | 253.5 .. 261.8 | ~11.8pt |
 | avatar | 293.9 .. 328.9 | 230.6 .. 265.9 | 35pt circle |
 
+The avatar is the comp's own photograph, cut to a circle into `assets/widgets/` and staged
+into the app group by `stageWidgetAssets` (see `widgets/assets.ts`); the layout only falls
+back to a person glyph when the URI is missing.
+
 The rail's origin dot sits level with the **address**, not with the `From` label, and the
 rule stops beside `To`. There is no second dot and no vehicle on the rail.
 
@@ -103,3 +107,8 @@ rule stops beside `To`. There is no second dot and no vehicle on the rail.
 
 The truck sits at the **right end** of the capsule. Read as a progress track, that is the
 arrived state — which is how it is built: the capsule is the track and the truck rides it.
+
+The comp's camera dot is about 45pt across. A real Dynamic Island cutout is 126pt wide,
+and the compact regions sit outside it, so on a device the gap between the capsule and
+`32 Min` is nearly three times what the comp shows and cannot be closed by layout. The
+leading region also clips past ~100pt, so the capsule is 96pt on device, not 119.5.

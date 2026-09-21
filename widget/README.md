@@ -12,6 +12,15 @@ From/To route with a yellow origin dot and a rule running down to the
 destination; call and message actions beside the driver's name, reference ID and
 photo along the bottom.
 
+**`FoodDeliveryActivity`** — the Foody order card: the burger-and-cup badge, the
+order and its total, a rider illustration that travels along a mint progress bar
+under a soft halo, and the courier's photo, name and arrival time beside call
+and message buttons.
+
+The photos, the rider and the badge mark are the comps' own artwork, cut from
+`docs/screenshots/` into `assets/widgets/` and copied into the shared app group at
+launch so the widget extension can draw them (`widgets/assets.ts`).
+
 **It runs itself.** The trip is described by when it started and when it is due,
 not by a minute count the app has to decrement, so SwiftUI ticks the ETA down
 every second — on the Lock Screen, in the Dynamic Island, with the app suspended
@@ -87,6 +96,17 @@ dismisses it.
 
 To prove it really is running without the app: start a trip, force-quit the app
 from the app switcher, and watch the countdown keep going.
+
+The control screen also answers a URL, which is how a run is started without a tap
+when screenshotting from the terminal:
+
+```bash
+xcrun simctl openurl booted "widget:///?autostart=delivery"   # or foody
+xcrun simctl openurl booted "widget:///?autostart=end"        # end every activity
+```
+
+Starting one ends the other first, since two at once share the Dynamic Island and
+both collapse to their minimal circle.
 
 The card is sized to the Lock Screen's 160pt ceiling. Anything past that is cut
 off rather than scaled down, so check `widgets/README.md` before adding rows.
