@@ -1,4 +1,14 @@
 # macOS
 .DS_Store
 
-./docs
+# Dependencies and Expo build output
+node_modules/
+.expo/
+expo-env.d.ts
+
+# Agent tooling config (kept local, see 32eee52)
+CLAUDE.md
+.claude/
+
+# Local docs
+/docs
