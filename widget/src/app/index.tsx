@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   DeliveryTrackingActivity,
   FoodDeliveryActivity,
+  LofiPlayerActivity,
   stageWidgetAssets,
   widgetsDirectory,
   widgetsUnavailable,
@@ -14,6 +15,8 @@ import {
   type FoodDeliveryProps,
   type WidgetAssetUris,
 } from '../../widgets';
+import { LofiPreview } from '../lofi/LofiPreview';
+import { TRACKS, useLofiPlayer } from '../lofi/useLofiPlayer';
 
 /**
  * The comp's artwork, cut from the reference screenshots. The widgets get the same files
@@ -147,6 +150,8 @@ export default function ControlScreen() {
   foodTripRef.current = foodTrip;
   foodActivityRef.current = foodActivity;
 
+  const lofi = useLofiPlayer(assets, report);
+
   /**
    * Pushes the dot along the route. The ETA does not need this — SwiftUI counts that
    * down on its own — but nothing in SwiftUI can walk a dot down a path, so position
@@ -242,7 +247,7 @@ export default function ControlScreen() {
     setTrip(null);
   }, [activity, trip, report]);
 
-  // `widget:///?autostart=delivery|foody` starts an activity without a tap, so a run can
+  // `widget:///?autostart=delivery|foody|lofi` starts an activity without a tap, so a run can
   // be kicked off from the terminal with `xcrun simctl openurl` and screenshotted.
   const { autostart } = useLocalSearchParams<{ autostart?: string }>();
   useEffect(() => {
@@ -259,11 +264,14 @@ export default function ControlScreen() {
       setTrip(null);
       setFoodActivity(null);
       setFoodTrip(null);
+      await lofi.end();
     };
     if (autostart === 'delivery') {
       endAll().then(start);
     } else if (autostart === 'foody') {
       endAll().then(startFoody);
+    } else if (autostart === 'lofi') {
+      endAll().then(lofi.start);
     } else if (autostart === 'end') {
       endAll();
     }
@@ -345,6 +353,29 @@ export default function ControlScreen() {
               primary
             />
             <Button label="End order" onPress={endFoody} disabled={foodActivity === null} />
+          </View>
+
+          <View style={styles.divider} />
+
+          <Text style={styles.kicker}>LIVE ACTIVITY</Text>
+          <Text style={styles.title}>LO-FI player</Text>
+          <LofiPreview
+            playback={lofi.playback}
+            now={lofi.now}
+            angle={lofi.angle}
+            onCommand={lofi.command}
+          />
+          <Text style={styles.nowPlaying}>
+            {TRACKS[lofi.playback.index].title} · {lofi.playback.playing ? 'Playing' : 'Paused'}
+          </Text>
+          <View style={styles.buttons}>
+            <Button
+              label="Start player"
+              onPress={lofi.start}
+              disabled={lofi.activity !== null || !LofiPlayerActivity}
+              primary
+            />
+            <Button label="End player" onPress={lofi.end} disabled={lofi.activity === null} />
           </View>
 
           <Text style={styles.footnote}>
@@ -607,6 +638,7 @@ const styles = StyleSheet.create({
   buttonLabelPrimary: { color: '#000000' },
 
   footnote: { color: '#6E6E73', fontSize: 13, lineHeight: 19 },
+  nowPlaying: { color: '#9E9EA3', fontSize: 13, marginTop: -8 },
 
   divider: { height: 1, backgroundColor: '#17181B', marginVertical: 4 },
 });

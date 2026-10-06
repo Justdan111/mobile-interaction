@@ -14,9 +14,11 @@ import type { LiveActivityFactory } from 'expo-widgets';
 
 import type { DeliveryTrackingProps } from './DeliveryTrackingActivity';
 import type { FoodDeliveryProps } from './FoodDeliveryActivity';
+import type { LofiPlayerProps } from './LofiPlayerActivity';
 
 export type { DeliveryTrackingProps } from './DeliveryTrackingActivity';
 export type { FoodDeliveryProps } from './FoodDeliveryActivity';
+export type { LofiPlayerProps } from './LofiPlayerActivity';
 export { stageWidgetAssets, type WidgetAssetUris } from './assets';
 
 /**
@@ -44,12 +46,31 @@ function load<T extends object>(require_: () => { default: LiveActivityFactory<T
 const delivery = load<DeliveryTrackingProps>(() => require('./DeliveryTrackingActivity'));
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const food = load<FoodDeliveryProps>(() => require('./FoodDeliveryActivity'));
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const lofi = load<LofiPlayerProps>(() => require('./LofiPlayerActivity'));
 
 /** Van-tracking Live Activity, or `null` when the native module is not in this client. */
 export const DeliveryTrackingActivity = delivery.activity;
 
 /** Foody order-tracking Live Activity, or `null` when the native module is missing. */
 export const FoodDeliveryActivity = food.activity;
+
+/** LO-FI cassette player Live Activity, or `null` when the native module is missing. */
+export const LofiPlayerActivity = lofi.activity;
+
+/**
+ * Subscribes to presses on Live Activity buttons, or returns `null` without the native
+ * module. The LO-FI player's controls arrive here as `target`s; the app owns playback.
+ */
+export const addUserInteractionListener: typeof import('expo-widgets').addUserInteractionListener | null =
+  (() => {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      return (require('expo-widgets') as typeof import('expo-widgets')).addUserInteractionListener;
+    } catch {
+      return null;
+    }
+  })();
 
 /**
  * The app-group directory both the app and the widget extension can read, or `null`
@@ -68,4 +89,4 @@ export const widgetsDirectory: string | null = (() => {
  * Why the widgets could not be registered, or `null` when everything is in place.
  * Non-null means the app is running somewhere without the `expo-widgets` native module.
  */
-export const widgetsUnavailable = delivery.unavailable ?? food.unavailable;
+export const widgetsUnavailable = delivery.unavailable ?? food.unavailable ?? lofi.unavailable;

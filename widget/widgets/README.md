@@ -6,9 +6,11 @@ One file per widget or Live Activity, re-exported from `index.ts`.
 | --- | --- | --- | --- |
 | `DeliveryTrackingActivity.tsx` | Live Activity | `DeliveryTrackingActivity` | No |
 | `FoodDeliveryActivity.tsx` | Live Activity | `FoodDeliveryActivity` | No |
+| `LofiPlayerActivity.tsx` | Live Activity | `LofiPlayerActivity` | No |
 | `assets.ts` | App-side helper | — | — |
 
-Each is measured off its own comps: `docs/design-spec.md` and `docs/design-spec-foody.md`.
+Each is measured off its own comps: `docs/design-spec.md`, `docs/design-spec-foody.md` and
+`docs/design-spec-lofi.md`.
 
 ## Adding the next one
 
@@ -252,3 +254,25 @@ Note this needs a block body — a directive cannot go in a concise arrow body.
 `npm run check:widgets` catches a missing opt-out. It drives the real
 `babel-preset-expo` with the same caller flags Metro uses, reads the serialised layout
 back out, and fails on any identifier the extension will not have.
+
+## A bare shape fills itself — outline with the `strokeBorder` modifier instead
+
+`<Circle modifiers={[strokeBorder(…)]} />` does not draw just a ring. The shape still fills
+with the default foreground (near-white on the Lock Screen), and the stroke follows the
+frame's rectangle unless `shape` is passed. Stacked over a dark fill, that painted the LO-FI
+shell and every button chip pale grey. Put the fill on one shape and the outline on the
+container: `strokeBorder({ color, style, shape: 'circle' })`.
+
+## Buttons: `target`, then listen in the app
+
+`<Button target="toggle">` inside a Live Activity becomes a `LiveActivityIntent` that posts
+`{ source: '<ActivityName>', target }` to the app's `addUserInteractionListener`. The widget
+cannot change its own state — the app applies the press and calls `update()`. See
+`src/lofi/useLofiPlayer.ts`. Use `buttonStyle('plain')` or the system tints the label.
+
+## Checking the expanded island without a long-press
+
+The simulator cannot long-press the island, so the expanded layout cannot be screenshotted
+directly. Temporarily render the expanded composition in `banner` (same width within a few
+points), lock, screenshot, and revert. `docs/screenshots/device-20-lofi-island-layout-in-banner.png`
+was made that way.

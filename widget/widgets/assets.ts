@@ -22,6 +22,14 @@ export type WidgetAssetUris = {
   courier: string;
   /** Foody's burger-and-cup mark, white on transparent. */
   foodyGlyph: string;
+  /** LO-FI player stickers, cut from docs/screenshots/widget-3. */
+  lofiSticker: string;
+  smileySticker: string;
+  headphonesSticker: string;
+  /** LO-FI player tape reel, drawn by tools/make-lofi-art.py: hub, vinyl, rimmed vinyl. */
+  reelHub: string;
+  vinyl: string;
+  vinylRim: string;
 };
 
 const MODULES: Record<keyof WidgetAssetUris, number> = {
@@ -29,6 +37,12 @@ const MODULES: Record<keyof WidgetAssetUris, number> = {
   courierAvatar: require('../assets/widgets/courier-avatar.png'),
   courier: require('../assets/widgets/courier.png'),
   foodyGlyph: require('../assets/widgets/foody-glyph.png'),
+  lofiSticker: require('../assets/widgets/lofi-sticker.png'),
+  smileySticker: require('../assets/widgets/smiley-sticker.png'),
+  headphonesSticker: require('../assets/widgets/headphones-sticker.png'),
+  reelHub: require('../assets/widgets/reel-hub.png'),
+  vinyl: require('../assets/widgets/vinyl.png'),
+  vinylRim: require('../assets/widgets/vinyl-rim.png'),
 };
 
 /**
