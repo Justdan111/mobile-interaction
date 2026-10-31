@@ -24,8 +24,7 @@ const SEGMENTS = [
  */
 const EMPLOYER_ROLE = 'Employer';
 
-// Member avatars are rounded squares here, matching the radius of the file
-// rows on the other segment. The chat thread keeps Avatar's default circle.
+
 const AVATAR_RADIUS = 12;
 
 function MemberRow({
