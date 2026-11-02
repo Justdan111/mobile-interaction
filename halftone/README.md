@@ -24,5 +24,5 @@ expo-glass-effect (with a blurred fallback).
 
 ```bash
 npm install
-npx expo start
+npm start
 ```

@@ -19,5 +19,5 @@ Expo 57, expo-router, Reanimated, NativeWind, expo-blur.
 
 ```bash
 npm install
-npx expo start
+npm start
 ```

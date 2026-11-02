@@ -17,5 +17,5 @@ Expo 54, expo-router, Reanimated, NativeWind, react-native-svg.
 
 ```bash
 npm install
-npx expo start
+npm start
 ```
