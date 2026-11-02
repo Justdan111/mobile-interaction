@@ -80,7 +80,7 @@ under. Once it finishes:
 eas build:run --platform ios --profile development
 
 # Then start the dev server and press `i`.
-npx expo start --dev-client
+npm start
 ```
 
 `eas build:run` downloads the artifact, unpacks the `.app` and installs it. To do

@@ -20,5 +20,5 @@ Expo 57, expo-router, Reanimated, NativeWind, expo-linear-gradient.
 
 ```bash
 npm install
-npx expo start
+npm start
 ```
