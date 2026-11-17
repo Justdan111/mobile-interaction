@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { Pressable, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { router } from 'expo-router';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated, { Easing, FadeIn, FadeInDown } from 'react-native-reanimated';
 import { ParcelStack } from '../../components/home/ParcelStack';
 import { Barcode } from '../../components/ui/Barcode';
 import { TitleHeader } from '../../components/ui/Header';
@@ -12,6 +12,9 @@ import { C } from '../../theme/colors';
 import { Press } from '../../components/ui/Press';
 
 const ACTIVE = activeParcels();
+
+/** Home's sections cascade in top to bottom. */
+const rise = (i: number) => FadeInDown.duration(420).delay(i * 70);
 
 function ActionTile({ icon, label, onPress }: { icon: IconName; label: string; onPress: () => void }) {
   return (
@@ -44,10 +47,14 @@ export default function Home() {
   };
 
   return (
-    <Screen>
-      <TitleHeader title="Home" />
+    // Not scrollable: it all fits, and a scroll view would compete with the
+    // stack's swipe-up for the same upward drag.
+    <Screen scroll={false}>
+      <Animated.View entering={rise(0)}>
+        <TitleHeader title="Home" />
+      </Animated.View>
 
-      <View className="flex-row items-center rounded-full bg-ink" style={{ height: 58, paddingLeft: 22, paddingRight: 6 }}>
+      <Animated.View entering={rise(1)} className="flex-row items-center rounded-full bg-ink" style={{ height: 58, paddingLeft: 22, paddingRight: 6 }}>
         <TextInput
           value={query}
           onChangeText={setQuery}
@@ -68,14 +75,14 @@ export default function Home() {
         >
           <Icon name="scan" color={C.ink} surface={C.bar} size={22} />
         </Pressable>
-      </View>
+      </Animated.View>
 
-      <View className="flex-row" style={{ gap: 12, marginTop: 14 }}>
+      <Animated.View entering={rise(2)} className="flex-row" style={{ gap: 12, marginTop: 14 }}>
         <ActionTile icon="dolly" label={'Create\nShipment'} onPress={() => router.push('/shipment/new')} />
         <ActionTile icon="pin-home" label={'Pickup\nLocations'} onPress={() => router.push('/map')} />
-      </View>
+      </Animated.View>
 
-      <View className="flex-row items-center justify-between" style={{ marginTop: 34, marginBottom: 16 }}>
+      <Animated.View entering={rise(3)} className="flex-row items-center justify-between" style={{ marginTop: 34, marginBottom: 16 }}>
         <Text className="font-medium text-ink" style={{ fontSize: 17.5 }}>
           Active Packages <Text className="font-body">{`  (${ACTIVE.length})`}</Text>
         </Text>
@@ -84,9 +91,13 @@ export default function Home() {
             View All
           </Text>
         </Pressable>
-      </View>
+      </Animated.View>
 
-      <ParcelStack parcels={ACTIVE} width={inner} onFrontChange={onFrontChange} />
+      {/* The stack slides in from below after the header has settled. Eased, not
+          sprung: a spring overshoots and the card visibly bounces on arrival. */}
+      <Animated.View entering={FadeInDown.duration(520).delay(300).easing(Easing.out(Easing.cubic))} style={{ zIndex: 5 }}>
+        <ParcelStack parcels={ACTIVE} width={inner} onFrontChange={onFrontChange} />
+      </Animated.View>
 
       {/* Keyed on the parcel, so a new code fades in when the stack cycles. */}
       <Animated.View key={front.id} entering={FadeIn.duration(260)} style={{ marginTop: 48, alignItems: 'center' }}>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
@@ -93,15 +93,23 @@ function CardFace({ parcel, onTone }: { parcel: Parcel; onTone: string }) {
   );
 }
 
+/** How far up the front card has to travel before the next one is fully in place. */
+const LIFT = CARD_HEIGHT * 0.9;
+
 function StackCard({
   parcel,
   depth,
+  last,
   drag,
+  arrive,
   width,
 }: {
   parcel: Parcel;
   depth: number;
+  /** True for the card at the very back, which fades in after a cycle. */
+  last: boolean;
   drag: SharedValue<number>;
+  arrive: SharedValue<number>;
   width: number;
 }) {
   const tone = C[parcel.tone ?? 'sun'];
@@ -109,24 +117,31 @@ function StackCard({
   const face = useAnimatedStyle(() => {
     if (depth === 0) return { opacity: 1 };
     if (depth > 1) return { opacity: 0 };
-    return { opacity: Math.min(Math.abs(drag.value) / (width * 0.6), 1) };
+    return { opacity: interpolate(-drag.value, [LIFT * 0.25, LIFT], [0, 1], 'clamp') };
   });
   const style = useAnimatedStyle(() => {
-    // As the front card is dragged away, every card behind moves up one slot.
-    const progress = Math.min(Math.abs(drag.value) / (width * 0.6), 1);
-    const d = depth === 0 ? 0 : depth - progress;
-    const scale = 1 - (d * INSET * 2) / width;
-    const ty = CARD_HEIGHT / 2 + d * PEEK - (CARD_HEIGHT / 2) * scale;
     if (depth === 0) {
+      // Follows the finger up; past the lift it keeps going and fades, so it
+      // reads as tossed off the top of the stack rather than slid away.
+      const up = Math.min(drag.value, 0);
       return {
+        opacity: interpolate(-drag.value, [LIFT, LIFT * 1.7], [1, 0], 'clamp'),
         transform: [
-          { translateX: drag.value },
-          { translateY: Math.abs(drag.value) * 0.04 },
-          { rotate: `${interpolate(drag.value, [-width, width], [-9, 9])}deg` },
+          { translateY: drag.value },
+          { scale: interpolate(-up, [0, LIFT], [1, 0.94], 'clamp') },
+          { rotate: `${interpolate(-up, [0, LIFT], [0, -3], 'clamp')}deg` },
         ],
       };
     }
-    return { transform: [{ translateY: ty }, { scale }] };
+    // Every card behind moves up one slot as the front card leaves.
+    const progress = interpolate(-drag.value, [0, LIFT], [0, 1], 'clamp');
+    const d = depth - progress;
+    const scale = 1 - (d * INSET * 2) / width;
+    const ty = CARD_HEIGHT / 2 + d * PEEK - (CARD_HEIGHT / 2) * scale;
+    return {
+      opacity: last ? arrive.value : 1,
+      transform: [{ translateY: ty + (last ? (1 - arrive.value) * PEEK : 0) }, { scale }],
+    };
   });
 
   return (
@@ -154,8 +169,9 @@ function StackCard({
 }
 
 /**
- * Home's stack of active parcels. Fling the front card either way and it
- * goes to the back; the next one rises into place. Tap opens the parcel.
+ * Home's stack of active parcels. Swipe the front card up and it lifts off
+ * the stack; the next parcel rises into its place with its own details, and
+ * the thrown card slips in again at the back. Tap opens the parcel.
  */
 export function ParcelStack({
   parcels,
@@ -168,47 +184,60 @@ export function ParcelStack({
 }) {
   const [order, setOrder] = useState(() => parcels.map((_, i) => i));
   const drag = useSharedValue(0);
+  const arrive = useSharedValue(1);
 
   const cycle = useCallback(() => {
     setOrder((o) => [...o.slice(1), o[0]]);
-    Haptics.selectionAsync().catch(() => {});
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
   }, []);
 
   const pan = usePanGesture({
-    activeOffsetX: [-12, 12],
-    failOffsetY: [-14, 14],
+    // Activates on an upward drag only; sideways or downward first moves fail,
+    // so a tap still opens the parcel.
+    activeOffsetY: [-10, 10000],
+    failOffsetX: [-18, 18],
     onUpdate: (e) => {
       'worklet';
-      drag.value = e.translationX;
+      // Pulling down rubber-bands: the stack has nothing above the front card.
+      drag.value = e.translationY < 0 ? e.translationY : e.translationY * 0.2;
     },
     onDeactivate: (e) => {
       'worklet';
-      const flung = Math.abs(e.translationX) > width * 0.28 || Math.abs(e.velocityX) > 800;
+      const flung = -e.translationY > LIFT * 0.4 || e.velocityY < -650;
       if (flung) {
-        const dir = Math.sign(e.translationX || e.velocityX) || 1;
-        drag.value = withTiming(dir * width * 1.3, { duration: 220 }, (done) => {
+        drag.value = withTiming(-LIFT * 1.8, { duration: 260 }, (done) => {
           if (done) scheduleOnRN(cycle);
         });
       } else {
-        drag.value = withSpring(0, { damping: 16, stiffness: 180 });
+        drag.value = withSpring(0, { damping: 15, stiffness: 190 });
       }
     },
   });
 
-  // Reset the drag in the same commit that reorders the cards. Resetting it
-  // before the reorder lands flashes the thrown card back to the centre for a
-  // frame; resetting after flashes the new front card off-screen.
+  // Reset in the same commit that reorders the cards. Resetting before the
+  // reorder lands flashes the thrown card back on top for a frame; resetting
+  // after flashes the new front card off the top.
+  // The back card's fade-in only belongs after a swipe; on first mount the
+  // whole stack is already sliding in, and a second motion reads as a bounce.
+  const mounted = useRef(false);
   useLayoutEffect(() => {
     drag.value = 0;
-  }, [order, drag]);
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+    arrive.value = 0;
+    arrive.value = withTiming(1, { duration: 320 });
+  }, [order, drag, arrive]);
 
   useEffect(() => {
     onFrontChange(parcels[order[0]]);
   }, [order, parcels, onFrontChange]);
 
   const front = parcels[order[0]];
+  const lastDepth = parcels.length - 1;
   return (
-    <View style={{ height: CARD_HEIGHT + PEEK * (parcels.length - 1) }}>
+    <View style={{ height: CARD_HEIGHT + PEEK * lastDepth }}>
       {order
         .map((idx, depth) => ({ idx, depth }))
         .reverse()
@@ -219,15 +248,24 @@ export function ParcelStack({
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={`Open ${front.id}`}
+                  accessibilityHint="Swipe up for the next package"
                   onPress={() => router.push(`/package/${front.id}`)}
                   style={{ flex: 1 }}
                 >
-                  <StackCard parcel={parcels[idx]} depth={0} drag={drag} width={width} />
+                  <StackCard parcel={parcels[idx]} depth={0} last={false} drag={drag} arrive={arrive} width={width} />
                 </Pressable>
               </View>
             </GestureDetector>
           ) : (
-            <StackCard key={parcels[idx].id} parcel={parcels[idx]} depth={depth} drag={drag} width={width} />
+            <StackCard
+              key={parcels[idx].id}
+              parcel={parcels[idx]}
+              depth={depth}
+              last={depth === lastDepth}
+              drag={drag}
+              arrive={arrive}
+              width={width}
+            />
           )
         )}
     </View>

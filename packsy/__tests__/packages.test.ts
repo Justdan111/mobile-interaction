@@ -44,6 +44,13 @@ describe('parcel derivations', () => {
     PARCELS.forEach((p) => expect(ids.has(p.pickupId)).toBe(true));
   });
 
+  it('ships B6H52NK903 within Nigeria, to a locker that is not drawn on the Paris map', () => {
+    const p = get('B6H52NK903');
+    expect(p.origin).toEqual({ city: 'Lagos', country: 'Nigeria' });
+    expect(p.destination).toEqual({ city: 'Abuja', country: 'Nigeria' });
+    expect(PLACES.find((x) => x.id === p.pickupId)?.city).toBe('Abuja');
+  });
+
   it('keeps events in chronological order', () => {
     PARCELS.forEach((p) => {
       const at = p.events.map((e) => e.at);

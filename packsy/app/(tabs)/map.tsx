@@ -26,7 +26,7 @@ export default function MapScreen() {
   const [opened, setOpened] = useState(false);
   const [query, setQuery] = useState('');
 
-  const places = useMemo(() => PLACES.filter((p) => filter === 'all' || p.kind === filter), [filter]);
+  const places = useMemo(() => PLACES.filter((p) => p.city === 'Paris' && (filter === 'all' || p.kind === filter)), [filter]);
   const current = PLACES.find((p) => p.id === selected);
 
   const select = (p: Place) => {
@@ -36,7 +36,7 @@ export default function MapScreen() {
 
   const search = () => {
     const q = query.trim().toLowerCase();
-    const hit = q && PLACES.find((p) => `${p.name} ${p.address}`.toLowerCase().includes(q));
+    const hit = q && PLACES.find((p) => p.city === 'Paris' && `${p.name} ${p.address}`.toLowerCase().includes(q));
     if (hit) {
       setFilter('all');
       select(hit);
