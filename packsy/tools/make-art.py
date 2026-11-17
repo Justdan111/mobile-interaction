@@ -1,0 +1,141 @@
+"""Cut every parcel photograph out of its backdrop and write the manifest the
+app imports.
+
+Runs over `assets/img/*.jpg` automatically: add a row to tools/photos.tsv,
+run tools/fetch-photos.sh, re-run this, done. Nothing is tuned per photo.
+
+The comps put a parcel directly on a flat yellow card, so a photo only
+belongs there if it carries no trace of the room it was shot in: no floor,
+no wall, no grey halo along its edge. Three things make that hold for any
+input:
+
+    1. U2Net matting (via rembg) instead of colour keying. The hero box is
+       shot on a wooden floor against a grey wall; there is no single backdrop
+       colour to key.
+    2. Edge decontamination. A semi-transparent edge pixel still carries the
+       backdrop's colour, which reads as a grey rim on yellow. Each edge
+       pixel's colour is replaced by the colour of the nearest solid subject
+       pixels (an alpha-weighted blur), so the rim takes the box's own kraft.
+    3. A trim to the subject's bounding box, because screens size the image
+       into a fixed frame and dead margin silently shrinks the parcel.
+
+Usage (Python 3.12 or 3.13 — onnxruntime has no 3.14 wheels yet):
+    python3.12 -m venv .venv && .venv/bin/pip install numpy pillow "rembg[cpu]"
+    .venv/bin/python tools/make-art.py
+
+Stop Metro first: it watches `assets/` and caches a half-written PNG as
+`Error: Empty file` until restarted.
+"""
+
+import glob
+import os
+
+import numpy as np
+from PIL import Image, ImageFilter
+from rembg import new_session, remove
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SRC = os.path.join(ROOT, "assets", "img")
+OUT = os.path.join(ROOT, "assets", "art")
+MANIFEST = os.path.join(ROOT, "lib", "art.ts")
+WIDTH = 900
+
+SESSION = new_session("u2net")
+
+
+def matte(im):
+    cut = remove(im, session=SESSION, post_process_mask=True)
+    return np.asarray(cut.convert("RGBA").getchannel("A"), np.float32) / 255.0
+
+
+def keep_largest(alpha):
+    """Drop specks the model kept that are not the parcel (a floor knot, a
+    highlight on the wall). Flood-fills from the strongest pixel and keeps
+    only what is connected to it."""
+    solid = alpha > 0.5
+    if not solid.any():
+        return alpha
+    h, w = solid.shape
+    seen = np.zeros_like(solid)
+    y0, x0 = np.unravel_index(np.argmax(alpha), alpha.shape)
+    stack = [(y0, x0)]
+    seen[y0, x0] = True
+    while stack:
+        y, x = stack.pop()
+        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            ny, nx = y + dy, x + dx
+            if 0 <= ny < h and 0 <= nx < w and solid[ny, nx] and not seen[ny, nx]:
+                seen[ny, nx] = True
+                stack.append((ny, nx))
+    # Grow the kept region a little so its soft edge survives.
+    grown = Image.fromarray((seen * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(9))
+    return alpha * (np.asarray(grown, np.float32) / 255.0)
+
+
+def decontaminate(rgb, alpha, radius):
+    """Replace edge colour with the subject's own colour from just inside."""
+    solid = (alpha > 0.95).astype(np.float32)
+    # Pillow cannot blur float images, so each 0..255 plane goes through 8-bit.
+    blur = lambda a: np.asarray(
+        Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)).filter(
+            ImageFilter.GaussianBlur(radius)
+        ),
+        np.float32,
+    )
+    weight = blur(solid * 255) / 255.0
+    inner = np.dstack([blur(rgb[..., c] * solid) for c in range(3)])
+    inner = inner / np.maximum(weight[..., None], 1e-4)
+    t = np.clip((0.95 - alpha) / 0.95, 0, 1)[..., None]
+    has = (weight > 1e-3)[..., None]
+    return np.where(has, rgb * (1 - t) + inner * t, rgb)
+
+
+def cutout(src, dst):
+    im = Image.open(src).convert("RGB")
+    im = im.resize((WIDTH, round(im.height * WIDTH / im.width)), Image.LANCZOS)
+    a = keep_largest(matte(im))
+    a = np.asarray(
+        Image.fromarray((a * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.8)),
+        np.float32,
+    ) / 255.0
+    rgb = decontaminate(np.asarray(im, np.float32), a, radius=WIDTH * 0.01)
+    out = Image.fromarray(
+        np.dstack([np.clip(rgb, 0, 255).astype(np.uint8), (a * 255).astype(np.uint8)]),
+        "RGBA",
+    )
+    box = out.getchannel("A").point(lambda v: 255 if v > 6 else 0).getbbox()
+    if box:
+        out = out.crop(box)
+    out.save(dst, optimize=True)
+    return out.size
+
+
+def main():
+    os.makedirs(OUT, exist_ok=True)
+    entries = []
+    for src in sorted(glob.glob(os.path.join(SRC, "*.jpg"))):
+        slug = os.path.splitext(os.path.basename(src))[0]
+        w, h = cutout(src, os.path.join(OUT, f"{slug}.png"))
+        print(f"cut   {slug:14s} -> {w}x{h}")
+        entries.append((slug, w, h))
+
+    # Generated because React Native's `require` must be a static literal.
+    # The aspect ratio ships with each entry so screens can size a parcel by
+    # one edge without measuring the image at runtime.
+    lines = [
+        "// GENERATED by tools/make-art.py — do not edit by hand.",
+        "",
+        "export const art = {",
+    ]
+    lines += [
+        f"  '{s}': {{ source: require('../assets/art/{s}.png'), aspect: {w / h:.4f} }},"
+        for s, w, h in entries
+    ]
+    lines += ["} as const;", "", "export type ArtKey = keyof typeof art;", ""]
+    with open(MANIFEST, "w") as f:
+        f.write("\n".join(lines))
+    print(f"wrote lib/art.ts with {len(entries)} entries")
+
+
+if __name__ == "__main__":
+    main()

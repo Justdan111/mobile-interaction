@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Packsy is dark-only apart from the iris onboarding screen. Every value here
+   was sampled from the comps in .design/comps/. The same values live in
+   theme/colors.ts for places a className cannot reach (SVG fills, Reanimated
+   styles) — change both together. */
+@layer base {
+  :root {
+    --color-page: 28 28 28;     /* #1C1C1C screen ground */
+    --color-card: 43 43 43;     /* #2B2B2B cards, fields, tiles */
+    --color-raised: 58 58 58;   /* #3A3A3A icon chips sitting on a card */
+    --color-bar: 17 17 17;      /* #111111 tab bar */
+    --color-ink: 255 255 255;
+    --color-muted: 122 122 122; /* #7A7A7A captions */
+    --color-faint: 92 92 92;    /* #5C5C5C placeholders, hairlines */
+    --color-pill: 208 208 208;  /* #D0D0D0 active tab, active chip */
+    --color-sun: 242 207 115;   /* #F2CF73 parcel card */
+    --color-iris: 128 130 247;  /* #8082F7 onboarding, In Transit */
+    --color-coral: 229 110 92;  /* #E56E5C third card, unread dot */
+    --color-go: 94 184 105;     /* #5EB869 progress, Received */
+  }
+}
+
+/* expo-google-fonts registers each weight as its own family, so weight alone
+   selects nothing on Android: the family is named with the weight. */
+@layer components {
+  .font-body     { font-family: Poppins_400Regular; font-weight: 400; }
+  .font-medium   { font-family: Poppins_500Medium;  font-weight: 500; }
+  .font-semibold { font-family: Poppins_600SemiBold; font-weight: 600; }
+}
