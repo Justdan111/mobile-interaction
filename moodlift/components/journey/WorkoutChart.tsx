@@ -3,7 +3,7 @@ import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 import type { DayMetrics } from '../../lib/activity';
 
 /**
- * The small filled area chart beside Calories — `journey-activity.png`.
+ * The small filled area chart beside Calories.
  *
  * Shows the same day's hourly series as the steps matrix, so the two cards
  * describe one day rather than two unrelated ones.

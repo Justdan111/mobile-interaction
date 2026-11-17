@@ -27,25 +27,18 @@ export function VoiceNote({
   /** Circle background behind the play icon — not the waveform's colour. */
   tint: string;
   /**
-   * Play-triangle colour. Defaults to white, which is correct against an
-   * accent-tinted circle (other messages) but invisible against a
-   * white-tinted one (own messages) — see MessageBubble, which passes a
-   * contrasting colour for that case. Comp 6's own voice note shows an
-   * accent-coloured triangle on a white circle, not a white-on-white one.
+   * Play-triangle colour. White suits an accent circle; MessageBubble passes a
+   * contrasting colour for the white circle on own messages.
    */
   iconColor?: string;
   /**
-   * Waveform bar colour. Deliberately separate from `tint`: the comp's
-   * other-sender bars are neutral gray (no accent tint), while `tint` for
-   * that case is the accent-purple circle background — one value can't
-   * serve both without accent-tinting bars the comp draws in plain gray.
+   * Waveform bar colour. Separate from `tint`: other-sender bars are neutral
+   * gray while their circle is accent-tinted.
    */
   barColor: string;
   /**
-   * Duration colour. A prop for the same reason `barColor` and `iconColor`
-   * are: this text sits on the bubble, whose fill differs between own and
-   * other messages. It was the one colour here left hardcoded to `muted`, and
-   * on an accent-filled own bubble that is roughly 1.1:1 against its ground.
+   * Duration colour. A prop because the bubble fill differs between own and
+   * other messages; `muted` on the accent own bubble is about 1.1:1.
    */
   durationColor: string;
 }) {

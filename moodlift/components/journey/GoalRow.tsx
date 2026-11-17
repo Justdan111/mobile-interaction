@@ -10,7 +10,7 @@ const ACCENT = '#E8724C';
 const TRACK = '#2A2A2C';
 
 /**
- * A goal row with its progress ring — `journey-activity.png`.
+ * A goal row with its progress ring.
  *
  * Progress is read from `goalProgress`, the same solved series the charts use,
  * so a goal can never disagree with the chart above it.

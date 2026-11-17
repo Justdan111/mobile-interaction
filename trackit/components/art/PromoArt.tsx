@@ -3,7 +3,7 @@ import Svg, { Circle, Defs, G, LinearGradient, Path, Polygon, Rect, Stop } from 
 /**
  * The translucent marks that sit on the right of each promo card. They are
  * always drawn in white at low opacity so one component works on every card
- * colour, and both overrun the card so it clips them exactly as in the design.
+ * colour, and both overrun the card so it clips them.
  */
 
 /** Coupon ticket with a perforated stub and a big percent mark. */

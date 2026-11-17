@@ -13,9 +13,8 @@ import type { Profile } from '../../data/types';
 
 export function ProfileHeader({ profile }: { profile: Profile }) {
   const { t } = useTheme();
-  // The plate runs to the top of the screen behind the status bar, as the comp
-  // draws it, so the screen cannot inset the top edge for us — the padding has
-  // to come from here.
+  // The plate runs behind the status bar, so the top inset is applied here
+  // rather than by the screen.
   const insets = useSafeAreaInsets();
 
   return (

@@ -104,10 +104,8 @@ describe('threadPreview', () => {
   });
 });
 
-// These fixtures deliberately differ in id/title/dates from `project` above,
-// so a derivation that returned a fixed, plausible-looking constant (rather
-// than actually reading the given projects) would fail here even though it
-// could pass the single-fixture tests above.
+// These fixtures differ from `project` above, so a derivation that returned a
+// fixed constant would fail here.
 describe('marksFromProjects (varies with input)', () => {
   const other: Project = {
     ...project,

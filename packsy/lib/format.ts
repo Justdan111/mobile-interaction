@@ -1,5 +1,5 @@
 /**
- * Dates in the comps are wall-clock times at the parcel's location, so they are
+ * Dates are wall-clock times at the parcel's location, so they are
  * stored as zone-less ISO strings ("2026-03-28T14:11") and formatted by hand.
  * Going through `Date` would shift them into the device's timezone, and Hermes'
  * Intl support varies by build.
@@ -21,7 +21,7 @@ export function formatDate(iso: string): string {
   return `${MONTHS[p.m - 1]} ${p.d}, ${p.y}`;
 }
 
-/** "Apr 01, 2026" — the zero-padded form the comp uses for the expected-by line. */
+/** "Apr 01, 2026" — the zero-padded form used for the expected-by line. */
 export function formatDatePadded(iso: string): string {
   const p = parse(iso);
   return `${MONTHS[p.m - 1]} ${String(p.d).padStart(2, '0')}, ${p.y}`;

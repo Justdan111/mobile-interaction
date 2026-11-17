@@ -5,7 +5,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Sampled from the comps. Keep in sync with theme/colors.ts.
+        // Keep in sync with theme/colors.ts.
         ground: '#F1F1F1',
         surface: '#FFFFFF',
         inset: '#EAEAEA',

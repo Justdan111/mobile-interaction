@@ -20,8 +20,6 @@ const SEGMENTS = [
 ];
 
 export default function Chats() {
-  // Feeds this screen's scroll position to the floating tab bar, which
-  // shrinks to icons on the way down and expands again on the way up.
   const tabBarScroll = useTabBarScroll();
   const router = useRouter();
   const { t } = useTheme();
@@ -31,10 +29,7 @@ export default function Chats() {
   );
   const [left, setLeft] = useState<Set<string>>(() => new Set());
 
-  // `data/people.ts` is the single authoritative sender->name lookup; the
-  // only thing this screen adds on top is the "You" display convention for
-  // the current user's own messages in a preview chip, rather than showing
-  // their full profile name back to themselves.
+  // Own messages preview as "You" rather than the profile name.
   const people = useMemo(() => ({ ...allPeople, me: 'You' }), []);
 
   const visibleTeams = sourceTeams.filter((x) => !left.has(x.id));

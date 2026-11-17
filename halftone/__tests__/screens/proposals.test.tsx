@@ -13,10 +13,8 @@ const incoming = proposals.filter((p) => p.direction === 'incoming');
 
 /**
  * Accept/Decline show only while an incoming proposal is still open. One
- * incoming proposal ships already declined — deliberately, so the status-chip
- * branch has real coverage — so the button count is the undecided count, not
- * the incoming count. The brief asserted `incoming.length` and would have
- * failed against its own data.
+ * incoming proposal ships already declined, so the button count is the
+ * undecided count, not the incoming count.
  */
 const undecided = incoming.filter((p) => p.status === 'sent' || p.status === 'viewed');
 
@@ -85,8 +83,7 @@ describe('Proposals', () => {
 });
 
 describe('Proposal card detail', () => {
-  // The card grammar matches the feed's, and the feed stamps a posted date.
-  // `at` is an ISODateTime, so formatPostedDate must be handed the date half —
+  // `at` is an ISODateTime, so formatPostedDate must be handed the date half;
   // given the whole string it reads NaN out of "12T09:30:00".
   it('stamps each proposal with a readable date, not NaN', async () => {
     await wrap();
@@ -97,10 +94,7 @@ describe('Proposal card detail', () => {
     }
   });
 
-  // The card used to chip every non-accepted status with a clock, so "Declined"
-  // rendered under an icon meaning "still waiting" — the glyph contradicting the
-  // word next to it. The invariant, not the literals: a settled status never
-  // wears the pending icon, and every status has an icon at all.
+  // A settled status never wears the pending icon, and every status has one.
   it('never marks a settled status with the pending icon', () => {
     const pending = STATUS_ICON.sent;
     expect(STATUS_ICON.viewed).toBe(pending);

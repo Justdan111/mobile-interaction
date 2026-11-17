@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react-native';
+import { render, screen } from '@testing-library/react-native';
 import PassScreen from '../app/(tabs)/pass';
 import { PassTimer } from '../components/pass/PassTimer';
 

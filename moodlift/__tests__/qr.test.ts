@@ -49,10 +49,8 @@ describe('qrMatrix', () => {
   });
 });
 
-// Guards for the rendering geometry. These exact values were established by
-// rendering QrCanvas's drawing off-device and decoding it with jsQR: a dot
-// radius below half a module, or a quiet zone under 4, produces a code that
-// looks right and scans as nothing. Neither is a cosmetic choice.
+// Guards for the rendering geometry: a dot radius at or below half a module, or
+// a quiet zone under 4, produces a code that looks right and scans as nothing.
 describe('QrCanvas geometry', () => {
   it('keeps the quiet zone the spec requires', () => {
     expect(QUIET_MODULES).toBeGreaterThanOrEqual(4);

@@ -15,7 +15,7 @@ const MONTHS = [
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
-/** `17:00 – 17:45`. En dash, matching the comps. */
+/** `17:00 – 17:45`, with an en dash. */
 export function formatTimeRange(startsAt: string, durationMin: number): string {
   const start = new Date(startsAt);
   const end = new Date(start.getTime() + durationMin * 60_000);
@@ -68,7 +68,7 @@ export function formatCountdown(msRemaining: number): string {
   return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 }
 
-/** `3,548`. Fixed to en-US grouping so the figure matches the comps everywhere. */
+/** `3,548`. Fixed to en-US grouping so the figure reads the same on every device. */
 export function formatSteps(steps: number): string {
   return steps.toLocaleString('en-US');
 }

@@ -19,8 +19,8 @@ import { LofiPreview } from '../lofi/LofiPreview';
 import { TRACKS, useLofiPlayer } from '../lofi/useLofiPlayer';
 
 /**
- * The comp's artwork, cut from the reference screenshots. The widgets get the same files
- * staged into the app group (see `widgets/assets.ts`); the previews use them directly.
+ * Photos and illustrations. The widgets get the same files staged into the app group
+ * (see `widgets/assets.ts`); the previews use them directly.
  */
 const ART = {
   driverAvatar: require('../../assets/widgets/driver-avatar.png'),
@@ -247,14 +247,12 @@ export default function ControlScreen() {
     setTrip(null);
   }, [activity, trip, report]);
 
-  // `widget:///?autostart=delivery|foody|lofi` starts an activity without a tap, so a run can
-  // be kicked off from the terminal with `xcrun simctl openurl` and screenshotted.
+  // `widget:///?autostart=delivery|foody|lofi|end` starts or ends an activity without a tap.
   const { autostart } = useLocalSearchParams<{ autostart?: string }>();
   useEffect(() => {
     if (!assets) return;
-    // One activity at a time: two running at once share the island and both collapse
-    // to their minimal presentation, which is not what a screenshot run is after.
-    // `end` clears every instance of both, including ones left over from earlier launches.
+    // One activity at a time: two running at once share the island and both collapse to
+    // their minimal presentation. This also clears instances left by earlier launches.
     const endAll = async () => {
       await Promise.all(
         [...(DeliveryTrackingActivity?.getInstances() ?? []), ...(FoodDeliveryActivity?.getInstances() ?? [])]
@@ -412,8 +410,8 @@ function Chip({
 }
 
 /**
- * The delivery card as the comp draws it, at the comp's own proportions — the preview has
- * the whole screen, so unlike the Live Activity it need not give up the comp's air.
+ * The delivery card at full proportions: unlike the Live Activity, the preview is not
+ * bound by the ~160pt cap.
  */
 function Preview({
   progress,
@@ -477,9 +475,8 @@ function Preview({
   );
 }
 
-/** The Foody card as the comp draws it: rider on the bar, halo behind, photo and glyphs. */
+/** The Foody card: rider on the bar, halo behind, photo and glyphs. */
 function FoodyPreview({ progress, minutes }: { progress: number; minutes: number }) {
-  const riderW = 39;
   return (
     <View style={f.card}>
       <View style={d.top}>

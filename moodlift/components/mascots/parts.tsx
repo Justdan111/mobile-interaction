@@ -2,7 +2,7 @@ import React from 'react';
 import { Path, Circle } from 'react-native-svg';
 
 /**
- * The mascots in the comps are drawn with two distinct weights: limbs and
+ * The mascots are drawn with two distinct weights: limbs and
  * faces in a thin outline, and legs in a heavy solid stroke with a blob foot.
  * Both take `ink` from the caller — nothing here knows what it sits on.
  */

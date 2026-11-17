@@ -6,7 +6,7 @@ import Svg, { ClipPath, Defs, G, LinearGradient, Path, Polygon, Rect, Stop } fro
  *
  * Everything is derived from six corner points, so the corrugation, locking
  * rods and rails all share one perspective. The card clips whatever runs past
- * its right edge, exactly as in the design.
+ * its right edge.
  */
 
 type P = { x: number; y: number };

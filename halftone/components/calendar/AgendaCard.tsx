@@ -15,7 +15,6 @@ export function AgendaCard({ item, onPress }: { item: AgendaItem; onPress: () =>
       <View style={{ width: 5, backgroundColor: t.accent }} />
       <View className="w-[74px] items-center justify-center py-4">
         <Text className="font-display text-ink text-[30px]">{day}</Text>
-        {/* Comp draws the month abbreviation in accent under the white day. */}
         <Text className="text-accent text-[13px] font-semibold">{month}</Text>
       </View>
       <View className="flex-1 justify-center py-4 pr-3">

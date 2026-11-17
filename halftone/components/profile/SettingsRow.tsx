@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, Text } from 'react-native';
 import { Icon, type IconName } from '../ui/icons';
 import { useTheme } from '../../lib/theme';
 

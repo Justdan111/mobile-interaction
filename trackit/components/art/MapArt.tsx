@@ -2,7 +2,7 @@ import Svg, { Circle, Defs, Ellipse, G, Path, RadialGradient, Rect, Stop } from 
 
 /**
  * The night-mode chart behind Live tracking: near-black water, slate landmasses
- * and a faint aurora across the top. Coordinates are design points, so the
+ * and a faint aurora across the top. Coordinates are in points, so the
  * markers laid over it can use the same numbers.
  */
 

@@ -8,10 +8,7 @@ import { useTheme } from '../../lib/theme';
 import { ACTION_FOREGROUND_COLOR } from '../../lib/tokens';
 import type { Proposal, ProposalStatus } from '../../data/types';
 
-/**
- * A clock on every non-accepted status told the user a declined proposal was
- * still pending — the icon contradicting the word beside it.
- */
+/** Declined gets its own icon; a clock would read as still pending. */
 export const STATUS_ICON: Record<ProposalStatus, IconName> = {
   sent: 'clock',
   viewed: 'clock',

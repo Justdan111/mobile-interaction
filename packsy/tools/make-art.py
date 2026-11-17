@@ -4,7 +4,7 @@ app imports.
 Runs over `assets/img/*.jpg` automatically: add a row to tools/photos.tsv,
 run tools/fetch-photos.sh, re-run this, done. Nothing is tuned per photo.
 
-The comps put a parcel directly on a flat yellow card, so a photo only
+The app puts a parcel directly on a flat yellow card, so a photo only
 belongs there if it carries no trace of the room it was shot in: no floor,
 no wall, no grey halo along its edge. Three things make that hold for any
 input:

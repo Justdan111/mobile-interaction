@@ -4,7 +4,7 @@ import { widths } from '../../lib/code128';
 
 /**
  * A Code 128 rendering of `value`, stretched to `width`. Bars are drawn in
- * `bar` on a transparent ground, so the comp's white-on-black look is just
+ * `bar` on a transparent ground, so a white-on-black look is just
  * `bar="#FFFFFF"` over the dark page.
  */
 export function Barcode({ value, width, height, bar }: { value: string; width: number; height: number; bar: string }) {

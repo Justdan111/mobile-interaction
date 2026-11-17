@@ -31,10 +31,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [preference, setPreferenceState] = useState<Preference>('system');
   const [hydrated, setHydrated] = useState(false);
 
-  // Restore the stored preference once on mount. Every exit from this read —
-  // a valid value, nothing stored, a corrupt value `isPreference` rejects, or
-  // the read itself failing — must still flip `hydrated`, or the splash
-  // screen (which waits on it in app/_layout.tsx) hangs forever.
+  // Every exit from this read, including a failure, must flip `hydrated`, or
+  // the splash screen (which waits on it) hangs forever.
   useEffect(() => {
     let cancelled = false;
     AsyncStorage.getItem(THEME_STORAGE_KEY)
@@ -42,8 +40,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         if (!cancelled && isPreference(stored)) setPreferenceState(stored);
       })
       .catch(() => {
-        // Read failed (e.g. storage unavailable) — fall back to the default
-        // preference rather than leaving the app stuck unhydrated.
+        // Read failed: keep the default preference.
       })
       .finally(() => {
         if (!cancelled) setHydrated(true);

@@ -7,7 +7,7 @@ import { formatRelativeSlot, INTENSITY_LABEL } from '../../lib/format';
 import { Icon } from '../ui/icons';
 import { Tag } from '../ui/Chip';
 
-/** A list row — `.design/comps/workouts-browse.png`. */
+/** A workout list row. */
 export function WorkoutRow({
   workout,
   onPress,

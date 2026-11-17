@@ -83,17 +83,14 @@ describe('Profile header plate', () => {
     expect(PROFILE_PLATE_COLOR).not.toBe(tokens.dark.page);
   });
 
-  // Four separate defects in this build have been a foreground drawn on a
-  // surface it cannot be read against. The plate and its ink are both fixed, so
-  // their contrast is a constant and can simply be asserted.
+  // The plate and its ink are both fixed, so their contrast is a constant.
   it('keeps its ink legible against it', () => {
     expect(contrast(PROFILE_PLATE_INK, PROFILE_PLATE_COLOR)).toBeGreaterThan(4.5);
   });
 });
 
 describe('Dark Mode switch wiring', () => {
-  // The label used to sit on a plain View wrapping the Toggle, so the node the
-  // name resolved to had neither the checked state nor the press handler.
+  // The label must sit on the switch itself, not on a wrapping View.
   it('puts the name, the state and the press target on one control', async () => {
     await wrap();
     const control = screen.getByLabelText('Dark Mode');

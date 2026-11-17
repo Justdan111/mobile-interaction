@@ -4,7 +4,7 @@ import { Pressable, type PressableProps, type StyleProp, type ViewStyle } from '
 /**
  * Pressable with a pressed-state style. NativeWind's css-interop wraps
  * Pressable and silently drops a `style` *function* — the button renders
- * with no style at all (seen on Get Started: no white pill, text left-aligned).
+ * with no style at all.
  * So the pressed state is tracked here and a plain style object is passed on.
  */
 export function Press({

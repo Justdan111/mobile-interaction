@@ -11,7 +11,7 @@ const ART = {
   vinyl: require('../../assets/widgets/vinyl.png'),
 };
 
-/** The comp's canvas, in points. The preview draws at this size and scales to fit. */
+/** The reference canvas, in points. The preview draws at this size and scales to fit. */
 const W = 371;
 const H = 199;
 
@@ -32,7 +32,7 @@ const C = {
   dim: '#8E8E8E',
 };
 
-/** Positions a box by its centre, in comp points — the same coordinates the widget uses. */
+/** Positions a box by its centre, in canvas points — the same coordinates the widget uses. */
 function at(cx: number, cy: number, w: number, h: number) {
   return { position: 'absolute' as const, left: cx - w / 2, top: cy - h / 2, width: w, height: h };
 }
@@ -52,9 +52,8 @@ function Glyph({ name, size, color }: { name: SFSymbol; size: number; color: str
 }
 
 /**
- * ref-03 at its own size: the expanded island as the comp draws it. The Live Activity has
- * to fit this into ~160pt, so the preview is where the full proportions live. Its buttons
- * send the same commands as the island's.
+ * The expanded player at full proportions, which the Live Activity has to squeeze into
+ * ~160pt. Its buttons send the same commands as the island's.
  */
 export function LofiPreview({
   playback,

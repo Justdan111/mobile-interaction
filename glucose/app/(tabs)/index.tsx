@@ -88,8 +88,8 @@ export default function Dashboard() {
         </View>
         <View className="mt-[9px] h-[1px] bg-rule" />
 
-        {/* Three columns on a 39% grid — the trailing stat lands where the
-            comp puts it, well short of the right margin. */}
+        {/* Three columns on a 39% grid, so the trailing stat lands well short
+            of the right margin. */}
         <View className="mt-5 flex-row">
           {summary.map((stat, i) => (
             <View

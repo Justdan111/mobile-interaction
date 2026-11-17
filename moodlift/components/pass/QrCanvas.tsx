@@ -5,9 +5,8 @@ import { qrMatrix } from '../../lib/qr';
 const FINDER_SIZE = 7;
 
 /**
- * Geometry a scanner actually tolerates, established by rasterising this
- * component's exact drawing off-device and decoding it with jsQR. None of
- * these three values is cosmetic:
+ * Geometry a scanner actually tolerates (measured by decoding renders with
+ * jsQR). None of these three values is cosmetic:
  *
  *   dot radius  0.42 -> unreadable   0.50 -> unreadable
  *               0.55 -> decodes      0.60 -> decodes (used, for margin)
@@ -32,10 +31,10 @@ function inFinder(row: number, col: number, n: number): boolean {
 }
 
 /**
- * The pass code — `.design/comps/pass-qr.png`.
+ * The pass code.
  *
  * Data modules are dots and the three finder patterns are redrawn in the accent
- * colour, which is what gives the comp's code its look. Finder modules are
+ * colour. Finder modules are
  * skipped in the data pass rather than overpainted, so rounded corners aren't
  * fighting square modules underneath.
  */
@@ -125,8 +124,7 @@ export function QrCanvas({
       {finder(0, n - FINDER_SIZE)}
       {finder(n - FINDER_SIZE, 0)}
 
-      {/* The centre badge. Error correction M tolerates this much occlusion —
-          confirmed by decoding a render with the badge in place. */}
+      {/* The centre badge. Error correction M tolerates this much occlusion. */}
       <Rect
         x={centre - badge / 2}
         y={centre - badge / 2}

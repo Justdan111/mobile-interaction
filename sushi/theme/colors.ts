@@ -1,7 +1,4 @@
-/**
- * Sampled rather than eyeballed — the paper,
- * the vermilion and the near-black are the whole identity of this app.
- */
+/** The paper, the vermilion and the near-black are the whole identity of this app. */
 export const colors = {
   paper: '#E6DFD1',
   paperDeep: '#DCD3C1',

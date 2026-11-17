@@ -70,9 +70,7 @@ describe('VoiceNote duration legibility', () => {
     expect(r.getByText('0:05').props.style.color).toBe('#123456');
   });
 
-  // The duration shipped as `muted` grey on the accent-filled own bubble —
-  // about 1.1:1, unreadable — because it was the one colour in this component
-  // that was not a prop. `muted` on `card` is fine; `muted` on `accent` is not.
+  // `muted` on `card` is fine; `muted` on the accent own bubble is about 1.1:1.
   it('proves muted is unreadable on an accent bubble, which is why this is a prop', () => {
     expect(contrast(tokens.light.muted, tokens.light.accent)).toBeLessThan(2);
     expect(contrast(tokens.dark.muted, tokens.dark.accent)).toBeLessThan(3);

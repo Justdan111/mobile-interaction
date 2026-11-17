@@ -8,9 +8,8 @@ import { Icon } from '../../components/ui/icons';
 import { ThemeProvider } from '../../lib/theme';
 import { tokens } from '../../lib/tokens';
 
-// @testing-library/react-native@14 declares `render` as async (it awaits
-// React's `act` internally), so every call below is awaited and the
-// "throws outside a provider" assertion uses `rejects.toThrow`.
+// RNTL v14's `render` is async, so every call is awaited and the "throws
+// outside a provider" assertion uses `rejects.toThrow`.
 const wrap = (ui: React.ReactElement) => render(<ThemeProvider>{ui}</ThemeProvider>);
 
 // Forces the native color scheme so ThemeProvider resolves to a specific,
@@ -22,11 +21,8 @@ jest.mock('react-native/Libraries/Utilities/useColorScheme', () => ({
 import mockUseColorSchemeImport from 'react-native/Libraries/Utilities/useColorScheme';
 const mockUseColorScheme = mockUseColorSchemeImport as jest.Mock;
 
-// Depth-first search through a `toJSON()` render tree for the first node
-// carrying a `backgroundColor` style. Used to prove a component's rendered
-// color actually comes from the current theme's tokens rather than a
-// hardcoded hex — a render tree assertion that would fail if a component
-// were hardcoded to one mode.
+// Depth-first search of a `toJSON()` tree for the first node with a
+// `backgroundColor` style.
 function findBackgroundColor(node: any): string | undefined {
   if (!node || typeof node !== 'object') return undefined;
   const styleValue = node.props?.style;
@@ -65,17 +61,12 @@ describe('Segmented', () => {
   });
 
   it('marks the active option as selected for assistive tech', async () => {
-    // Tied to the specific option by `name`, not just "some tab is selected"
-    // — a component that always marked the first option active (ignoring
-    // `value`) would fail this, since 'Calendar' is the second option here.
+    // 'Calendar' is the second option, so this fails if the first is always active.
     await wrap(<Segmented options={options} value="b" onChange={() => {}} />);
     expect(screen.getByRole('tab', { name: 'Calendar', selected: true })).toBeTruthy();
   });
 
   it('marks the inactive option as not selected', async () => {
-    // Complements the test above: proves the component distinguishes the two
-    // options rather than marking every tab (or none) as selected, and again
-    // ties the assertion to the specific option by name.
     await wrap(<Segmented options={options} value="b" onChange={() => {}} />);
     expect(screen.getByRole('tab', { name: 'Active projects', selected: false })).toBeTruthy();
   });
@@ -99,9 +90,7 @@ describe('Toggle', () => {
   });
 
   it('reports the flipped value when starting on', async () => {
-    // Complements the off->on case above: a component that ignored `value`
-    // on press and always reported `true` would pass the off->on test by
-    // coincidence but fails this one, which starts from `value={true}`.
+    // Starts from `value={true}`, so a toggle that always reports `true` fails.
     const onChange = jest.fn();
     await wrap(<Toggle value={true} onChange={onChange} />);
     fireEvent.press(screen.getByRole('switch'));
@@ -114,8 +103,6 @@ describe('Toggle', () => {
   });
 
   it('exposes off state to assistive tech too', async () => {
-    // Complements the "on" case above: proves `checked` actually tracks the
-    // `value` prop in both directions, not just reporting `true` always.
     await wrap(<Toggle value={false} onChange={() => {}} />);
     expect(screen.getByRole('switch').props.accessibilityState.checked).toBe(false);
   });
@@ -125,9 +112,7 @@ describe('Toggle', () => {
       mockUseColorScheme.mockReset();
     });
 
-    // These two prove the off-state track color is actually read from
-    // useTheme().t rather than a fixed hex: light and dark chip tokens
-    // differ, so a component hardcoded to either mode fails one of these.
+    // Light and dark chip tokens differ, so a hardcoded track colour fails one.
     it('uses the light chip token when the theme resolves to light', async () => {
       mockUseColorScheme.mockReturnValue('light');
       const rendered = await wrap(<Toggle value={false} onChange={() => {}} />);
@@ -143,15 +128,10 @@ describe('Toggle', () => {
 });
 
 describe('Icon', () => {
-  // Regression coverage for a real bug: the 'star' icon's <Path> originally
-  // wrote `fill={filled ? color : 'none'} {...s}`, with the spread AFTER the
-  // explicit fill — so `s.fill` ('none') always won and `filled` was a
-  // silent no-op. These assert the resolved `fill` on the rendered SVG path
-  // node directly, so they fail again if that ordering regresses.
+  // The `fill` must not be overridden by a spread placed after it, or `filled`
+  // is a silent no-op.
   it('fills the star with the given color when filled is true', async () => {
-    // react-native-svg normalizes `fill` to its own processed-color object
-    // (`{ payload, type }`), not the raw string — match the same idiom
-    // already established in __tests__/halftone/Halftone.test.tsx.
+    // react-native-svg normalizes `fill` to a processed `{ payload, type }`.
     const rendered = await render(<Icon name="star" size={20} color="#112233" filled />);
     const path = rendered.root!.queryAll((i: { type: string }) => i.type === 'RNSVGPath')[0];
     expect(path.props.fill.payload).toBe(processColor('#112233'));

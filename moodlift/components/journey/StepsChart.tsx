@@ -7,7 +7,7 @@ const COLUMNS = 12;
 const ROWS = 4;
 
 /**
- * The dot-matrix steps chart from `.design/comps/journey-activity.png`.
+ * The dot-matrix steps chart.
  *
  * Each column is a two-hour block of the day; the number of lit dots is that
  * block's share of the busiest block, so the matrix reads as a shape rather

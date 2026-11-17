@@ -71,8 +71,7 @@ describe('mascots', () => {
   // six in a single test and unmounting between them detaches `screen`, and
   // every later assertion then reads an empty tree and passes vacuously.
   describe.each(MOODS.map((m) => [m.id, m.label] as const))('%s', (id) => {
-    // The rule that keeps breaking in this repo: a foreground colour baked in
-    // against an assumed surface. Every mascot must paint what it is handed.
+    // Every mascot must paint what it is handed, never a baked-in foreground.
     it('paints the fill it is given', async () => {
       await renderMascot(id);
       expect(colours('fill')).toContain(FILL);

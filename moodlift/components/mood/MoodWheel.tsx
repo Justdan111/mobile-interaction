@@ -30,7 +30,7 @@ export type MoodWheelProps = {
 /**
  * The label track.
  *
- * Not a ScrollView any more: the card owns a pan gesture, and a ScrollView
+ * Not a ScrollView: the card owns a pan gesture, and a ScrollView
  * underneath it would compete for the same horizontal drag. This is a pure
  * indicator that slides to centre `preview`.
  *

@@ -11,7 +11,6 @@ export type TabDef = {
   icon: IconName;
 };
 
-/** Tab order is taken from the bar in `.design/comps/home-no-mood.png`. */
 export const TABS: readonly TabDef[] = [
   { name: 'index', href: '/', label: 'Home', icon: 'home' },
   { name: 'workouts', href: '/workouts', label: 'Workouts', icon: 'dumbbell' },
@@ -35,7 +34,7 @@ export type TabItemProps = {
 
 /**
  * One tab. The focused state is a filled coral disc with a dark glyph; idle
- * tabs are a muted outline with no chrome, matching the comps.
+ * tabs are a muted outline with no chrome.
  */
 export const TabItem = React.forwardRef<View, TabItemProps>(
   ({ icon, label, isFocused, onPress, index = 0 }, ref) => (
@@ -78,8 +77,7 @@ export function MoodTabBar({ children }: { children: React.ReactNode }) {
       style={{ paddingBottom: Math.max(insets.bottom, 12) }}
       pointerEvents="box-none"
     >
-      {/* Full-bleed minus a side gutter, with the five items spread evenly —
-          the bar in the comps reaches nearly edge to edge. */}
+      {/* Full-bleed minus a side gutter, with the five items spread evenly. */}
       <View className="mx-4 flex-row items-center justify-around self-stretch rounded-full bg-card px-2 py-1.5">
         {children}
       </View>

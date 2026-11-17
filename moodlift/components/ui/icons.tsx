@@ -40,11 +40,11 @@ export type IconProps = {
 };
 
 /**
- * A single 24x24 line-icon set drawn to match the comps' stroke weight.
+ * A single 24x24 line-icon set.
  *
  * `color` has no default on purpose. Every icon in this app sits on a surface
- * chosen by its caller — page, card, sage, or a mood colour — and a baked-in
- * foreground is the defect that has recurred across this repo.
+ * chosen by its caller — page, card, sage, or a mood colour — so a baked-in
+ * foreground would be wrong on most of them.
  */
 export function Icon({ name, color, size = 24, strokeWidth = 1.6, fill = 'none' }: IconProps) {
   const common = {

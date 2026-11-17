@@ -4,7 +4,7 @@ import type { WeekDay } from '../../lib/week';
 
 const ACCENT = '#E8724C';
 
-/** The Mon–Sun strip from `.design/comps/calendar.png`. */
+/** The Mon–Sun week strip on the calendar screen. */
 export function WeekStrip({
   days,
   selected,

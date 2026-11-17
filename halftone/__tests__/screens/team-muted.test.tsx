@@ -5,11 +5,8 @@ import { ThemeProvider } from '../../lib/theme';
 import { teams as realTeams } from '../../data/teams';
 
 /**
- * Every team in data/teams.ts is unmuted, which makes `useState(!team.muted)`
- * and `useState(true)` indistinguishable on the real fixtures. Rather than add
- * a muted team to the shared data purely to give a test a positive case, this
- * suite mocks the module with a muted copy of the same team, so the inversion
- * is exercised with nothing else changed.
+ * Every fixture team is unmuted, so this suite mocks the data module with a
+ * muted copy of one team to exercise `useState(!team.muted)`.
  */
 const MUTED_TEAM = { ...realTeams.find((t) => t.name === 'Website Development')!, muted: true };
 

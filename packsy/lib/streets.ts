@@ -1,5 +1,5 @@
 /**
- * The Map tab's city, generated rather than tiled. The comp's map is a
+ * The Map tab's city, generated rather than tiled. The map is a
  * stylised old-town plan (thin pale streets, a few broad dark avenues, one
  * labelled street) that no live map style reproduces, and drawing it as SVG
  * keeps the app runnable in Expo Go with no API key.

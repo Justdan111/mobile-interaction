@@ -82,7 +82,6 @@ export default function Splash() {
   const reduceMotion = useReducedMotion();
   const [textWidth, setTextWidth] = useState(0);
 
-  // Shared values driving the sequence.
   const boxScale = useSharedValue(reduceMotion ? 1 : 0);
   const boxOpacity = useSharedValue(reduceMotion ? 1 : 0);
   const markX = useSharedValue(0);

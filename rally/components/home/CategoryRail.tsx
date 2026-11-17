@@ -3,10 +3,7 @@ import { BrandMark, type BrandId } from '@/components/icons';
 import { brands } from '@/data/brands';
 import { colors } from '@/theme/colors';
 
-/**
- * Selection is a visual affordance only — it reorders nothing. The comp shows
- * one tile filled teal, so the state exists to reproduce that.
- */
+/** Selection is a visual affordance only — it reorders nothing. */
 export function CategoryRail({
   selected,
   onSelect,
@@ -30,9 +27,8 @@ export function CategoryRail({
             onPress={() => onSelect(brand.id)}
             accessibilityRole="button"
             accessibilityLabel={brand.name}
-            // Sized off the comp: four tiles plus a sliver of the fifth fit
-            // across the screen, which is what makes the row read as a rail
-            // rather than three buttons.
+            // Four tiles plus a sliver of the fifth fit across the screen, so
+            // the row reads as a rail rather than a set of buttons.
             className={`h-[72px] w-[92px] items-center justify-center gap-1.5 rounded-2xl ${
               active ? 'bg-teal' : 'bg-surface'
             }`}

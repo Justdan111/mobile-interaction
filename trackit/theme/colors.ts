@@ -1,5 +1,4 @@
-// Tokens sampled directly from the reference design.
-// Mirrored in tailwind.config.js for className use; this file is for props
+// Colour tokens. Mirrored in tailwind.config.js for className use; this file is for props
 // that don't take a className (SVG fills, gradient stops, icon colors…).
 export const colors = {
   // Surfaces
@@ -40,11 +39,11 @@ export const colors = {
   tabInactive: '#9AA0A6',
   tabAccent: '#3CB566',
 
-  // Legacy splash tokens
+  // Splash
   splash: '#151C26',
   wordmark: '#5BC47F',
   brandDark: '#1B8049',
 } as const;
 
-/** Screen gutter — the design keeps 16pt on both sides. */
+/** Screen gutter, 16pt on both sides. */
 export const GUTTER = 16;

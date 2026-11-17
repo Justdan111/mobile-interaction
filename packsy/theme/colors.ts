@@ -1,7 +1,7 @@
 /**
  * The palette as hex, for places a className cannot reach: SVG fills,
  * Reanimated styles, icon props. Mirrors the CSS variables in global.css —
- * change both together. Every value was sampled from `.design/comps/`.
+ * change both together.
  */
 export const C = {
   page: '#1C1C1C',

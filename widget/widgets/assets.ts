@@ -5,10 +5,6 @@
  * `file://` URL, so every photo and illustration has to be copied somewhere both sides
  * can read — the `widgetsDirectory` `expo-widgets` exposes inside the app group. This is
  * app-side code: it is *not* a widget body, so importing modules here is fine.
- *
- * The files themselves are cut from the reference comps in `docs/screenshots/`, which is
- * what makes the driver, courier, rider and badge match the design rather than stand in
- * for it with SF Symbols.
  */
 import { Asset } from 'expo-asset';
 import { Directory, File } from 'expo-file-system';
@@ -22,7 +18,7 @@ export type WidgetAssetUris = {
   courier: string;
   /** Foody's burger-and-cup mark, white on transparent. */
   foodyGlyph: string;
-  /** LO-FI player stickers, cut from docs/screenshots/widget-3. */
+  /** LO-FI player stickers, cut by tools/make-lofi-art.py. */
   lofiSticker: string;
   smileySticker: string;
   headphonesSticker: string;

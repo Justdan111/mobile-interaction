@@ -32,13 +32,11 @@
   }
 }
 
-/* Ruling R3. expo-google-fonts registers each Inter weight as its own family,
-   so `font-weight` alone cannot select a face on Android. Binding family and
-   weight together here — rather than as `fontFamily` keys in the Tailwind
-   config — avoids emitting two competing rules for `.font-medium`,
-   `.font-semibold` and `.font-bold` (one fontFamily, one fontWeight), where
-   which one wins is undefined. Every component in this plan already uses these
-   class names, so no call site changes. */
+/* expo-google-fonts registers each Inter weight as its own family, so
+   `font-weight` alone cannot select a face on Android. Binding family and
+   weight together here, rather than as `fontFamily` keys in the Tailwind
+   config, avoids two competing rules per class where which one wins is
+   undefined. */
 @layer components {
   .font-medium   { font-family: Inter_500Medium;   font-weight: 500; }
   .font-semibold { font-family: Inter_600SemiBold; font-weight: 600; }

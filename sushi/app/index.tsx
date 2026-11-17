@@ -67,7 +67,7 @@ export default function Onboarding() {
 
           {/* Sun, then the ridge wash over it, then the pine over that — the
               order is the depth of the scene, and it is what lets the peak
-              eclipse the bottom of the disc the way the comp does. */}
+              eclipse the bottom of the disc. */}
           <View style={{ position: 'absolute', right: -W * 0.05, top: H * 0.05 }}>
             <SumiLandscape width={W * 0.84} height={W * 0.79} pine={false} />
           </View>

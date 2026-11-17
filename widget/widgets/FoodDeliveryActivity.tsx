@@ -21,10 +21,9 @@ import type { SFSymbol } from 'sf-symbols-typescript';
 /**
  * Content shown by the Foody order-tracking Live Activity.
  *
- * `progress` drives both the bar and the rider on it, and is the one thing the system
- * cannot work out for itself. The arrival figure is a string rather than a live timer
- * because the comp reads `7 min`, which is neither of the two shapes SwiftUI's
- * self-updating date styles produce — see docs/design-spec-foody.md.
+ * `progress` drives both the bar and the rider on it. The arrival figure is a string
+ * rather than a live timer because `7 min` is not a shape SwiftUI's self-updating date
+ * styles can produce.
  */
 export type FoodDeliveryProps = {
   /** Restaurant or app name shown as the headline. For example `Foody`. */
@@ -54,10 +53,6 @@ export type FoodDeliveryProps = {
 };
 
 /**
- * Built from `docs/design-spec-foody.md`. The comp measures 371 x 174pt against a ~160pt
- * ceiling, so this only needs trimming rather than the near-halving the delivery card
- * wanted; colours, weights, alignment and the artwork are the comp's.
- *
  * The body is serialised by `babel-preset-expo` and re-evaluated in the widget extension,
  * so it may only reach for `@expo/ui`, JS builtins and its own declarations — hence the
  * inline colour tokens. Every nested component needs `'use no memo'`, because Expo's
@@ -82,13 +77,9 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
   };
 
   /**
-   * The card and the island differ mostly in what the camera band leaves behind, so they
-   * carry separate size sets rather than one scale factor. The card runs at the comp's
-   * own sizes; the island at ~0.92 of them.
-   *
-   * `bar` is the width the fill and the rider's run are measured against; being a little
-   * off only shifts the fill by the same fraction, and the rider is clamped by its own
-   * trailing Spacer either way. `rider` keeps the illustration's 138:111 aspect.
+   * Separate size sets for the card and the island, which loses height to the camera band.
+   * `bar` is an estimate of the track width the fill and rider are measured against.
+   * `rider` keeps the illustration's 138:111 aspect.
    */
   const CARD = {
     badge: 44, badgeGlyph: 22, brand: 15, item: 13, amount: 19, payment: 12,
@@ -146,8 +137,7 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
   };
 
   /**
-   * The Foody mark: the comp's burger-and-cup, white on the chip. The PNG is 69 x 60, so
-   * the frame keeps that ratio. A takeout-bag symbol stands in if it is not staged.
+   * The Foody mark, white on the chip. The PNG is 69 x 60, so the frame keeps that ratio. A takeout-bag symbol stands in if it is not staged.
    */
   const Badge = (p: { diameter: number; glyphSize: number }) => {
     'use no memo';
@@ -179,11 +169,9 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
   };
 
   /**
-   * `pin` keeps a stack at its natural width beside a Spacer, which otherwise hands it far
-   * less and truncates. It is only safe where the row is wide — a pinned stack refuses to
-   * shrink, so in a Dynamic Island region it overflows and the rounded corner clips it.
-   * Narrow regions take a width cap, which is what gives `minimumScaleFactor` something to
-   * scale against.
+   * `pin` stops text truncating beside a Spacer, but a pinned stack refuses to shrink and
+   * gets clipped in the Dynamic Island. Narrow regions take a width `cap` instead, which
+   * gives `minimumScaleFactor` something to scale against.
    */
   const StackedPair = (p: {
     top: React.ReactNode;
@@ -240,9 +228,8 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
   };
 
   /**
-   * The rider, with the comp's mint halo behind it. The halo is a radial gradient on a
-   * circle far larger than the rider's frame; a ZStack centres it on the rider and, since
-   * nothing here clips, it spills softly into the rows either side exactly as drawn.
+   * The rider over a mint halo: a radial gradient on a circle larger than the rider's frame,
+   * left unclipped so it spills softly into the neighbouring rows.
    */
   const Rider = (p: { s: Sizes }) => {
     'use no memo';
@@ -274,10 +261,8 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
   };
 
   /**
-   * The rider rides the bar, sitting just behind the fill's leading edge: in both comps
-   * its rear wheel trails the edge by about 4pt. Position comes from a transparent leading
-   * spacer with a Spacer taking the remainder, so overshooting `bar` only pushes the rider
-   * up against the trailing edge rather than off it.
+   * The rider trails the fill's leading edge by about 4pt. A transparent leading spacer
+   * positions it and a Spacer takes the remainder, so overshooting `bar` cannot push it off.
    */
   const Courier = (p: { s: Sizes }) => {
     'use no memo';
@@ -292,12 +277,8 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
   };
 
   /**
-   * Two rectangles clipped to a capsule: rounded outer ends with a clean straight junction,
-   * which is what the comp draws. A ProgressView would fill proportionally on its own but
-   * leaves the unfilled track the system's grey, and the comp's is a specific dark grey.
-   *
-   * `bar` is an estimate of the track's real width, so at the end of the run the fill is
-   * allowed to take the whole track rather than leave a sliver of it showing.
+   * Two rectangles clipped to a capsule; a ProgressView would force the system's track grey.
+   * `bar` is only an estimate, so near the end the fill takes the whole track.
    */
   const ProgressBar = (p: { s: Sizes }) => {
     'use no memo';
@@ -321,7 +302,7 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
     );
   };
 
-  /** The courier's photo — the comp's, cut to a circle — with a glyph only if it is missing. */
+  /** The courier's photo cut to a circle, with a glyph only if it is missing. */
   const Avatar = (p: { diameter: number }) => {
     'use no memo';
     if (props.courierAvatarUri) {
@@ -394,7 +375,7 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
   };
 
   return {
-    // Lock Screen and Notification Centre — the comp at its own sizes.
+    // Lock Screen and Notification Centre.
     banner: (
       <VStack
         alignment="leading"
@@ -428,8 +409,8 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
       </HStack>
     ),
 
-    // Dynamic Island, expanded — the presentation ref-03 and ref-04 were drawn for. The
-    // rounded corners clip whatever hugs the edge, so both top regions carry an inset.
+    // Dynamic Island, expanded. The rounded corners clip whatever hugs the edge, so both
+    // top regions carry an inset.
     expandedLeading: (
       <HStack modifiers={[padding({ leading: 4 })]}>
         <OrderIdentity s={ISLAND} cap={150} />
@@ -452,7 +433,7 @@ const FoodDeliveryActivity = (props: FoodDeliveryProps, environment: LiveActivit
       </VStack>
     ),
 
-    // Dynamic Island, collapsed — ref-01 and ref-02: badge and brand, then the ETA in mint.
+    // Dynamic Island, collapsed: badge and brand, then the ETA.
     compactLeading: (
       <HStack spacing={7} alignment="center">
         <Badge diameter={26} glyphSize={13} />

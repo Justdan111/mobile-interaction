@@ -57,8 +57,8 @@ export type LofiPlayerProps = {
   reelAngle: number;
   repeatOn: boolean;
   /**
-   * `file://` URIs staged into `widgetsDirectory` by `stageWidgetAssets`. The stickers are
-   * cut from docs/screenshots/widget-3, the reel art drawn by tools/make-lofi-art.py.
+   * `file://` URIs staged into `widgetsDirectory` by `stageWidgetAssets`. The art is
+   * produced by tools/make-lofi-art.py.
    */
   lofiStickerUri?: string;
   smileyStickerUri?: string;
@@ -69,10 +69,8 @@ export type LofiPlayerProps = {
 };
 
 /**
- * Built from docs/design-spec-lofi.md. The comp is one 371 x 199pt canvas — a grey cassette
- * shell over a dark island, controls underneath — against a ~160pt ceiling, so the shell is
- * drawn into whatever height each presentation leaves and its contents are placed by the
- * comp's own coordinates, scaled. See `Shell`.
+ * A cassette shell with controls underneath. The shell fills whatever height each
+ * presentation leaves under the ~160pt cap, its contents placed on a scaled canvas; see `Shell`.
  *
  * The body is serialised by `babel-preset-expo` and re-evaluated in the widget extension, so
  * it may only reach for `@expo/ui`, JS builtins and its own declarations — hence the inline
@@ -102,7 +100,7 @@ const LofiPlayerActivity = (props: LofiPlayerProps, environment: LiveActivityEnv
     dimGlyph: '#8E8E8E',
   };
 
-  /** The comp's shell canvas, in points. Everything inside it is placed in these units. */
+  /** The reference shell canvas, in points. Everything inside it is placed in these units. */
   const COMP_W = 371;
   const COMP_H = 140;
 
@@ -172,8 +170,8 @@ const LofiPlayerActivity = (props: LofiPlayerProps, environment: LiveActivityEnv
 
   /**
    * Orange fill on a dark capsule. Playing, SwiftUI advances it from the track's start and
-   * end dates; paused, it holds `position`. The system draws its own translucent track,
-   * which reads as the comp's dark groove over the `track` capsule behind it.
+   * end dates; paused, it holds `position`. The system's translucent track sits over the
+   * `track` capsule behind it.
    */
   const Bar = (p: { w: number; h: number }) => {
     'use no memo';
@@ -191,12 +189,12 @@ const LofiPlayerActivity = (props: LofiPlayerProps, environment: LiveActivityEnv
   };
 
   /**
-   * The cassette shell, the comp's top 140pt, drawn W x H. Positions scale by width and
-   * height separately so the shell fills whatever room a presentation has; artwork scales
-   * by height only, keeping circles round. Text keeps legible sizes rather than scaling.
+   * The cassette shell, drawn W x H. Positions scale by width and height separately so the
+   * shell fills whatever room a presentation has; artwork scales by height only, keeping
+   * circles round. Text keeps legible sizes rather than scaling.
    *
-   * `stickers` draws LO-FI and the headphones inside the shell, as the comp does. The
-   * Dynamic Island moves them up beside the camera instead, where they cost no height.
+   * `stickers` draws LO-FI and the headphones inside the shell. The Dynamic Island moves
+   * them up beside the camera instead, where they cost no height.
    */
   const Shell = (p: {
     W: number;
@@ -216,9 +214,9 @@ const LofiPlayerActivity = (props: LofiPlayerProps, environment: LiveActivityEnv
     const sy = p.H / COMP_H;
     const sa = Math.max(sy, p.minArt ?? 0);
 
-    // The dark window the right-hand reel spins in: comp x 100-358, y 6-106.
+    // The dark window the right-hand reel spins in: canvas x 100-358, y 6-106.
     const win = { cx: 229 * sx, cy: 56 * sy, w: 258 * sx, h: 100 * sy };
-    // Right reel at comp (269, 69), expressed relative to the window's centre.
+    // Right reel at canvas (269, 69), expressed relative to the window's centre.
     const rightReel = { x: 269 * sx - win.cx, y: 69 * sy - win.cy };
 
     const textH = (p.titleSize + p.artistSize) * 1.25;
@@ -356,7 +354,7 @@ const LofiPlayerActivity = (props: LofiPlayerProps, environment: LiveActivityEnv
     );
   };
 
-  /** Repeat · rewind · play/pause well · forward · AirPlay, at the comp's 40pt scaled by `k`. */
+  /** Repeat · rewind · play/pause well · forward · AirPlay, at 40pt scaled by `k`. */
   const Controls = (p: { k: number }) => {
     'use no memo';
     const d = 40 * p.k;
@@ -416,7 +414,7 @@ const LofiPlayerActivity = (props: LofiPlayerProps, environment: LiveActivityEnv
   const ISLAND_W = 336;
 
   return {
-    // Lock Screen: the whole comp — shell with all three stickers, then the controls.
+    // Lock Screen: shell with all three stickers, then the controls.
     banner: (
       <VStack
         spacing={6}
@@ -429,7 +427,7 @@ const LofiPlayerActivity = (props: LofiPlayerProps, environment: LiveActivityEnv
       </VStack>
     ),
 
-    // CarPlay and watchOS — ref-02's strip: sticker cluster, title, spinning disc.
+    // CarPlay and watchOS: sticker cluster, title, spinning disc.
     bannerSmall: (
       <HStack spacing={8} alignment="center" modifiers={[padding({ all: 8 })]}>
         <ZStack modifiers={[frame({ width: 64, height: 44 })]}>
@@ -457,7 +455,7 @@ const LofiPlayerActivity = (props: LofiPlayerProps, environment: LiveActivityEnv
       </HStack>
     ),
 
-    // Dynamic Island, expanded (ref-03). The stickers flank the camera; the shell and the
+    // Dynamic Island, expanded. The stickers flank the camera; the shell and the
     // controls take the band below it.
     expandedLeading: (
       <HStack modifiers={[padding({ leading: 6, top: 2 })]}>
@@ -486,7 +484,7 @@ const LofiPlayerActivity = (props: LofiPlayerProps, environment: LiveActivityEnv
       </VStack>
     ),
 
-    // Dynamic Island, collapsed (ref-01): LO-FI, and the disc turning on the right.
+    // Dynamic Island, collapsed: LO-FI, and the disc turning on the right.
     compactLeading: (
       <HStack modifiers={[padding({ leading: 2 })]}>
         <Art uri={props.lofiStickerUri} w={30} h={26} />

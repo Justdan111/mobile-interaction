@@ -5,10 +5,8 @@ import { Halftone } from '../../components/halftone/Halftone';
 import { ThemeProvider } from '../../lib/theme';
 
 /**
- * Reanimated is mocked here, so the rotation itself is not observable — it is
- * verified on device by diffing two captures taken seconds apart. What is
- * testable is that wrapping the field in a rotation did not change the field:
- * the whole point is that the same seed still draws the same dots.
+ * Reanimated is mocked, so the rotation itself is not observable here. What is
+ * testable is that wrapping the field in a rotation leaves the dots unchanged.
  */
 
 // Collects every circle's centre from a rendered tree — i.e. the dot field.

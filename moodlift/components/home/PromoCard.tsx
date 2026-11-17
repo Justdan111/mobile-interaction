@@ -6,7 +6,7 @@ import { Entrance } from '../ui/Entrance';
 
 /**
  * The no-mood state: the sage card that asks what you want to train and sends
- * you to the picker. Matches `.design/comps/home-no-mood.png`.
+ * you to the picker.
  */
 export function PromoCard({ onPress, index = 0 }: { onPress: () => void; index?: number }) {
   const energized = getMood('energized');
@@ -23,8 +23,7 @@ export function PromoCard({ onPress, index = 0 }: { onPress: () => void; index?:
           </Text>
         </View>
 
-        {/* The mascot sits alongside the heading and bleeds off the top-right,
-            as it does in the comp. */}
+        {/* The mascot sits alongside the heading and bleeds off the top-right. */}
         <View className="-mt-3">
           <Mascot size={96} fill={energized.mascotFill} ink={energized.mascotInk} />
         </View>

@@ -1,15 +1,7 @@
 /**
- * `lib/glass.ts` exists to handle one specific risk:
- * `expo-glass-effect` has no config plugin, so it can't be autolinked in
- * Expo Go, and on iOS its `GlassView`/`GlassContainer` modules call
- * `requireNativeViewManager` at *module evaluation* time — a bare
- * `import { GlassView } from 'expo-glass-effect'` would throw before
- * `isLiquidGlassAvailable()` ever gets a chance to route around it. This
- * file proves the guard actually guards: that requiring the wrapper when
- * the underlying package throws does NOT propagate the throw, and instead
- * falls back to a plain View and an always-false availability check — and,
- * for contrast, that a working module is passed through rather than always
- * falling back regardless of what's actually available.
+ * `expo-glass-effect` throws at module evaluation where it is not linked (Expo
+ * Go). Requiring `lib/glass` must swallow that and fall back, while still
+ * passing a working module through.
  */
 
 describe('lib/glass', () => {

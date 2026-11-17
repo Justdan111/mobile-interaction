@@ -18,10 +18,8 @@ const settle = async () => {
   });
 };
 
-// react-native-svg's <Polyline> lowers to a host 'RNSVGPath' node under
-// the test renderer, so this walks the rendered JSON tree counting them
-// — the only way, in this RN Testing Library version, to tell a
-// single-stroke check apart from a double-stroke one.
+// <Polyline> renders as a host 'RNSVGPath', so counting those tells a single
+// check from a double one.
 function countHostNodesByType(node: unknown, type: string): number {
   if (!node) return 0;
   const nodes = Array.isArray(node) ? node : [node];
@@ -41,10 +39,7 @@ describe('Chats', () => {
 
   it('derives member counts from the roster rather than a stored number', async () => {
     await wrap();
-    // Two seeded teams both happen to carry 6 members, so `getByText` (which
-    // requires a unique match) throws on that count; `getAllByText` handles
-    // the duplicate while still proving each team's own `members.length` is
-    // rendered somewhere on screen.
+    // Two teams share a member count, so use getAllByText.
     for (const team of teams) {
       expect(screen.getAllByText(`${team.members.length} members`).length).toBeGreaterThan(0);
     }
@@ -67,9 +62,8 @@ describe('Chats', () => {
     expect(screen.getAllByLabelText(/Leave/).length).toBe(teams.length);
   });
 
-  // The action's effect is deliberately deferred a beat so its icon shakes
-  // before it changes underneath — see SwipeableRow. Pressing and asserting in
-  // the same tick therefore proves nothing; the timers have to be run.
+  // The action's effect is deferred so its icon shakes first (see SwipeableRow),
+  // so run the timers before asserting.
   it('flips the mute action label when pressed', async () => {
     await wrap();
     const first = screen.getAllByLabelText(/Mute .*/)[0];
@@ -101,11 +95,7 @@ describe('Chats', () => {
   });
 
   it('shows an unread badge only for the team with unread messages, and read ticks for the rest', async () => {
-    // Only t-website-dev has an unread (unread: 1) message from someone
-    // other than 'me'; the other two teams' single seeded message is read,
-    // so this exercises both sides of the unread/read-tick binary — it must
-    // fail whether the branch gets stuck always showing ticks (no badge
-    // would render) or always showing badges (three badges, not one).
+    // Only t-website-dev has an unread message; the other two threads are read.
     await wrap();
     const badges = screen.getAllByText(/^\d+$/);
     expect(badges.length).toBe(1);
@@ -114,10 +104,7 @@ describe('Chats', () => {
   });
 
   it('draws the read tick as a double check, not a single check', async () => {
-    // Comp fidelity: a single-check glyph reused for the read tick would
-    // pass every other assertion in this file (they only check whether a
-    // tick renders, not its shape), so this test looks at the actual SVG
-    // polylines drawn inside the tick.
+    // Checks the tick's shape, not just its presence.
     await wrap();
     const ticks = screen.getAllByLabelText('read tick');
     for (const tick of ticks) {
@@ -127,10 +114,7 @@ describe('Chats', () => {
 });
 
 describe('Chats mute state on the row', () => {
-  // Before this, muting a thread changed a Set and nothing else: the row that
-  // was muted looked exactly like one that was not, so the whole action was
-  // invisible the moment it slid shut. This is the assertion that would have
-  // caught that.
+  // A muted row must still read as muted once the swipe action slides shut.
   it('marks the row as muted and unmarks it again', async () => {
     await wrap();
     const name = teams[0].name;

@@ -58,8 +58,8 @@ export function MiniBars({
             x={i * (BAR_WIDTH + BAR_GAP)}
             y={height - barHeight}
             width={BAR_WIDTH}
-            // Overrun the frame so only the top cap is rounded — the foot of
-            // each bar is cut square by the card edge, as in the comp.
+            // Overrun the frame so only the top cap is rounded; the card edge
+            // cuts the foot square.
             height={barHeight + BAR_WIDTH}
             rx={BAR_WIDTH / 2}
             fill={`url(#mini-${tone})`}

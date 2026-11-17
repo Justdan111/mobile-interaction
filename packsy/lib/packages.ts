@@ -1,9 +1,7 @@
 /**
  * The parcels, and everything derived from them. Screens never type a date,
  * a status or a progress stage: they ask this module, which reads them off
- * each parcel's event list. The comps disagree with themselves about
- * F523HI487's arrival (Mar 30 on Home and Packages, Apr 01 on its detail);
- * there is one `etaAt` here, so every screen agrees on Mar 30.
+ * each parcel's event list, so every screen agrees on the same dates.
  */
 import type { Tone } from '../theme/colors';
 import { formatDateTime } from './format';
@@ -200,7 +198,7 @@ export function inFolder(folder: Folder | 'all'): Parcel[] {
   return PARCELS.filter((p) => folder === 'all' || p.folder === folder);
 }
 
-/** Home's stack: the inbox, in the order the comp stacks its colours. */
+/** Home's stack: the inbox, in its designed colour order. */
 export function activeParcels(): Parcel[] {
   return PARCELS.filter((p) => p.folder === 'inbox');
 }

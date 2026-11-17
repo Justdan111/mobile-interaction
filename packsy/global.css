@@ -2,8 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Packsy is dark-only apart from the iris onboarding screen. Every value here
-   was sampled from the comps in .design/comps/. The same values live in
+/* Packsy is dark-only apart from the iris onboarding screen. The same values live in
    theme/colors.ts for places a className cannot reach (SVG fills, Reanimated
    styles) — change both together. */
 @layer base {

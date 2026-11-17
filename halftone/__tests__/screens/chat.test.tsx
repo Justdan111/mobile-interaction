@@ -52,18 +52,12 @@ describe('Chat thread', () => {
 });
 
 /**
- * The grouping/rendering rules (name on the first bubble only, avatar beside
- * the last bubble, own vs. other fill) are the actual point of this screen.
- * A component that showed the sender name on every bubble, or hung the avatar
- * off the first bubble instead of the last, would still pass every test above.
- * This block walks the rendered tree in document order to pin those three things
- * down against the real fixture data (Alice Johnson's 3-message opening
- * group in the Website Development thread).
+ * Grouping rules: sender name on the first bubble only, avatar beside the last
+ * bubble, own vs. other fill. Checked against Alice Johnson's 3-message opening
+ * group in the Website Development thread.
  */
 describe('Chat thread — grouping in the rendered tree', () => {
-  // Depth-first, document-order walk collecting just the markers relevant to
-  // grouping: rendered text, and any node's className/accessibilityLabel
-  // that identifies an avatar or a message-bubble container.
+  // Document-order walk collecting text plus avatar and bubble markers.
   function markers(node: any, out: string[] = []): string[] {
     if (node == null) return out;
     if (Array.isArray(node)) {

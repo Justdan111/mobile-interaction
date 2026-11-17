@@ -5,7 +5,7 @@ import { MascotFor } from '../mascots';
 import { HandDrawnEllipse } from '../mood/HandDrawnEllipse';
 
 /**
- * The compact mood banner at the top of Workouts — `workouts-browse.png`.
+ * The compact mood banner at the top of Workouts.
  *
  * A static preview of the wheel rather than a second scrollable one: two wheels
  * in the app that disagree about the selection would be worse than a banner

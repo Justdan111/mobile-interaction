@@ -15,9 +15,7 @@ describe('Home', () => {
     expect(screen.getByText(/Good (morning|afternoon|evening)!/)).toBeTruthy();
   });
 
-  // The regex above would still pass if the greeting were hardcoded to one
-  // branch. Pin the hour and prove all three branches are actually wired to
-  // `greeting()` rather than a fixed string.
+  // Pin the hour so every branch is checked, not just whichever one is live.
   describe('greeting is time-derived', () => {
     const cases: Array<[number, string]> = [
       [9, 'Good morning!'],
@@ -42,8 +40,6 @@ describe('Home', () => {
     expect(screen.getByText(projects[0].title)).toBeTruthy();
   });
 
-  // A component hardcoding a couple of matching titles would pass the test
-  // above. Prove every project in the data module actually renders.
   it('renders every project title from data/projects.ts', async () => {
     await wrap();
     for (const p of projects) {
@@ -70,12 +66,8 @@ describe('Home', () => {
   });
 
   describe('saving a project', () => {
-    // p-graphic-ad starts unsaved and p-website-dev starts saved (see
-    // data/projects.ts). Using a project that starts unsaved matters, rather
-    // than `getAllByLabelText(/save/i)[0]`: that regex also matches
-    // "saved" inside "Remove ... from saved", so with the
-    // already-saved website-dev project present it would find a match
-    // *before any press*, passing even if onToggleSave were a no-op.
+    // Target a project that starts unsaved: `/save/i` also matches "Remove ...
+    // from saved" on the already-saved one, before any press.
     const unsavedTitle = 'Graphic design for new advertising campaign';
     const alreadySavedTitle = 'Website Development';
 
@@ -126,10 +118,8 @@ function ancestorNames(node: any): string[] {
 }
 
 describe('Home pinned header', () => {
-  // The greeting, the search field and the art rail used to be the FlatList's
-  // ListHeaderComponent, so they scrolled away with the projects. They are a
-  // fixed sibling above the list now — which means none of them may have a
-  // virtualized list among their ancestors.
+  // The greeting and search field sit above the list, so neither may have a
+  // virtualized list among its ancestors.
   it('renders the search field outside the scrolling list', async () => {
     await wrap();
     const names = ancestorNames(screen.getByPlaceholderText('Search for project'));
@@ -143,9 +133,7 @@ describe('Home pinned header', () => {
     expect(names.some((n) => /VirtualizedList|FlatList|ScrollView/.test(n))).toBe(false);
   });
 
-  // The Projects heading was chosen to keep scrolling with the cards, so it
-  // stays inside the list — the counterpart assertion that proves the split is
-  // where it was meant to be and not simply "everything moved out".
+  // The Projects heading scrolls with the cards, so it stays inside the list.
   it('keeps the Projects heading inside the scrolling list', async () => {
     await wrap();
     const names = ancestorNames(screen.getByText('Projects'));

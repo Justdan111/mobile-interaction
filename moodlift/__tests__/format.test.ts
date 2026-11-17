@@ -44,9 +44,7 @@ describe('formatRelativeSlot', () => {
 
 describe('formatDayHeading', () => {
   it('renders weekday, month and day', () => {
-    // 2025-12-12 really is a Friday. The comps label it "Tue" — their dates
-    // are not internally consistent, so the app computes the weekday rather
-    // than copying the comp's label.
+    // 2025-12-12 is a Friday; the weekday is computed, never hardcoded.
     expect(formatDayHeading('2025-12-12')).toBe('Friday, December 12');
   });
 });

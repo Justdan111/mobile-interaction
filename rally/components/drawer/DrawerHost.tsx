@@ -30,10 +30,9 @@ const SCALE = 0.78;
 const FILL = { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 } as const;
 
 /**
- * Built by hand rather than with a stock drawer navigator: the comp's effect
- * is specific — the content card translates, scales, rounds its corners and
- * casts a shadow, with a second translucent sheet peeking out behind it — and
- * a stock drawer produces none of that.
+ * Built by hand rather than with a stock drawer navigator: the content card
+ * translates, scales, rounds its corners and casts a shadow, with a second
+ * translucent sheet peeking out behind it, and a stock drawer does none of that.
  */
 export function DrawerHost({ children }: { children: ReactNode }) {
   const { width } = useWindowDimensions();

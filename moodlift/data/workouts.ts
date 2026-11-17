@@ -38,14 +38,14 @@ export type Workout = {
   photo: PhotoKey;
   /** Which moods this workout suits. Drives `matchWorkouts`. */
   moods: MoodId[];
-  /** Display chips, as they read in the comps. */
+  /** Display chips. */
   tags: string[];
   solo: boolean;
 };
 
 /**
- * Sessions are anchored to the current week rather than to the comps' fixed
- * December dates, so "Today" and "Tomorrow" stay truthful whenever the app is
+ * Sessions are anchored to the current week rather than to fixed dates, so
+ * "Today" and "Tomorrow" stay truthful whenever the app is
  * opened. Resolved once at module load, so ordering is stable within a run.
  */
 const TODAY = new Date();

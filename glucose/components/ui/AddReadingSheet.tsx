@@ -3,7 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Sheet } from '@/components/ui/Sheet';
 import { useAppState } from '@/state/app-state';
-import { classify, formatValue, toUnit } from '@/lib/glucose';
+import { classify, formatValue } from '@/lib/glucose';
 import { colors } from '@/theme/colors';
 
 /** Steps are per-unit so the control feels the same in either scale. */

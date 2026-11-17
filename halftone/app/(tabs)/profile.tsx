@@ -12,17 +12,13 @@ import { useTheme } from '../../lib/theme';
 import { useTabBarScroll } from '../../components/tabs/TabBarChrome';
 
 export default function Profile() {
-  // Feeds this screen's scroll position to the floating tab bar, which
-  // shrinks to icons on the way down and expands again on the way up.
   const tabBarScroll = useTabBarScroll();
   const router = useRouter();
   const { mode, setPreference, t } = useTheme();
   const isDark = mode === 'dark';
 
-  // The header plate is pale lavender in both themes, so the dark-mode status
-  // bar the root layout sets would put a white clock on it. Scope the override
-  // to focus and hand the bar back on the way out, or every other tab inherits
-  // it.
+  // The header plate is pale in both themes, so force a dark status bar while
+  // focused and restore it on blur, or every other tab inherits it.
   useFocusEffect(
     useCallback(() => {
       setStatusBarStyle('dark');
