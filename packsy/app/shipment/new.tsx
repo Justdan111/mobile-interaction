@@ -59,7 +59,9 @@ export default function NewShipment() {
   const [name, setName] = useState('');
   const [weight, setWeight] = useState('');
 
-  const back = () => (step > 0 ? setStep(step - 1) : router.back());
+  // Opened straight onto (no history), there is nothing to pop back to.
+  const leave = () => (router.canGoBack() ? router.back() : router.replace('/home'));
+  const back = () => (step > 0 ? setStep(step - 1) : leave());
   const next = () => (step < STEPS.length - 1 ? setStep(step + 1) : router.replace('/packages'));
 
   return (
@@ -130,7 +132,7 @@ export default function NewShipment() {
         style={{ paddingHorizontal: GUTTER - 6, paddingBottom: insets.bottom + 8, paddingTop: 14, gap: 12, backgroundColor: 'rgba(28,28,28,0.94)' }}
       >
         <Pressable
-          onPress={() => router.back()}
+          onPress={leave}
           accessibilityRole="button"
           className="flex-1 items-center justify-center rounded-full"
           style={{ height: FIELD_HEIGHT, borderWidth: 1, borderColor: '#6A6A6A' }}
