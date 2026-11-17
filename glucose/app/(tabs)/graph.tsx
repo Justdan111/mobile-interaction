@@ -116,7 +116,7 @@ export default function Graph() {
         </Pressable>
       </View>
 
-      {/* A violet bloom sits behind the headline, the way it does in the comp. */}
+      {/* A violet bloom sits behind the headline. */}
       <View className="absolute left-0 top-[190px]">
         <Svg width={width} height={280}>
           <Defs>
@@ -130,10 +130,9 @@ export default function Graph() {
         </Svg>
       </View>
 
-      {/* Overview keeps the comp's composition exactly: only the numeral is
-          centred, and the "%" hangs off its bottom-right. A unit as wide as
-          "mg/dL" cannot hang off the same way without landing on the digits, so
-          prediction sets it on the baseline instead. */}
+      {/* Overview centres only the numeral and hangs the "%" off its
+          bottom-right. "mg/dL" is too wide to hang without landing on the
+          digits, so prediction sets it on the baseline instead. */}
       <View className="mt-[41px] items-center" style={{ paddingLeft: isPrediction ? 0 : 23 }}>
         <View className={isPrediction ? 'flex-row items-baseline' : undefined}>
           <Text

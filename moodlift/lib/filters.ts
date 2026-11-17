@@ -2,7 +2,7 @@ import type { Workout } from '../data/workouts';
 
 export type FilterId = 'all' | 'today' | 'low-intensity' | 'solo';
 
-/** The chip row from `.design/comps/workouts-browse.png`. */
+/** The filter chip row on Workouts. */
 export const FILTERS: readonly { id: FilterId; label: string }[] = [
   { id: 'all', label: 'All workout' },
   { id: 'today', label: 'Today' },

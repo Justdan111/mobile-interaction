@@ -6,13 +6,13 @@ import { EyeClosed, EyeDot, EyeTired, Foot, Thick, Thin } from './parts';
 /**
  * Every mascot takes its body colour and its line colour from the caller.
  * Neither has a default: a mascot is drawn on whichever mood surface is
- * current, and a baked-in colour is the defect this repo keeps rediscovering.
+ * current, so a baked-in colour would be wrong on most of them.
  */
 export type MascotProps = {
   size: number;
   /** The head's flat fill. */
   fill: string;
-  /** Face, limbs and feet. Near-black in every comp, whatever the surface. */
+  /** Face, limbs and feet. */
   ink: string;
 };
 
@@ -101,7 +101,7 @@ export function TenseMascot({ size, fill, ink }: MascotProps) {
   );
 }
 
-/** Calm — the pink hexagon with closed eyes and folded arms, from the comps. */
+/** Calm — the pink hexagon with closed eyes and folded arms. */
 export function CalmMascot({ size, fill, ink }: MascotProps) {
   return (
     <Frame size={size}>
@@ -112,12 +112,12 @@ export function CalmMascot({ size, fill, ink }: MascotProps) {
       <Path d={polygonPath(6, 54, 100, 76, -90)} fill={fill} />
       <EyeClosed cx={83} cy={74} ink={ink} />
       <EyeClosed cx={117} cy={74} ink={ink} />
-      {/* The vertical nose stroke between the eyes, as in mood-calm.png. */}
+      {/* The vertical nose stroke between the eyes. */}
       <Thin d="M100 62v20" ink={ink} />
       <Thin d="M93 96q7 7 14 0" ink={ink} />
       {/* Folded arms. Two crossing full-length tubes read as a knot at this
           size, so this is one band of forearms with the upper arms dropping
-          into it from the shoulders — the silhouette the comp actually has. */}
+          into it from the shoulders. */}
       <Thin d={capsulePath(82, 112, 70, 132, 7)} ink={ink} />
       <Thin d={capsulePath(118, 112, 130, 132, 7)} ink={ink} />
       <Thin d={capsulePath(71, 140, 129, 140, 13)} ink={ink} />
@@ -125,7 +125,7 @@ export function CalmMascot({ size, fill, ink }: MascotProps) {
   );
 }
 
-/** Balanced — the clover in tree pose, palms together overhead, from the comps. */
+/** Balanced — the clover in tree pose, palms together overhead. */
 export function BalancedMascot({ size, fill, ink }: MascotProps) {
   return (
     <Frame size={size}>
@@ -147,7 +147,7 @@ export function BalancedMascot({ size, fill, ink }: MascotProps) {
   );
 }
 
-/** Energized — the running sun throwing a peace sign, from the comps. */
+/** Energized — the running sun throwing a peace sign. */
 export function EnergizedMascot({ size, fill, ink }: MascotProps) {
   return (
     <Frame size={size}>

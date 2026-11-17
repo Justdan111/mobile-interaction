@@ -17,8 +17,8 @@ order and its total, a rider illustration that travels along a mint progress bar
 under a soft halo, and the courier's photo, name and arrival time beside call
 and message buttons.
 
-The photos, the rider and the badge mark are the comps' own artwork, cut from
-`docs/screenshots/` into `assets/widgets/` and copied into the shared app group at
+The photos, the rider and the badge mark live in `assets/widgets/` and are copied
+into the shared app group at
 launch so the widget extension can draw them (`widgets/assets.ts`).
 
 **It runs itself.** The trip is described by when it started and when it is due,

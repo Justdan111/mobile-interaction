@@ -7,7 +7,6 @@ import { Icon, type IconName } from '../ui/icons';
 
 export type TabDef = { name: string; href: string; label: string; icon: IconName };
 
-/** Order and labels from the bars in `.design/comps/` (home, packages, map). */
 export const TABS: readonly TabDef[] = [
   { name: 'home', href: '/home', label: 'Home', icon: 'home' },
   { name: 'packages', href: '/packages', label: 'Packages', icon: 'box' },

@@ -13,12 +13,9 @@ const CELL = 40;
 const CELL_INSET = 2;
 
 /**
- * Days inside a joined range overlap their neighbours by a hair instead of
- * merely butting against them. Seven `flex: 1` columns rarely divide a screen
- * width evenly, and the leftover fraction opened a visible dark seam between
- * two filled cells — which splits the single pill the spec asks a multi-day
- * range to read as. Overlapping absorbs the rounding; half a point is far
- * below a rendered pixel on any of these screens.
+ * Days inside a joined range overlap their neighbours by half a point. Seven
+ * `flex: 1` columns rarely divide the width evenly, and the rounding otherwise
+ * opens a visible seam inside a multi-day pill.
  */
 const JOINED_OVERLAP = -0.5;
 

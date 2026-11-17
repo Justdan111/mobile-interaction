@@ -6,15 +6,12 @@ import { SwipeableRow, type SwipeAction } from '../../components/ui/SwipeableRow
 import { ThemeProvider } from '../../lib/theme';
 
 /**
- * The shake itself is not observable here — reanimated is mocked — and the
- * swipe gesture that reveals these buttons is mocked too, so it is verified on
- * device. What these cover is the contract around the animation: that pressing
- * an action taps the phone, and that its effect and the row's close are
- * ordered rather than simultaneous.
+ * Reanimated and the swipe gesture are mocked, so the shake is not observable
+ * here. These cover the contract around it: pressing an action taps the phone,
+ * and its effect and the row's close are ordered rather than simultaneous.
  *
- * The action Pressables mount unconditionally rather than being gated on swipe
- * state, so a press exercises the real handler despite the gesture being
- * unavailable.
+ * The action Pressables mount regardless of swipe state, so a press exercises
+ * the real handler.
  */
 
 const action = (over: Partial<SwipeAction> = {}): SwipeAction => ({
@@ -62,9 +59,8 @@ describe('SwipeableRow action feedback', () => {
 });
 
 describe('SwipeableRow action timing', () => {
-  // The row used to close in the same tick the action fired, which hid the
-  // very feedback the action exists to give. The effect now lands a beat
-  // later, so the icon changes while the shake is running.
+  // The effect lands a beat after the press, so the icon changes while the
+  // shake is running and before the row closes.
   it('defers the action rather than firing it immediately', async () => {
     const onPress = jest.fn();
     await wrap(action({ onPress }));

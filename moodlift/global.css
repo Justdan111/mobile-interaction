@@ -2,8 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Moodlift is a dark-only app — the comps have no light counterpart — so the
-   palette is declared once on :root with no theme swap. */
+/* Moodlift is a dark-only app, so the palette is declared once on :root with
+   no theme swap. */
 @layer base {
   :root {
     --color-page: 14 14 16;

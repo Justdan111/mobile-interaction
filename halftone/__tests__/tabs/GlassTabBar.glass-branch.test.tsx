@@ -4,14 +4,9 @@ import { processColor } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider } from '../../lib/theme';
 
-// jest.setup.js mocks expo-glass-effect globally with isLiquidGlassAvailable
-// hardcoded to false, so GlassTabBar.test.tsx (and every other suite) only
-// ever exercises the BlurView fallback branch. That leaves the glass branch
-// — the one that actually renders on an iOS 26+ device — completely
-// unverified unless a test specifically overrides the mock. This file does that: it re-mocks
-// expo-glass-effect with isLiquidGlassAvailable() => true *before* requiring
-// TabPill/GlassTabBar, so this test's copies of those modules resolve
-// `glass` to true and take the GlassView/GlassContainer branch instead.
+// jest.setup.js mocks expo-glass-effect with glass unavailable, so every other
+// suite only exercises the BlurView fallback. This file re-mocks it as
+// available before requiring TabPill/GlassTabBar, to cover the glass branch.
 jest.doMock('expo-glass-effect', () => {
   const { View } = require('react-native');
   const GlassView = (props: any) => <View {...props} />;
@@ -24,9 +19,8 @@ jest.doMock('expo-glass-effect', () => {
   };
 });
 
-// Required with `require`, not a static `import`, so the mock above is in
-// place before these modules (and the `lib/glass` guard they both import)
-// evaluate `require('expo-glass-effect')` for the first time in this file.
+// `require`, not `import`, so the mock above is in place before these modules
+// evaluate `expo-glass-effect`.
 const { TabPill } = require('../../components/tabs/TabPill');
 const { GlassTabBar } = require('../../components/tabs/GlassTabBar');
 
@@ -38,12 +32,8 @@ const wrap = (ui: React.ReactElement) =>
   );
 
 
-// The icon's colour reaches the screen as an SVG stroke, not as a prop on a
-// queryable host element (RTL v14's `screen` has no UNSAFE_getByType), so read
-// the stroke actually painted into the rendered tree. That is stronger
-// evidence than a prop assertion anyway: it is the value that ends up on the
-// pixels. react-native-svg stores it processed, so compare against
-// `processColor` of the expected colour.
+// The icon's colour reaches the tree as a processed SVG stroke, so compare
+// against `processColor` of the expected colour.
 function focusedIconStroke(): unknown {
   const seen: unknown[] = [];
   const walk = (node: any): void => {
@@ -67,15 +57,8 @@ describe('GlassTabBar / TabPill surface (glass path — isLiquidGlassAvailable()
     expect(screen.queryByTestId('tab-bar-fallback-surface')).toBeNull();
   });
 
-  // Regression test for the bar rendering completely invisibly on a real
-  // iOS 26 device. `GlassContainer` paints no surface of its own — natively
-  // it is a UIVisualEffectView carrying a UIGlassContainerEffect, which only
-  // governs how *child* glass surfaces merge. Wrapping plain views in it
-  // produced a bar with no glass, no hairline and no background at all, while
-  // every test still passed because they only asserted the container branch
-  // was taken. The bar needs its own GlassView as the pill surface, so assert
-  // on a prop that only a GlassView accepts rather than on a testID a plain
-  // View could just as easily carry.
+  // GlassContainer paints no surface of its own; it only merges child glass.
+  // The bar needs its own GlassView, so assert a prop only GlassView accepts.
   it('paints the pill with a real GlassView surface, not a bare GlassContainer', async () => {
     await wrap(
       <GlassTabBar>
@@ -86,10 +69,8 @@ describe('GlassTabBar / TabPill surface (glass path — isLiquidGlassAvailable()
     expect(surface.props.glassEffectStyle).toBe('regular');
   });
 
-  // The container's merge behaviour applies to glass surfaces that are
-  // siblings within it (as in the SDK 57 docs' own example). If the bar's
-  // GlassView were made an *ancestor* of the chip's GlassView instead, this
-  // would fail — and the bar and chip would stack glass rather than merge.
+  // Merging applies to sibling glass surfaces in the container; if the bar's
+  // GlassView were the chip's ancestor they would stack instead.
   it('keeps the bar surface and the focused chip as sibling glass surfaces', async () => {
     await wrap(
       <GlassTabBar>
@@ -113,13 +94,8 @@ describe('GlassTabBar / TabPill surface (glass path — isLiquidGlassAvailable()
     expect(screen.queryByTestId('tab-pill-fallback-surface')).toBeNull();
   });
 
-  // Regression test for the focused icon disappearing into its own chip on
-  // the glass path. The chip's GlassView is tinted with `t.accent`; the icon
-  // used to be painted in `t.accent` too, so on a real iOS 26 device it was
-  // accent on accent and simply not visible — only the label read, because it
-  // was already the near-black foreground. Assert the relationship, not the
-  // literal hex: the icon must not be the chip's own tint, and it must match
-  // the label so the two read as one unit.
+  // The chip is tinted `t.accent`, so an accent icon vanishes into it. The icon
+  // must differ from the tint and match the label.
   it('paints the focused icon in the label foreground, never the chip tint', async () => {
     await wrap(<TabPill icon="search" label="Search" isFocused onPress={() => {}} />);
     const chip = screen.getByTestId('tab-pill-glass-surface');

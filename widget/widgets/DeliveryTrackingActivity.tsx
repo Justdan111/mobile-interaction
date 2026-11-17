@@ -58,14 +58,10 @@ export type DeliveryTrackingProps = {
 };
 
 /**
- * Built from `docs/design-spec.md`, which is measured off the comps rather than eyeballed.
- * Colours, glyph weights, alignment and the driver's photo are the comp's; the vertical
- * rhythm is not, because the comp is 295pt tall at 361pt wide and every Live Activity
- * presentation caps out near 160pt. SwiftUI clips instead of scaling, so the comp's
- * ~132pt of whitespace is spent first and the type is trimmed second — but only as far
- * as the cap demands, so every size here is the largest the budget allows.
+ * Every Live Activity presentation caps out near 160pt and SwiftUI clips rather than
+ * scales, so each size here is the largest that fits that budget.
  *
- * Two rules govern the code itself. The body is serialised by `babel-preset-expo` and
+ * The body is serialised by `babel-preset-expo` and
  * re-evaluated in the widget extension, so it may only reach for `@expo/ui`, JS builtins
  * and its own declarations — hence inline colour tokens. And every nested component needs
  * `'use no memo'`, because Expo's `'widget'` opt-out does not reach inside this function.
@@ -77,8 +73,6 @@ const DeliveryTrackingActivity = (
 ) => {
   'widget';
 
-  // Sampled from ref-03. p90 equalled max for every one of these, so they are the
-  // comp's real values rather than an antialiased guess.
   const color = {
     surface: '#000000',
     badgeCircle: '#25272D',
@@ -113,14 +107,8 @@ const DeliveryTrackingActivity = (
   const liveColor = environment.isStale ? color.secondary : color.primary;
 
   /**
-   * Each presentation gets its own measured sizes rather than one scale factor, because
-   * they have different budgets. The Lock Screen card owns all ~160pt; the expanded
-   * island loses about 30pt to the camera band and system padding before anything of
-   * ours is drawn, and its top row has to sit beside the camera.
-   *
-   * The comp's sizes are: badge 54, plate 16, model 13.5, labels 13.5, addresses 15.5,
-   * dot 10, actions 35.5, name 16, id 11.8, avatar 35. The card runs at ~0.8 of that,
-   * the island at ~0.72 — the most either budget holds without dropping a row.
+   * Separate size sets per presentation: the Lock Screen card owns all ~160pt, while the
+   * expanded island loses about 30pt to the camera band and system padding.
    */
   const CARD = {
     badge: 44, badgeGlyph: 21, plate: 13.5, model: 11.5,
@@ -138,10 +126,8 @@ const DeliveryTrackingActivity = (
 
   /**
    * The ETA. `timerInterval` hands the countdown to SwiftUI, which ticks it unaided.
-   *
-   * A timer text takes every point of width it is offered and lays its digits out from
-   * the leading edge, so where it sits at the end of a row it needs `trailing` to keep
-   * the digits flush with the distance under them.
+   * A timer text fills its offered width from the leading edge, so at a row's end it
+   * needs `trailing` to stay flush with the distance under it.
    */
   const Countdown = (p: { size: number; weight?: 'bold' | 'semibold'; trailing?: boolean }) => {
     'use no memo';
@@ -195,11 +181,9 @@ const DeliveryTrackingActivity = (
   };
 
   /**
-   * `pin` stops `RJ 4567` rendering as `RJ…` beside a Spacer, which otherwise hands these
-   * stacks a width well below their ideal. It is only safe where the row is wide: a pinned
-   * stack refuses to shrink, so inside the Dynamic Island it overflows and the presentation
-   * clips it — that is what cut the last letter off `Arrived`. Narrow regions take a width
-   * cap instead, which is what gives `minimumScaleFactor` something to scale against.
+   * `pin` stops text truncating beside a Spacer, but a pinned stack refuses to shrink and
+   * gets clipped in the Dynamic Island. Narrow regions take a width `cap` instead, which
+   * gives `minimumScaleFactor` something to scale against.
    */
   const StackedPair = (p: {
     top: React.ReactNode;
@@ -226,7 +210,7 @@ const DeliveryTrackingActivity = (
     );
   };
 
-  /** Truck badge, then plate over model. The comp uses the outline truck here. */
+  /** Truck badge, then plate over model. */
   const VehicleIdentity = (p: { s: Sizes; pin?: boolean; cap?: number }) => {
     'use no memo';
     return (
@@ -263,12 +247,8 @@ const DeliveryTrackingActivity = (
   };
 
   /**
-   * The route. The comp puts the origin dot level with the *address*, not the `From` label,
-   * and runs a thin rule from it down beside `To`. There is no second dot and no vehicle on
-   * the rail — a truck there read as an amber smear against the dot and rule.
-   *
-   * The comp indents the whole block: the dot sits 34pt in from the card's edge and the
-   * text 52pt, well inside the badge's left edge. `inset` reproduces that.
+   * The route: the origin dot sits level with the first address, with a thin rule running
+   * down beside `To`. `inset` indents the whole block from the card's edge.
    */
   const Route = (p: { s: Sizes; inset: number }) => {
     'use no memo';
@@ -306,7 +286,7 @@ const DeliveryTrackingActivity = (
     );
   };
 
-  /** The driver's photo — the comp's, cut to a circle — with a glyph only if it is missing. */
+  /** The driver's photo cut to a circle, with a glyph only if it is missing. */
   const Avatar = (p: { diameter: number }) => {
     'use no memo';
     if (props.driverAvatarUri) {
@@ -331,10 +311,7 @@ const DeliveryTrackingActivity = (
     );
   };
 
-  /**
-   * Call and message on the left, driver identity and photo on the right. Outline glyphs.
-   * The comp's two buttons sit 27pt apart, wider than the gutter elsewhere.
-   */
+  /** Call and message on the left, driver identity and photo on the right. */
   const DriverBar = (p: { s: Sizes; pin?: boolean; cap?: number; inset: number }) => {
     'use no memo';
     return (
@@ -369,31 +346,17 @@ const DeliveryTrackingActivity = (
   };
 
   /**
-   * The collapsed pill, straight from ref-02: a grey capsule in the leading region with the
-   * truck at its right-hand end, then the ETA, then a grey circle holding a clock.
-   *
-   * Reading that capsule as a track explains the comp — a truck parked at the right end is
-   * the arrived state — so the truck rides it, sitting further left earlier in the trip.
-   * The two regions flank the camera and cannot be spanned, so this is the only place in
-   * the collapsed presentation where travel can be shown.
+   * The collapsed pill's leading region: a capsule track the truck rides along, reaching
+   * the right end on arrival. The only place the collapsed presentation can show travel.
    */
   const CompactRail = () => {
     'use no memo';
-    // The comp's capsule is 119.5pt with an 18.6pt truck ending 6.6pt short of its right
-    // end. The pill already stretches to ~250pt with a 60pt track, so the track goes as
-    // wide as the region will take; a narrow one leaves a 24pt glyph parked at 70% of
-    // the way along at travel 1, which does not read as arrived.
-    // The region clips anything past about 100pt, flattening the capsule's right end.
+    // The compact region clips anything past about 100pt, flattening the capsule's end.
     const capW = 96;
     const truckW = 24;
     const endGap = 5;
-    // The truck is positioned by an offset measured from the capsule's centre, not from
-    // its leading edge. A ZStack centres its child regardless of the alignment asked for
-    // here, so a leading-relative offset landed the glyph further right than intended and
-    // the capsule clipped it to a sliver at travel 1. Measuring from the centre cancels the
-    // glyph's own width out of the sum, so a wrong estimate of it only shortens the run
-    // rather than pushing the truck off the end. The run is symmetric: at travel 0 the
-    // truck sits `endGap` from the left end, at travel 1 `endGap` from the right.
+    // Offset from the capsule's centre: a ZStack centres its child regardless of the
+    // alignment asked for, so a leading-relative offset pushes the truck off the end.
     const run = capW - truckW - endGap * 2;
     return (
       <ZStack
@@ -413,9 +376,7 @@ const DeliveryTrackingActivity = (
   };
 
   return {
-    // Lock Screen and Notification Centre. The widest presentation, so it carries the
-    // comp's proportions most closely: badge in the corner, route indented under it,
-    // actions and driver along the bottom.
+    // Lock Screen and Notification Centre.
     banner: (
       <VStack
         alignment="leading"
@@ -457,17 +418,14 @@ const DeliveryTrackingActivity = (
       </HStack>
     ),
 
-    // Dynamic Island, expanded — the presentation ref-03 was drawn for. The camera band
-    // and system padding take about 30pt of its ~160, and the top row sits beside the
-    // camera, so the bottom region gets what is left for the route and the driver.
+    // Dynamic Island, expanded. The top row sits beside the camera.
     expandedLeading: (
       <HStack modifiers={[padding({ leading: 4 })]}>
         <VehicleIdentity s={ISLAND} cap={150} />
         <Spacer />
       </HStack>
     ),
-    // The island's rounded corner clips whatever hugs the edge, and the trailing content
-    // was landing 5pt from it — which is what kept cutting the last letter off `Arrived`.
+    // The island's rounded corner clips content that hugs the trailing edge.
     expandedTrailing: (
       <HStack modifiers={[padding({ trailing: 12 })]}>
         <Spacer />
@@ -481,12 +439,10 @@ const DeliveryTrackingActivity = (
       </VStack>
     ),
 
-    // Dynamic Island, collapsed — ref-01 and ref-02.
+    // Dynamic Island, collapsed.
     compactLeading: <CompactRail />,
-    // The ETA sits where iOS puts it: the compact regions flank the 126pt hardware
-    // island and each pins its content to the pill's outer edge, and neither a Spacer
-    // nor a fixed-width row moves it inward. The black stretch between the track and
-    // the ETA is the camera on a real phone; the comp's 47pt camera gap is not physical.
+    // Compact regions flank the 126pt camera and iOS pins their content to the outer
+    // edge; neither a Spacer nor a fixed-width row moves it inward.
     compactTrailing: (
       <HStack spacing={6} alignment="center">
         <Countdown size={13} weight="semibold" />

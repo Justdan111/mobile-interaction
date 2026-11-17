@@ -46,9 +46,7 @@ describe('mock data integrity', () => {
   });
 
   it('orders every multi-day project window start to end', () => {
-    // Guards against a future short-month clamp collapsing or inverting a
-    // window — the joined-pill calendar rendering assumes deadlineEnd is
-    // never before deadline.
+    // The joined-pill calendar assumes deadlineEnd is never before deadline.
     for (const p of projects) {
       if (p.deadlineEnd !== undefined) {
         expect(p.deadlineEnd.localeCompare(p.deadline)).toBeGreaterThanOrEqual(0);
@@ -57,10 +55,7 @@ describe('mock data integrity', () => {
   });
 
   it('resolves every message sender in the people lookup', () => {
-    // The people lookup (data/people.ts) is the one place a sender id turns
-    // into a display name and avatar. A sender that resolves to nothing has
-    // no name and no avatar source downstream, where messages are grouped by
-    // sender for avatar placement.
+    // A sender missing from data/people.ts would have no name or avatar.
     for (const m of messages) {
       expect(people[m.senderId]).toEqual(expect.any(String));
     }
@@ -82,16 +77,16 @@ describe('mock data integrity', () => {
   });
 
   it('gives every team at least one message', () => {
-    // Ruling R2 — threadPreview returns null for an empty thread, and the
-    // chats list renders one row per team from that preview.
+    // threadPreview returns null for an empty thread, and the chats list
+    // renders one row per team from that preview.
     for (const t of teams) {
       expect(messages.some((m) => m.threadId === t.id)).toBe(true);
     }
   });
 
   it('leaves every incoming proposal undecided or declined', () => {
-    // Ruling R4 — the proposals screen asserts a single "Accepted" after the
-    // user accepts one, so nothing may arrive pre-accepted.
+    // The proposals tests expect a single "Accepted" after accepting one, so
+    // nothing may arrive pre-accepted.
     for (const p of proposals.filter((p) => p.direction === 'incoming')) {
       expect(p.status).not.toBe('accepted');
     }

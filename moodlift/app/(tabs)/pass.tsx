@@ -11,7 +11,7 @@ const MEMBER = {
   id: 'MLF-4821-QX',
 };
 
-/** Passes are issued for ten minutes, as in the comp's countdown. */
+/** Passes are issued for ten minutes. */
 const PASS_MINUTES = 10;
 const SAGE = '#5F7359';
 const INK = '#FFFFFF';
@@ -20,9 +20,8 @@ const CARD_INNER = 'rgba(255,255,255,0.12)';
 const ACCENT = '#E8724C';
 /**
  * The finder patterns are drawn in a deepened accent, not the brand coral.
- * Coral sits at 57% luminance; a scanner's threshold reads that as white and
- * the three patterns it locks onto vanish. Verified by decoding renders:
- * #E8724C fails, #A8442A decodes.
+ * Coral (#E8724C) sits at 57% luminance; a scanner's threshold reads that as
+ * white and the three patterns it locks onto vanish.
  */
 const ACCENT_DEEP = '#A8442A';
 const PAGE = '#0E0E10';

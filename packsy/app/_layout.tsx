@@ -1,6 +1,6 @@
 import '../global.css';
 import { useEffect } from 'react';
-import { router, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -8,7 +8,6 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold } from '@expo-google-fonts/poppins';
 import { C } from '../theme/colors';
-import { DEV_ROUTE } from '../dev-route';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -20,12 +19,6 @@ export default function RootLayout() {
   useEffect(() => {
     if (ready) SplashScreen.hideAsync();
   }, [ready]);
-  useEffect(() => {
-    if (__DEV__ && ready && DEV_ROUTE) {
-      const t = setTimeout(() => router.replace(DEV_ROUTE as never), 50);
-      return () => clearTimeout(t);
-    }
-  }, [ready]); // DEV_ROUTE edits re-run this via fast refresh
 
   if (!ready) return null;
 

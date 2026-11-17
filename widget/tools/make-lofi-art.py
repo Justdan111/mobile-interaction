@@ -3,18 +3,16 @@ Builds the artwork for LofiPlayerActivity into assets/widgets/.
 
 Two kinds of art, made two ways:
 
-* Stickers (LO-FI, smiley, headphones) are illustrations nobody can redraw from SF
-  Symbols, so they are cut straight out of the comp in docs/screenshots/widget-3/ with
-  rembg. Each one is a row in STICKERS; adding a sticker is adding a row, and every row
-  goes through the same cut -> tidy -> trim -> upscale pass.
-* The tape reel and the vinyl it sits on are geometric, and the comp only shows them half
-  hidden behind stickers and a translucent shell. They are drawn here instead, at 4x and
-  downsampled, using the comp's colours. The hub is a separate file from the vinyl so the
-  widget can turn the hub while the grooves (which look the same at any angle) stay put.
+* Stickers (LO-FI, smiley, headphones) are cut from reference images with rembg. Each
+  one is a row in STICKERS, and every row goes through the same cut -> tidy -> trim ->
+  upscale pass. The source images are not included in the repo; the committed output in
+  assets/widgets/ is what the app uses.
+* The tape reel and its vinyl are drawn here at 4x and downsampled. The hub is a separate
+  file so the widget can turn it while the grooves (identical at any angle) stay put.
 
-Run from widget/:
+Run from widget/ with Pillow, numpy and rembg installed:
 
-    PYTHONPATH=../rally/.venv/lib/python3.14/site-packages python3.14 tools/make-lofi-art.py
+    python3 tools/make-lofi-art.py
 
 rembg needs ~/.u2net/u2net.onnx, which it downloads on first use.
 """
@@ -30,13 +28,12 @@ ROOT = Path(__file__).resolve().parent.parent
 COMPS = ROOT / "docs" / "screenshots" / "widget-3"
 OUT = ROOT / "assets" / "widgets"
 
-# name -> (comp, crop box in comp pixels, hole seeds). Boxes are loose on purpose: rembg
-# finds the edge, and the result is trimmed to its alpha afterwards.
+# name -> (source image, crop box in source pixels, hole seeds). Boxes are loose on
+# purpose: rembg finds the edge, and the result is trimmed to its alpha afterwards.
 #
-# A hole seed is a point, in crop pixels, inside a die-cut opening — the gap under the
-# headband, where the comp shows the vinyl through the sticker. rembg keeps whatever is
-# enclosed by the subject, so each opening is flood-filled out up to the sticker's cream
-# outline.
+# A hole seed is a point, in crop pixels, inside a die-cut opening such as the gap under
+# the headband. rembg keeps whatever the subject encloses, so each opening is flood-filled
+# out up to the sticker's cream outline.
 STICKERS = {
     "lofi-sticker": ("ref-03-expanded.png", (128, 160, 290, 298), []),
     "smiley-sticker": ("ref-03-expanded.png", (486, 204, 616, 334), []),
@@ -59,8 +56,8 @@ def cut_sticker(session, comp: str, box: tuple[int, int, int, int], holes) -> Im
     luma = np.asarray(src.convert("L"))
     for seed in holes:
         alpha[flood(luma < OUTLINE_LUMA, seed)] = 0
-    # Stickers are die-cut: a hard outline, no soft shadow. Snap the matte so the vinyl
-    # and shell behind them in the comp do not survive as a grey halo.
+    # Stickers are die-cut: a hard outline, no soft shadow. Snap the matte so whatever
+    # was behind them does not survive as a grey halo.
     alpha = np.clip((alpha - 60) * (255 / 140), 0, 255).astype(np.uint8)
     # Keep only the largest blob, which drops crumbs of reel or groove rembg kept.
     alpha = largest_component(alpha)
@@ -128,7 +125,7 @@ def draw_hub(size: int) -> Image.Image:
         d.ellipse((c - r, c - r, c + r, c + r), fill=fill)
 
     ring(c, (28, 28, 30, 255))  # dark rim
-    # Pale face with a soft top-left light, as the comp shades it.
+    # Pale face with a soft top-left light.
     face_r = c * 0.9
     face = Image.new("RGBA", (s, s), (0, 0, 0, 0))
     yy, xx = np.mgrid[0:s, 0:s].astype(np.float32)
@@ -156,7 +153,7 @@ def draw_hub(size: int) -> Image.Image:
                  for r, t in ((r3, -w), (r4, -w * 0.8), (r4, w * 0.8), (r3, w))]
         d.polygon(inner, fill=(46, 46, 48, 255))
 
-    # Orange tick on the rim, the comp's one accent on the reel.
+    # Orange tick on the rim.
     d.arc((c - face_r * 0.98, c - face_r * 0.98, c + face_r * 0.98, c + face_r * 0.98),
           start=-70, end=-40, fill=ORANGE + (255,), width=round(face_r * 0.09))
 
@@ -178,7 +175,7 @@ def draw_vinyl(size: int, rim: bool) -> Image.Image:
     outer = c * (0.88 if rim else 1.0)
 
     base = np.full(r.shape, 20.0)
-    # Grooves: thin pale lines on black, as the comp draws them, fading toward the label.
+    # Grooves: thin pale lines on black, fading toward the label.
     ripple = 0.5 + 0.5 * np.sin(r / (s / 150) * 2 * math.pi)
     base += 34 * ripple**6 * np.clip((r - c * 0.45) / (c * 0.2), 0, 1)
     # Sheen: two opposed lobes, as light catches a record.

@@ -116,7 +116,7 @@ export function MoodCard({
         </View>
 
         {/* The track bleeds past the card's padding so neighbouring labels are
-            cut off by the card edge, as they are in the comps. */}
+            cut off by the card edge. */}
         <View className="-mx-5">
           <MoodWheel
             preview={preview.id}

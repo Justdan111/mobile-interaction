@@ -16,8 +16,6 @@ const SEGMENTS = [
 ];
 
 export default function Proposals() {
-  // Feeds this screen's scroll position to the floating tab bar, which
-  // shrinks to icons on the way down and expands again on the way up.
   const tabBarScroll = useTabBarScroll();
   const router = useRouter();
   const [segment, setSegment] = useState<'incoming' | 'outgoing'>('incoming');

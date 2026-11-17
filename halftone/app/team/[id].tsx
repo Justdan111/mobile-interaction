@@ -18,9 +18,8 @@ const SEGMENTS = [
 ];
 
 /**
- * The employer is a member row like any other, but the comp sets it apart from
- * the people with a group break. Keying on the role keeps that purely
- * data-driven: a team with no employer renders as one uninterrupted list.
+ * The employer row is set apart from the people with a group break. Keying on
+ * the role keeps that data-driven: a team with no employer renders as one list.
  */
 const EMPLOYER_ROLE = 'Employer';
 
@@ -62,8 +61,8 @@ export default function Team() {
   const { t } = useTheme();
   const team = teams.find((x) => x.id === id);
   const [segment, setSegment] = useState('members');
-  // Seeded from the team's own mute flag — the same field the chats list's
-  // swipe-to-mute action reads — then local state only, per the spec.
+  // Seeded from the team's mute flag (the field chats' swipe-to-mute reads),
+  // then local state only.
   const [notify, setNotify] = useState(!team?.muted);
 
   if (!team) {

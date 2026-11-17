@@ -18,10 +18,8 @@ export function TeamTile({
 }) {
   const h = hashSeed(teamId);
   const ground = TILE_GROUNDS[h % TILE_GROUNDS.length];
-  // Unsigned shift: hashSeed returns a uint32 via `>>> 0`, but a signed `>>`
-  // reinterprets any value with the top bit set as negative (ToInt32), which
-  // would make `% FIELD_NAMES.length` negative and index the array with a
-  // negative number — always `undefined` — for roughly half of all team ids.
+  // Unsigned shift: a signed `>>` turns uint32 hashes with the top bit set
+  // negative, and a negative index is `undefined` for about half of all ids.
   const variant = FIELD_NAMES[(h >>> 5) % FIELD_NAMES.length];
 
   return (

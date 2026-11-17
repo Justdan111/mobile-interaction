@@ -6,10 +6,8 @@ import { projects } from '../../data/projects';
 
 const target = projects[0];
 
-// Mutable so later tests can route a different id (or one that matches no
-// project) without a fresh jest.mock factory per test. Jest's hoisting only
-// allows referencing identifiers prefixed with "mock" from inside a
-// jest.mock factory, hence the naming.
+// Mutable so tests can route a different id. Jest only allows `mock`-prefixed
+// identifiers inside a jest.mock factory.
 let mockId: string = target.id;
 const mockPush = jest.fn();
 const mockBack = jest.fn();
@@ -44,11 +42,7 @@ describe('ProjectDetail', () => {
     expect(screen.getByText('Send proposal')).toBeTruthy();
   });
 
-  // The three tests above always mock the route id to projects[0], so they
-  // would pass even if the screen ignored the id param and hardcoded
-  // projects[0] directly. Route a *different* id and prove the screen
-  // renders that project's own content — and that the first project's
-  // title is nowhere on screen.
+  // The tests above always route projects[0], so prove the id param is used.
   it('renders the project named by the route id, not a fixed one', async () => {
     const other = projects[1];
     mockId = other.id;
@@ -57,9 +51,7 @@ describe('ProjectDetail', () => {
     expect(screen.queryByText(target.title)).toBeNull();
   });
 
-  // An id with no match in data/projects.ts is a real navigation path (a
-  // stale link, a removed listing) — confirm it degrades to a message
-  // instead of crashing or rendering blank.
+  // A stale link must degrade to a message, not a crash or a blank screen.
   it('shows a fallback for a route id with no matching project', async () => {
     mockId = 'does-not-exist';
     await wrap();
@@ -72,9 +64,7 @@ describe('ProjectDetail', () => {
     expect(mockPush).toHaveBeenCalledWith('/proposals');
   });
 
-  // `target` (projects[0]) has one done task and one not-done task — assert
-  // against that mix directly instead of assuming which index is which, so
-  // the test still means what it says if the fixture data is reordered.
+  // Find done and not-done tasks rather than assuming fixture order.
   it('shows a check mark only for the tasks that are done', async () => {
     const done = target.tasks.find((t) => t.done);
     const notDone = target.tasks.find((t) => !t.done);

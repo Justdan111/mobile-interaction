@@ -55,9 +55,7 @@ describe('MonthGrid fills', () => {
     expect(screen.getByLabelText('14').props.style.backgroundColor).toBe('transparent');
   });
 
-  // The grid filled today with `chip` while the legend showed `muted` for it,
-  // and nothing caught the drift because the two lists lived in separate files.
-  // This is the assertion that would have.
+  // The grid and the legend must agree on every mark's colour.
   it('agrees with the legend on every mark colour', async () => {
     await grid();
     const gridFills = {
@@ -76,9 +74,8 @@ describe('MonthGrid fills', () => {
 });
 
 describe('MonthGrid day labels', () => {
-  // The visible number is padded to match the comp; the accessibility label is
-  // not, so a screen reader says "five" and the screen's current-date test —
-  // which matches `^<day>(,|$)` — keeps working on single-digit days.
+  // The visible number is padded; the accessibility label is not, so a screen
+  // reader says "five".
   it('shows a padded day but labels it unpadded', async () => {
     await grid();
     expect(screen.getByText('05')).toBeTruthy();
@@ -111,9 +108,7 @@ describe('MonthGrid joined ranges', () => {
     expect(screen.getByLabelText('5, task deadline').props.style.borderRadius).toBeGreaterThan(0);
   });
 
-  // Butting the cells up at exactly 0 was not enough: seven flex:1 columns
-  // leave a fractional remainder, and a dark seam opened between two filled
-  // days. Joined cells overlap so no rounding can put a gap between them.
+  // Joined cells overlap so fractional column widths cannot open a seam.
   it('overlaps joined days so no seam can open between them', async () => {
     await grid();
     expect(screen.getByLabelText('23, project deadline').props.style.marginHorizontal).toBeLessThan(0);

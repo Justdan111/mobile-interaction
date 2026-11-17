@@ -36,7 +36,7 @@ function CardFace({ parcel, onTone }: { parcel: Parcel; onTone: string }) {
   return (
     <View style={{ flex: 1, padding: 16 }}>
       {/* Drawn first so the header's pill stays on top of it. The card's
-          bottom edge crops the box, as in the comp. */}
+          bottom edge crops the box. */}
       <View style={{ position: 'absolute', right: -14, bottom: -34 }} pointerEvents="none">
         <Image source={box.source} style={{ width: boxH * box.aspect, height: boxH, transform: [{ scaleX: -1 }, { rotate: '4deg' }] }} contentFit="contain" />
       </View>

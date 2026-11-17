@@ -41,14 +41,8 @@ const RISE_EASING = Easing.out(Easing.cubic);
 const SECTION_TRAVEL = 72;
 
 /**
- * Entrance choreography.
- *
- * Nothing inside moves until the sheet is most of the way up. An earlier pass
- * started the first section at 240ms, and its slide was effectively invisible —
- * a 56px horizontal drift reads as nothing while the whole sheet is still
- * travelling several hundred pixels vertically underneath it. Out-cubic puts
- * the sheet ~87% of the way up by 350ms, so from ~450ms the sections have a
- * near-stationary backdrop to slide across and each one is legible on its own.
+ * Entrance choreography. Sections wait until the sheet is ~87% up (out-cubic,
+ * ~350ms); a sideways slide is invisible while the sheet is still climbing.
  */
 const T = {
   header: 260,

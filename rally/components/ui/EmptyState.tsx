@@ -5,9 +5,9 @@ import { IconButton } from '@/components/ui/IconButton';
 import { Screen } from '@/components/ui/Screen';
 
 /**
- * Shared body for the four drawer destinations that have no comp. They exist
- * so navigation never dead-ends, and they say so plainly rather than
- * pretending to be a designed screen.
+ * Shared body for the four placeholder drawer destinations. They exist so
+ * navigation never dead-ends, and say so plainly rather than pretending to be
+ * a finished screen.
  */
 export function EmptyState({ title, message }: { title: string; message: string }) {
   const router = useRouter();

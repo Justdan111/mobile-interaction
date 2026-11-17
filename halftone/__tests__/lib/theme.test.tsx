@@ -4,10 +4,8 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeProvider, useTheme, THEME_STORAGE_KEY } from '../../lib/theme';
 
-// Mock only the leaf module react-native's `useColorScheme` delegates to
-// (react-native/index.js re-exports it via a getter that requires this exact
-// path), rather than the whole 'react-native' package — replacing the entire
-// package trips up react-native's own jest-preset component mocks.
+// Mock only the leaf module react-native's `useColorScheme` delegates to;
+// replacing the whole package trips up react-native's own jest-preset mocks.
 jest.mock('react-native/Libraries/Utilities/useColorScheme', () => ({
   __esModule: true,
   default: jest.fn(),
@@ -41,19 +39,15 @@ describe('ThemeProvider', () => {
     mockUseColorScheme.mockReset();
   });
 
-  // NOTE: this only checks that the `preference` state string equals
-  // 'system', which is true from `useState('system')` regardless of what the
-  // OS reports. It does not prove the provider consults the system scheme —
-  // see the "follows the system color scheme" tests below for that.
+  // Only checks the initial state; the "follows the system color scheme" tests
+  // cover the real behaviour.
   it('starts on the system preference', async () => {
     renderProbe();
     await waitFor(() => expect(screen.getByTestId('pref')).toHaveTextContent('system'));
   });
 
-  // NOTE: this only checks membership in ['light', 'dark'], which the `Mode`
-  // type already guarantees and which would pass against a provider that
-  // hardcoded a mode and never consulted the system scheme at all. See the
-  // "follows the system color scheme" tests below for the real guard.
+  // Only checks the type contract; the "follows the system color scheme" tests
+  // cover the real behaviour.
   it('resolves to a concrete mode', async () => {
     renderProbe();
     await waitFor(() =>
@@ -105,20 +99,13 @@ describe('ThemeProvider', () => {
 
   describe('hydration', () => {
     it('is not hydrated until the storage read settles, then hydrates', async () => {
-      // @testing-library/react-native's `render` awaits React's `act`, which
-      // drains pending microtasks — including the mocked AsyncStorage's
-      // near-instant read — before it resolves. So a plain `await
-      // renderProbe()` already lands past hydration and can't observe the
-      // "not yet hydrated" window. Hold the read open with a controllable
-      // promise to make that window observable and deterministic.
+      // `render` drains the mocked read before resolving, so hold the read open to
+      // observe the not-yet-hydrated window.
       let resolveRead: (value: string | null) => void = () => {};
       const pendingRead = new Promise<string | null>((resolve) => {
         resolveRead = resolve;
       });
-      // `getItem` is already a `jest.fn` (from the async-storage jest mock).
-      // `mockReturnValueOnce` overrides only this one call and then falls
-      // back to the default implementation on its own — no manual restore
-      // needed, and nothing can leak into later tests.
+      // `mockReturnValueOnce` applies to this call only, so nothing leaks.
       (AsyncStorage.getItem as jest.Mock).mockReturnValueOnce(pendingRead);
 
       await renderProbe();
@@ -142,10 +129,7 @@ describe('ThemeProvider', () => {
   });
 
   it('throws a useful error outside the provider', async () => {
-    // @testing-library/react-native v14's `render` is async (it awaits React's
-    // `act` internally), so the thrown error surfaces as a rejected promise
-    // rather than a synchronous throw. `toThrow` only catches sync throws, so
-    // this needs `rejects.toThrow` instead of `expect(() => render(...))`.
+    // `render` is async, so the throw surfaces as a rejected promise.
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
     await expect(render(<Probe />)).rejects.toThrow(/ThemeProvider/);
     spy.mockRestore();

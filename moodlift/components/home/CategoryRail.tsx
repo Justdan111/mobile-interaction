@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text } from 'react-native';
 import { Icon, type IconName } from '../ui/icons';
 import { Entrance } from '../ui/Entrance';
 import type { Category } from '../../data/workouts';
@@ -13,7 +13,7 @@ const CATEGORIES: { id: Category; label: string; icon: IconName }[] = [
   { id: 'cycle', label: 'Cycle', icon: 'bike' },
 ];
 
-/** The horizontal category tiles from `.design/comps/home-no-mood.png`. */
+/** The horizontal category tiles on Home. */
 export function CategoryRail({
   onSelect,
   index = 0,

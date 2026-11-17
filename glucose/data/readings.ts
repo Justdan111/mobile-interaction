@@ -1,12 +1,8 @@
 /**
- * Sample data for the three screens, reshaped into something the app can compute
- * against. Nothing here is a headline number: the figures the screens show
- * (72 mg/dL, 93 average, 7.1% HbA1c, 50/30/20) all fall out of these series via
- * `lib/glucose.ts`, so logging a reading moves them.
- *
- * Today's curve keeps the shape sampled from the comp artwork but is expressed
- * in mg/dL, solved so its mean is 93 and its final sample is 72 - the two
- * numbers the dashboard puts on screen.
+ * Sample data for the three screens. Nothing here is a headline number: the
+ * figures the screens show all fall out of these series via `lib/glucose.ts`,
+ * so logging a reading moves them. Today's curve is solved so its mean is
+ * 93 mg/dL and its final sample is 72.
  */
 
 export type Reading = {

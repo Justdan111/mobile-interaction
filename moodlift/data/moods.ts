@@ -2,7 +2,7 @@ export type MoodId = 'low' | 'tense' | 'calm' | 'balanced' | 'energized' | 'high
 
 export type Mood = {
   id: MoodId;
-  /** Wheel label, as it reads in the comps. */
+  /** Wheel label. */
   label: string;
   /** Position on the energy scale, 1 (lowest) to 6 (highest). */
   rank: 1 | 2 | 3 | 4 | 5 | 6;
@@ -17,9 +17,9 @@ export type Mood = {
   /** The mascot's body fill. */
   mascotFill: string;
   /**
-   * The mascot's line work. Near-black on every mood: in the comps the faces
-   * and limbs are drawn in black ink whatever colour the card is, so this is
-   * deliberately NOT `onSurface`.
+   * The mascot's line work. Near-black on every mood: the faces and limbs are
+   * drawn in black ink whatever colour the card is, so this is deliberately
+   * NOT `onSurface`.
    */
   mascotInk: string;
   blurb: string;
@@ -28,10 +28,8 @@ export type Mood = {
 /**
  * Ordered low energy → high energy; the wheel scrolls in this order.
  *
- * Calm, Balanced and Energized are transcribed from the comps — surface
- * colour, mascot and blurb all come from `.design/comps/mood-*.png`, and the
- * three blurbs are verbatim. The remaining three complete the ramp: it runs
- * dim violet → clay → sage → blue → purple and lands on the brand coral.
+ * The surface colours ramp dim violet → clay → sage → blue → purple and land
+ * on the brand coral.
  */
 export const MOODS: readonly Mood[] = [
   {

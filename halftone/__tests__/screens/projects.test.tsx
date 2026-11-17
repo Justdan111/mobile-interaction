@@ -31,9 +31,8 @@ describe('My projects', () => {
   it('marks the real current date', async () => {
     await goToCalendar();
     const today = Number(todayIso().slice(8, 10));
-    // Ruling R5 — MonthGrid appends ", <kind> deadline" to a day that also
-    // carries a mark, so on the 5th, 9th, 23rd or 24th an exact-string match
-    // would fail. Match the day number and whatever follows it.
+    // MonthGrid appends ", <kind> deadline" to a day that carries a mark, so
+    // match the day number and whatever follows it.
     expect(screen.getByLabelText(new RegExp('^' + today + '(,|$)'))).toBeTruthy();
   });
 
@@ -56,7 +55,7 @@ describe('My projects', () => {
   });
 
   it('toggles a project between saved and unsaved', async () => {
-    // Ruling R6 — the heart on this list drives real state, same as home.
+    // The heart on this list drives real state, same as home.
     await wrap();
     await fireEvent.press(screen.getAllByLabelText(/save/i)[0]);
     expect(screen.getAllByLabelText(/Remove .* from saved/i).length).toBeGreaterThan(0);

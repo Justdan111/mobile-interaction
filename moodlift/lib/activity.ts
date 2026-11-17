@@ -51,9 +51,8 @@ const HOUR_SHAPE = [
 
 /**
  * These describe ACTIVE calories and exercise minutes, not whole-day totals.
- * Calibrated against the comps, which show 273 kcal alongside 1h 5m of
- * activity — summing every waking hour instead gives ~2,400 kcal and eleven
- * hours, which is a day's existence rather than a day's training.
+ * Summing every waking hour instead gives ~2,400 kcal and eleven hours,
+ * which is a day's existence rather than a day's training.
  */
 const STEPS_PER_KCAL = 0.04;
 const KCAL_PER_ACTIVE_MIN = 1;

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import Svg, { Path } from 'react-native-svg';
 
 /**
- * The hand-drawn ring the comps loop around the selected mood.
+ * The hand-drawn ring looped around the selected mood.
  *
  * Not an `<Ellipse>`: the character comes from the stroke overshooting where it
  * started and crossing itself, and from the radius wobbling slightly as it goes

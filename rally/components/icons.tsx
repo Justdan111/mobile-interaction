@@ -33,7 +33,7 @@ export function MenuIcon({ size = 26, color = colors.ink, strokeWidth = 2.4 }: I
   );
 }
 
-/** The comp's bell carries an unread dot; `dot` colours it, `null` hides it. */
+/** The bell carries an unread dot; `dot` colours it, `null` hides it. */
 export function BellIcon({
   size = 26,
   color = colors.ink,
@@ -169,7 +169,7 @@ export function CloseIcon({ size = 24, color = colors.surface, strokeWidth = 2.2
   );
 }
 
-/** Solid — the drawer's active row uses the filled house in the comp. */
+/** Solid — the drawer's active row uses the filled house. */
 export function HomeIcon({ size = 24, color = colors.surface, strokeWidth = 2 }: IconProps) {
   return (
     <Svg {...frame(size)}>

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Animated, Easing, TextStyle, View } from "react-native";
+import { Animated, TextStyle, View } from "react-native";
 
 type Props = {
   size?: number;

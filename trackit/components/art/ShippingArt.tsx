@@ -6,7 +6,6 @@ import Svg, {
   LinearGradient,
   Path,
   Polygon,
-  Rect,
   Stop,
   Text as SvgText,
 } from 'react-native-svg';

@@ -3,13 +3,8 @@ import { render, screen } from '@testing-library/react-native';
 import { Trigger } from '../../app/(tabs)/_layout';
 import { ThemeProvider } from '../../lib/theme';
 
-// This is the piece expo-router/ui's own `TabTrigger` can't verify for us:
-// it computes `isFocused` from real navigation state and hands it to
-// whatever `asChild` component we give it — that's expo-router/ui's tested
-// responsibility. What's ours is `Trigger`, the small adapter in
-// app/(tabs)/_layout.tsx that receives that value and must actually forward
-// it to TabPill rather than hardcoding it — a component that ignores its own
-// prop and still passes its tests is the easy bug here.
+// expo-router/ui computes `isFocused`; `Trigger` in app/(tabs)/_layout.tsx
+// must forward it to TabPill rather than hardcode it.
 const wrap = (ui: React.ReactElement) => render(<ThemeProvider>{ui}</ThemeProvider>);
 
 describe('Trigger (app/(tabs)/_layout adapter)', () => {
@@ -22,9 +17,8 @@ describe('Trigger (app/(tabs)/_layout adapter)', () => {
   it('marks the tab unselected when the slot reports isFocused: false — proving it is not hardcoded', async () => {
     await wrap(<Trigger icon="search" label="Search" isFocused={false} onPress={() => {}} />);
     expect(screen.getByRole('tab').props.accessibilityState.selected).toBe(false);
-    // The expanded label only renders for the focused tab (TabPill's own
-    // behaviour) — checking it here too catches a Trigger that forwarded
-    // `selected` correctly but hardcoded a different prop TabPill also reads.
+    // The label only renders for the focused tab, which catches a Trigger that
+    // forwards `selected` but hardcodes another prop TabPill reads.
     expect(screen.queryByText('Search')).toBeNull();
   });
 
@@ -36,26 +30,14 @@ describe('Trigger (app/(tabs)/_layout adapter)', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
-  // Regression test for a real bug found by reading the installed
-  // expo-router/ui source (node_modules/expo-router/build/ui/TabTrigger.js),
-  // not by tapping — UI automation to the Simulator window is unavailable in
-  // this sandbox (`osascript`/System Events enumerates zero windows for the
-  // Simulator process here), so this reproduces the failure without one.
-  //
-  // In production, the slot's `onPress` prop IS expo-router/ui's
-  // `handleOnPress`, which — before switching tabs — runs:
-  //   if (event?.isDefaultPrevented()) return;   // called AS A FUNCTION
+  // expo-router/ui's TabTrigger `handleOnPress` runs these checks before
+  // switching tabs:
+  //   if (event?.isDefaultPrevented()) return;
   //   if (!shouldHandleMouseEvent(event)) return; // native: !event?.defaultPrevented
-  // `Trigger` originally called `onPress?.({} as never)`. `({}).isDefaultPrevented`
-  // is `undefined`, and invoking it throws `TypeError: event.isDefaultPrevented
-  // is not a function` — before `switchTab()` ever runs, meaning every real
-  // tab tap would throw and navigation would silently never fire.
+  // An event stub without `isDefaultPrevented` throws and the tab never switches.
   it('hands the slot onPress an event object that survives real navigation preconditions', async () => {
     let reachedNavigation = false;
-    // Mirrors the two lines from TabTrigger.js's handleOnPress exactly,
-    // including the *unguarded* method call on `isDefaultPrevented` (only
-    // `event?.`, not `event?.isDefaultPrevented?.()`) — that unguarded call
-    // is precisely what threw against the original `{}` stub.
+    // Mirrors handleOnPress, including the unguarded `isDefaultPrevented()` call.
     const handleOnPressLikeExpoRouterUi = (event: any) => {
       if (event?.isDefaultPrevented()) return;
       if (event?.defaultPrevented) return;

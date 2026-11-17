@@ -3,23 +3,9 @@ the app imports.
 
 Runs over `assets/img/*.jpg` automatically — drop a new photo in, re-run, done.
 
-Why a matting model rather than colour keying:
-
-    The first version of this script sampled a median backdrop colour from the
-    frame's border and keyed on distance from it. That works beautifully on a
-    seamless studio backdrop and fails completely on anything else, which was
-    measured, not guessed: a racket against a cloudy sky kept the clouds as
-    blue blobs, a pink painted wall left magenta smears, and a court's white
-    line survived as a grey band straight through the subject. A gradient has
-    no single backdrop colour, so half the background reads as foreground.
-
-    Free badminton photography is overwhelmingly shot on skies, courts and
-    painted walls, so "pick photos with a plain backdrop" would have meant
-    picking on backdrop luck rather than on whether the product looks right.
-    U2Net segments the subject itself and does not care what is behind it.
-
-    This is a build-time tool. The model runs here and only the resulting PNGs
-    ship, so nothing is added to the app bundle.
+A matting model (U2Net) is used rather than colour keying because the source
+photos are shot on skies, courts and painted walls: a gradient backdrop has no
+single colour to key on. This is a build-time tool; only the PNGs ship.
 
 Usage:
     python3 -m venv .venv && .venv/bin/pip install numpy pillow "rembg[cpu]"
@@ -123,20 +109,11 @@ def smoothstep(a, b, x):
 def clear_string_bed(alpha, px, lo=0.05, hi=0.14):
     """Punch the backdrop back out of the gaps inside a racket's frame.
 
-    The matting model returns a silhouette, and a racket's silhouette encloses
-    its string bed — so whatever was behind the racket comes along inside it. A
-    racket shot on a pink wall mattes out as a pink oval; on a court, a green
-    one. Neither is a cut-out.
-
-    So the two techniques are combined where each is strong: the model decides
-    the outline, and a colour key decides what inside that outline is really
-    backdrop. The backdrop colour is sampled from pixels the model already
-    rejected, which is a far more reliable sample than the frame's border —
-    that was the original keying approach's weak point.
-
-    A pixel survives only if the model calls it subject AND it does not match
-    the backdrop. The frame, grip and strings differ from the backdrop, so they
-    stay; the gaps between strings do not, so they go.
+    The model returns a silhouette, and a racket's silhouette encloses its
+    string bed, so the backdrop comes along inside it. The model decides the
+    outline; a colour key, sampled from pixels the model already rejected,
+    decides what inside that outline is really backdrop. A pixel survives only
+    if the model calls it subject AND it does not match the backdrop.
     """
     outside = alpha < 0.1
     if outside.sum() < 64:
@@ -146,30 +123,17 @@ def clear_string_bed(alpha, px, lo=0.05, hi=0.14):
     dist = np.sqrt(((px - backdrop) ** 2).sum(axis=2) / 3.0)
     keep = smoothstep(lo, hi, dist)
 
-    # Cast shadows survive the test above — they sit far enough from the
-    # backdrop's colour to read as subject — and the model hands them over
-    # attached to the product, so a racket arrives trailing a grey blob.
-    #
-    # A shadow is the backdrop scaled darker: every channel drops by roughly
-    # the same factor. So divide by the backdrop and look at the spread of the
-    # per-channel ratios. Uniform spread and a ratio at or below 1 means
-    # shading, not pigment. A genuinely coloured object skews the channels
-    # unevenly, and a pale object on a dark ground scales up rather than down,
-    # so neither is caught — which is what keeps a white shuttlecock on a
-    # charcoal backdrop intact.
+    # Cast shadows pass the colour key and stay attached to the product. A
+    # shadow is the backdrop scaled darker, so a uniform per-channel ratio at or
+    # below 1 means shading; coloured or paler-than-ground objects are not caught.
     ratio = px / np.maximum(backdrop, 1e-3)
     spread = ratio.max(axis=2) - ratio.min(axis=2)
     level = ratio.mean(axis=2)
     shadow = (1.0 - smoothstep(0.10, 0.30, spread)) * (1.0 - smoothstep(0.94, 1.06, level))
 
-    # The ratio test alone cannot tell a dark neutral object from a shadow —
-    # a charcoal racket against a bright sky scales every channel down by the
-    # same factor, exactly like shading, and the first version of this erased
-    # one down to a ghost.
-    #
-    # Texture separates them. A cast shadow is a smooth gradient; a racket is
-    # nothing but edges — frame, strings, grip. So only trust the shadow verdict
-    # where the neighbourhood is flat.
+    # The ratio test alone would erase a dark neutral racket on a bright sky.
+    # Shadows are smooth and rackets are all edges, so only trust the shadow
+    # verdict where the neighbourhood is flat.
     grey = px.mean(axis=2)
     blurred = np.asarray(
         Image.fromarray((grey * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(2.0)),
@@ -184,15 +148,9 @@ def clear_string_bed(alpha, px, lo=0.05, hi=0.14):
     ) / 255.0
     shadow *= 1.0 - smoothstep(0.05, 0.22, detail)
 
-    # The detail gate is too generous for one case: the shadow *of a string
-    # bed* is itself a lattice, so it carries plenty of local detail and the
-    # gate waves it through. A racket on a pink wall kept a pink squiggle.
-    #
-    # Hue settles it. A shadow is the backdrop minus light, so it holds the
-    # backdrop's chromaticity exactly; the product almost never does. Compare
-    # chromaticity — colour with brightness divided out — and let a match
-    # override the detail gate. A charcoal racket on blue sky is neutral where
-    # the sky is blue, so it stays.
+    # The shadow of a string bed is itself a lattice and slips past the detail
+    # gate. A shadow keeps the backdrop's chromaticity exactly and the product
+    # almost never does, so a chromaticity match overrides the gate.
     def chroma(v):
         return v / np.maximum(v.sum(axis=-1, keepdims=True), 1e-3)
 

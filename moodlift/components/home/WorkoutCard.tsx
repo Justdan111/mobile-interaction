@@ -8,7 +8,7 @@ import { Icon } from '../ui/icons';
 import { Tag } from '../ui/Chip';
 
 /**
- * The large photo card in the mood rail — `.design/comps/home-mood-set.png`.
+ * The large photo card in the mood rail.
  * Width comes from the viewport so the next card peeks in at the right edge,
  * which is what tells you the rail scrolls.
  */

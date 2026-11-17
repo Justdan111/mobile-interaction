@@ -8,10 +8,9 @@ import {
 } from '../../components/tabs/TabBarChrome';
 
 /**
- * Reanimated is mocked here, so the bar's movement is not observable and the
- * animation is verified on device instead. What these cover is the wiring
- * either side of it: that a screen's scroll actually reaches the bar, and that
- * the bar reports the state a label can be mounted or unmounted from.
+ * Reanimated is mocked, so the bar's movement is not observable here. These
+ * cover the wiring either side of it: a screen's scroll reaches the bar, and the
+ * bar reports the state its label mounts from.
  */
 
 /** Reports offsets on mount, the way a scrolling list would. */
@@ -65,9 +64,7 @@ describe('tab bar chrome wiring', () => {
 });
 
 describe('tab bar chrome outside its provider', () => {
-  // Every screen spreads useTabBarScroll onto its list, and those screens are
-  // rendered on their own throughout this suite. Neither hook may explode
-  // there, and the bar must simply sit at full size.
+  // Outside the provider neither hook may throw, and the bar sits full size.
   it('reports not collapsed and swallows scroll events', async () => {
     await render(
       <View>

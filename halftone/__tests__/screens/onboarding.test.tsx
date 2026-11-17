@@ -10,13 +10,8 @@ jest.mock('expo-router', () => ({ useRouter: () => ({ replace: mockReplace, back
 
 const wrap = () => render(<ThemeProvider><Onboarding /></ThemeProvider>);
 
-// Under this project's Jest setup, NativeWind's `className` is NOT resolved
-// to an inline `style` (that requires the full Metro/CSS-interop pipeline,
-// which Jest doesn't run — see components/ui/Toggle.tsx for the pattern
-// components use when they need a testable *resolved* colour: an explicit
-// `style` prop). So `className` survives as a literal string prop here,
-// and checking which utility class is present is the direct, honest way to
-// assert which segment is filled.
+// NativeWind's `className` is not resolved to a `style` under Jest, so assert
+// on which utility class is present.
 const isFilled = (testId: string) =>
   (screen.getByTestId(testId).props.className as string).includes('bg-accent');
 
@@ -43,8 +38,7 @@ describe('Onboarding', () => {
     await wrap();
     fireEvent.press(screen.getByText('Next'));
     await waitFor(() => expect(screen.getByText(SLIDES[1].title)).toBeTruthy());
-    // Prove slide 1's content is actually gone, not just that slide 2 appeared
-    // alongside it (e.g. a broken implementation that renders every slide).
+    // Slide 1's content must be gone, not merely joined by slide 2.
     expect(screen.queryByText(SLIDES[0].title)).toBeNull();
   });
 
@@ -54,8 +48,6 @@ describe('Onboarding', () => {
     await waitFor(() => expect(screen.getByText(SLIDES[1].title)).toBeTruthy());
     fireEvent.press(screen.getByText('Next'));
     await waitFor(() => expect(screen.getByText('Get started')).toBeTruthy());
-    // Prove "Next" is really gone on the last slide, not just that
-    // "Get started" happens to also be present.
     expect(screen.queryByText('Next')).toBeNull();
   });
 
@@ -64,9 +56,8 @@ describe('Onboarding', () => {
     expect(screen.getByText('Skip')).toBeTruthy();
   });
 
-  // A mutant that rewires Skip's onPress to a no-op passes every test above
-  // — nothing here presses it. Prove both halves of what it must do: persist
-  // the flag (so onboarding doesn't reappear next launch) and navigate.
+  // Skip must both persist the flag (so onboarding doesn't reappear) and
+  // navigate.
   it('pressing Skip persists the onboarding flag and routes to the tabs', async () => {
     await wrap();
     fireEvent.press(screen.getByText('Skip'));

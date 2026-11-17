@@ -22,15 +22,12 @@ const SEGMENTS = [
 ];
 
 export default function Projects() {
-  // Feeds this screen's scroll position to the floating tab bar, which
-  // shrinks to icons on the way down and expands again on the way up.
   const tabBarScroll = useTabBarScroll();
   const router = useRouter();
   const { t } = useTheme();
   const [segment, setSegment] = useState('active');
 
-  // Ruling R6 — the heart drives real local state here, exactly as on home.
-  // An inert `onToggleSave` is a control that lies to the user.
+  // The heart drives real local state here, exactly as on home.
   const [saved, setSaved] = useState<Set<string>>(
     () => new Set(projects.filter((p) => p.saved).map((p) => p.id))
   );
@@ -42,9 +39,7 @@ export default function Projects() {
       return next;
     });
 
-  // Live calendar: opens on the real current month with the real date marked.
-  // Captured once per mount so a re-render at midnight cannot shift the grid
-  // out from under the user mid-interaction.
+  // Captured once per mount so a re-render at midnight cannot shift the grid.
   const today = useMemo(() => todayIso(), []);
   const [cursor, setCursor] = useState(() => monthOf(today));
 

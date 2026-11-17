@@ -27,7 +27,7 @@ function Card({ children, index }: { children: React.ReactNode; index: number })
 }
 
 const DOT = 13;
-/** The detail comp runs its cards closer to the screen edge than the tab screens. */
+/** The detail screen runs its cards closer to the screen edge than the tab screens. */
 const DETAIL_GUTTER = 14;
 
 export default function PackageDetail() {

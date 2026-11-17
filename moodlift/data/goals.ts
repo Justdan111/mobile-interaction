@@ -12,7 +12,6 @@ export type Goal = {
   target: number;
 };
 
-/** The two goals shown in journey-activity.png, plus one more to fill the list. */
 export const GOALS: readonly Goal[] = [
   {
     id: 'yoga-balance',

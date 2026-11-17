@@ -8,7 +8,7 @@ export type Product = {
   category: string;
   price: number;
   rating: number;
-  /** Pre-formatted, e.g. "23K" — the comp shows an abbreviated count. */
+  /** Pre-formatted abbreviated count, e.g. "23K". */
   sold: string;
   description: string;
   /** Exactly three: the detail screen's thumbnail rail shows three. */

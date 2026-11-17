@@ -3,7 +3,7 @@ import qrcode from 'qrcode-generator';
 /**
  * Encode a payload as a QR module matrix — `true` is a dark module.
  *
- * A real encoding rather than a decorative grid: the comp's pass is meant to
+ * A real encoding rather than a decorative grid: the pass is meant to
  * be scanned at a gym door, and a pattern that merely looks like a QR code
  * would be a prop, not a feature.
  *

@@ -22,9 +22,8 @@ const WHITE = toArgb('#FFFFFF');
 const ACCENT = toArgb(tokens.light.accent);
 const MUTED = toArgb(tokens.light.muted);
 
-// Find the VoiceNote circle's background colour, the play triangle's
-// resolved fill payload, and the first waveform bar's resolved fill
-// payload, in document order, from a rendered tree.
+// Finds the VoiceNote circle's background, the play triangle's fill payload
+// and the first waveform bar's fill payload, in document order.
 function colors(
   node: any,
   out: { circle?: string; iconPayload?: number; barPayload?: number } = {}
@@ -61,14 +60,10 @@ describe('MessageBubble voice note colour contrast', () => {
     );
     const { circle, iconPayload, barPayload } = colors(r.toJSON());
     expect(circle).toBe('#FFFFFF');
-    // A component that hardcoded the icon to white (invisible on a white
-    // circle, contradicting the comp's purple-on-white own voice note) must
-    // fail this — iconPayload would equal WHITE instead of ACCENT.
+    // Own voice notes draw an accent triangle on a white circle.
     expect(iconPayload).toBe(ACCENT);
     expect(iconPayload).not.toBe(WHITE);
-    // Own bars sit directly on the accent-filled bubble, so they need the
-    // white foreground colour, not the circle's own white surface colour
-    // (same value here, but a distinct concern — see the "other" case).
+    // Own bars sit on the accent bubble, so they take the white foreground.
     expect(barPayload).toBe(WHITE);
   });
 
@@ -81,9 +76,7 @@ describe('MessageBubble voice note colour contrast', () => {
     const { circle, iconPayload, barPayload } = colors(r.toJSON());
     expect(circle).toBe(tokens.light.accent);
     expect(iconPayload).toBe(WHITE);
-    // The comp's other-sender waveform bars are neutral gray, not
-    // accent-purple — a component that reused the circle's accent tint for
-    // the bars (the pre-fix bug) must fail this.
+    // Other-sender bars are neutral gray, not the circle's accent tint.
     expect(barPayload).toBe(MUTED);
     expect(barPayload).not.toBe(ACCENT);
   });

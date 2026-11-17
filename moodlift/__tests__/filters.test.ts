@@ -20,9 +20,8 @@ describe('applyFilters', () => {
     expect(all()).toHaveLength(WORKOUTS.length);
   });
 
-  // The comp's placeholder reads "Search name or training", so the category is
-  // searchable too — "yoga" finds every yoga session, not only the ones with
-  // the word in their title.
+  // The placeholder reads "Search name or training", so the category is
+  // searchable too — "yoga" finds every yoga session, not just matching titles.
   it('matches title, coach or category, case-insensitively', () => {
     const out = all('YOGA');
     expect(out.length).toBeGreaterThan(0);

@@ -71,8 +71,8 @@ export const messages: Message[] = [
     read: true,
   },
 
-  // The two teams outside the reference thread each carry a single message
-  // (Ruling R2 — an empty thread renders no preview row at all).
+  // These teams carry a single message each: an empty thread renders no
+  // preview row at all.
   {
     id: 'msg-brand-1',
     threadId: 't-brand-identity',

@@ -12,3 +12,12 @@ CLAUDE.md
 
 # Local docs
 /docs
+
+# Design references, screenshots and planning — kept local, never published.
+# Comps, simulator captures, verification shots, design specs and agent
+# instructions are working material, not part of the apps.
+.design/
+.shots/
+.screenshots/
+docs/
+AGENTS.md

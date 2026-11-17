@@ -20,13 +20,11 @@ export const TRACKS = [
   { title: 'Late Bus Home', artist: 'Mellow Haze', durationMs: 155_000 },
 ];
 
-/** Where the first track starts, so the bar opens about where the comp draws it. */
+/** Where the first track starts, so the bar opens partly filled. */
 const OPENING_POSITION = 0.17;
 /**
  * How often the reels are pushed while the app is in front, and how far they turn each
- * time. The hub has ten teeth, so it looks identical every 36°: a step near that would
- * strobe or appear to run backwards. 12° per push stays well clear and reads as a slow,
- * steady turn.
+ * time. The ten-tooth hub repeats every 36°, so a step near that would strobe.
  */
 const FRAME_MS = 300;
 const STEP_DEG = 12;

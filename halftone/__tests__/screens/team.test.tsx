@@ -50,26 +50,21 @@ describe('Team detail', () => {
     expect(screen.getAllByLabelText(/Message /).length).toBe(team.members.length);
   });
 
-  // Every fixture team is unmuted, so the negative case — a muted team starting
-  // with notifications off — lives in team-muted.test.tsx, where jest.mock can
-  // supply one without editing data/teams.ts.
+  // The muted case lives in team-muted.test.tsx, which mocks a muted team.
   it('starts an unmuted team with notifications on', async () => {
     await wrap();
     expect(team.muted).toBe(false);
     expect(screen.getByRole('switch').props.accessibilityState.checked).toBe(true);
   });
 
-  // The employer is pulled out into its own leading group, so guard the thing
-  // that split can silently break: every member still renders, exactly once,
-  // in data order.
+  // Splitting out the employer must not drop, duplicate or reorder members.
   it('keeps members in data order with the employer first', async () => {
     await wrap();
     const labels = screen.getAllByLabelText(/Message /).map((n) => n.props.accessibilityLabel);
     expect(labels).toEqual(team.members.map((m) => `Message ${m.name}`));
   });
 
-  // Comp shows rounded-square member avatars here, against the circles used in
-  // the chat thread — so the radius has to be a real prop, not Avatar's default.
+  // Member avatars here are rounded squares, so the radius must be passed.
   it('renders member avatars as rounded squares, not circles', async () => {
     await wrap();
     const avatar = screen.getByLabelText(`${team.members[1].name} avatar`);

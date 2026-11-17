@@ -12,7 +12,7 @@ import Svg, {
 } from 'react-native-svg';
 
 /**
- * The four quick-action marks. They read as small 3D renders in the design, so
+ * The four quick-action marks. They read as small 3D renders, so
  * each is built from flat facets plus a light-to-dark gradient rather than a
  * line icon — the highlight always falls on the top-left.
  */

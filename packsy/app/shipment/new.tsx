@@ -28,7 +28,7 @@ function ParcelCard({ tracking }: { tracking: string }) {
   const h = 230;
   return (
     <View className="bg-sun" style={{ height: 168, borderRadius: 30, overflow: 'hidden', padding: 18 }}>
-      {/* The box overruns the card's top and right edges, as in the comp. */}
+      {/* The box overruns the card's top and right edges. */}
       <Image
         source={box.source}
         contentFit="contain"
@@ -50,7 +50,7 @@ function ParcelCard({ tracking }: { tracking: string }) {
 export default function NewShipment() {
   const insets = useSafeAreaInsets();
   // Opens on Package Details: arriving from "Create Shipment" or "+", the
-  // tracking number has already been captured, which is the comp's state.
+  // tracking number has already been captured.
   const [step, setStep] = useState(1);
   const [tracking, setTracking] = useState('DHL123456789');
   const [category, setCategory] = useState<string>('Shopping');
@@ -125,7 +125,7 @@ export default function NewShipment() {
         </Animated.View>
       </ScrollView>
 
-      {/* Footer floats over a fade so fields scroll out beneath it, as the comp's soft edge shows. */}
+      {/* Footer floats over a fade so fields scroll out beneath it. */}
       <Animated.View
         entering={FadeIn.duration(300)}
         className="absolute inset-x-0 bottom-0 flex-row"

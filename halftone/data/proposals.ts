@@ -4,9 +4,8 @@ import { shiftDays, todayIso } from '../lib/today';
 const at = (daysAgo: number, time: string) => `${shiftDays(todayIso(), -daysAgo)}T${time}Z`;
 
 /**
- * No incoming proposal is seeded 'accepted' (Ruling R4) — the proposals
- * screen accepts one at a time and asserts exactly one "Accepted" result
- * afterward, so a pre-accepted incoming record would break that count.
+ * No incoming proposal is seeded 'accepted': the proposals tests accept one and
+ * expect exactly one "Accepted" result afterward.
  */
 export const proposals: Proposal[] = [
   {

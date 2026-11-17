@@ -12,7 +12,7 @@ describe('parcel derivations', () => {
     expect(stage(get('DHL123456789'))).toBe(0);
   });
 
-  it('shows the comp dates for F523HI487 on every screen', () => {
+  it('shows the same dates for F523HI487 on every screen', () => {
     const p = get('F523HI487');
     expect(shippedAt(p)).toBe('2026-03-28');
     expect(arrivalAt(p)).toBe('2026-03-30');
@@ -34,7 +34,7 @@ describe('parcel derivations', () => {
     expect(rows[3]).toMatchObject({ current: true, caption: '3-5 days' });
   });
 
-  it('stacks three active parcels in the comp colour order', () => {
+  it('stacks three active parcels in the designed colour order', () => {
     expect(activeParcels().map((p) => p.tone)).toEqual(['sun', 'iris', 'coral']);
     expect(inFolder('all')).toHaveLength(PARCELS.length);
   });

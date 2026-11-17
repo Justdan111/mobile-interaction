@@ -292,8 +292,7 @@ def brush_stroke(
     ink = edge * ends * (1.0 - 0.62 * dry) * (0.70 + 0.55 * (mid - 0.5))
 
     # Cut the ink against bristle noise: where the paper wins, the stroke skips.
-    # The transition is deliberately near-binary — a soft ramp here is what made
-    # earlier passes look like a blurred bar instead of ink on paper.
+    # The transition is deliberately near-binary; a soft ramp reads as a blurred bar.
     cut = 0.20 + streaks * (0.62 * fine + 0.30 * mid) + 0.55 * dry * (1.0 - fine)
     a = smoothstep(0.0, 0.012, ink - cut * 0.62)
     a = np.clip(a * (0.74 + 0.26 * mid), 0, 1)

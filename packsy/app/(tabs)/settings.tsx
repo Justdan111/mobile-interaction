@@ -6,7 +6,7 @@ import { Icon, type IconName } from '../../components/ui/icons';
 import { Screen } from '../../components/ui/Screen';
 import { C } from '../../theme/colors';
 
-/** No comp exists for Settings; it is built from the other screens' parts. */
+/** Settings, built from the other screens' parts. */
 function Row({ icon, label, value, toggle }: { icon: IconName; label: string; value?: string; toggle?: [boolean, (v: boolean) => void] }) {
   return (
     <View className="flex-row items-center" style={{ paddingVertical: 12, gap: 14 }}>

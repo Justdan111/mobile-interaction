@@ -19,7 +19,7 @@ import { art } from '../lib/art';
 import { C } from '../theme/colors';
 import { Press } from '../components/ui/Press';
 
-/** Rings from `.design/comps/welcome.png`: two solid inner, three dashed outer. */
+/** Onboarding rings: two solid inner, three dashed outer. */
 const SOLID = [150, 205];
 const DASHED = [262, 322, 388];
 

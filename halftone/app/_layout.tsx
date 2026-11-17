@@ -20,10 +20,8 @@ SplashScreen.preventAutoHideAsync();
 function Shell({ fontsReady }: { fontsReady: boolean }) {
   const { mode, hydrated } = useTheme();
 
-  // Hold the splash until both fonts and the persisted theme preference are
-  // ready, so the app never paints a frame in the wrong theme (or an
-  // un-fonted one). Fonts alone isn't enough: theme hydration is a second,
-  // independent async read that can still be pending once fonts resolve.
+  // Hold the splash until fonts and the persisted theme preference are both
+  // ready, so the first frame is never in the wrong theme or un-fonted.
   useEffect(() => {
     if (fontsReady && hydrated) SplashScreen.hideAsync();
   }, [fontsReady, hydrated]);

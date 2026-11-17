@@ -1,7 +1,7 @@
 /**
  * Head-shape geometry for the mascots.
  *
- * The comps draw each mood as a flat, slightly irregular paper shape. Computing
+ * Each mood is drawn as a flat, slightly irregular paper shape. Computing
  * the points rather than hand-plotting them keeps the spikes even and lets a
  * shape be retuned by changing one number instead of thirty coordinates.
  */
@@ -128,7 +128,7 @@ export function blobPath(
 /**
  * A capsule outline from p1 to p2 — the mascots' limbs.
  *
- * The comps draw arms as thin unfilled tubes, not single strokes; a stroked
+ * Arms are drawn as thin unfilled tubes, not single strokes; a stroked
  * line reads as wire and is what makes a limb look detached from the body.
  * Both end caps sweep 0: with the normal taken as (-uy, ux), sweep 1 bulges
  * the cap back into the capsule instead of out past the endpoint.
