@@ -16,7 +16,7 @@ import * as Haptics from 'expo-haptics';
 import { art } from '../../lib/art';
 import { formatDate } from '../../lib/format';
 import { arrivalAt, shippedAt, stage, status, type Parcel } from '../../lib/packages';
-import { C } from '../../theme/colors';
+import { TONES as C } from '../../theme/colors';
 import { CarrierMark } from '../ui/CarrierMark';
 import { StatusPill } from '../ui/StatusPill';
 

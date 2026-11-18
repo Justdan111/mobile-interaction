@@ -1,15 +1,30 @@
 import '../global.css';
 import { useEffect } from 'react';
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
+import { DEV_ROUTE } from '../dev-route'; // TEMP-VERIFY
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold } from '@expo-google-fonts/poppins';
-import { C } from '../theme/colors';
+import { ThemeProvider, useColors } from '../theme/ThemeProvider';
 
 SplashScreen.preventAutoHideAsync();
+
+/** Inside the provider, so the navigator and status bar follow the theme. */
+function Shell() {
+  const C = useColors();
+  return (
+    <>
+      <StatusBar style={C.statusBar} />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.page } }}>
+        <Stack.Screen name="index" options={{ contentStyle: { backgroundColor: C.iris } }} />
+        <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
+      </Stack>
+    </>
+  );
+}
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({ Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold });
@@ -20,16 +35,18 @@ export default function RootLayout() {
     if (ready) SplashScreen.hideAsync();
   }, [ready]);
 
+  useEffect(() => { // TEMP-VERIFY
+    if (ready && DEV_ROUTE) { const t = setTimeout(() => router.replace(DEV_ROUTE as never), 50); return () => clearTimeout(t); }
+  }, [ready]); // TEMP-VERIFY
+
   if (!ready) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <StatusBar style="light" />
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.page } }}>
-          <Stack.Screen name="index" options={{ contentStyle: { backgroundColor: C.iris } }} />
-          <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
-        </Stack>
+        <ThemeProvider>
+          <Shell />
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

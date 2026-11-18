@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { C } from '../../theme/colors';
+import { useColors } from '../../theme/ThemeProvider';
 import { Icon, type IconName } from '../ui/icons';
 
 export type TabDef = { name: string; href: string; label: string; icon: IconName };
@@ -32,6 +32,7 @@ export type TabItemProps = {
  * jumping, because the width is a shared value, not a layout switch.
  */
 export function TabItem({ icon, label, isFocused, onPress }: TabItemProps) {
+  const C = useColors();
   const on = useSharedValue(isFocused ? 1 : 0);
   useEffect(() => {
     on.value = withTiming(isFocused ? 1 : 0, EASE);
@@ -54,9 +55,9 @@ export function TabItem({ icon, label, isFocused, onPress }: TabItemProps) {
           pointerEvents="none"
           style={[{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, borderRadius: 29, backgroundColor: C.pill }, pill]}
         />
-        <Icon name={icon} color={isFocused ? C.night : C.ink} surface={isFocused ? C.pill : C.bar} size={24} />
+        <Icon name={icon} color={isFocused ? C.onPill : C.ink} surface={isFocused ? C.pill : C.bar} size={24} />
         <Animated.View style={[{ overflow: 'hidden' }, text]}>
-          <Text numberOfLines={1} className="font-medium" style={{ color: C.night, fontSize: 15.5, marginLeft: 10 }}>
+          <Text numberOfLines={1} className="font-medium" style={{ color: C.onPill, fontSize: 15.5, marginLeft: 10 }}>
             {label}
           </Text>
         </Animated.View>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import type { Status } from '../../lib/packages';
-import { C } from '../../theme/colors';
+import { useColors } from '../../theme/ThemeProvider';
 import { Icon } from './icons';
 
 const LABEL: Record<Status, string> = {
@@ -28,6 +28,7 @@ export function StatusPill({
   /** What the pill sits on; used for the glyph's cut-outs in outline mode. */
   surface: string;
 }) {
+  const C = useColors();
   const fill = variant === 'outline' ? 'transparent' : status === 'received' ? C.goDeep : status === 'in-transit' ? C.iris : C.raised;
   const glyphSurface = variant === 'outline' ? surface : fill;
   return (

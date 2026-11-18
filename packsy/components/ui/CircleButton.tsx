@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import { C } from '../../theme/colors';
+import { useColors } from '../../theme/ThemeProvider';
 import { Icon, type IconName } from './icons';
 import { Press } from './Press';
 
@@ -19,6 +19,7 @@ type Props = {
 };
 
 export function CircleButton({ icon, label, onPress, dot, size = 50, variant = 'outline', fill, glyph }: Props) {
+  const C = useColors();
   return (
     <Press
       onPress={onPress}

@@ -16,7 +16,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { art } from '../lib/art';
-import { C } from '../theme/colors';
+import { useColors } from '../theme/ThemeProvider';
 import { Press } from '../components/ui/Press';
 
 /** Onboarding rings: two solid inner, three dashed outer. */
@@ -60,6 +60,7 @@ function Rings({ cx, cy, size }: { cx: number; cy: number; size: number }) {
 }
 
 export default function Welcome() {
+  const C = useColors();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const centreY = height * 0.43;

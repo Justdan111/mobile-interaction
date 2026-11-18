@@ -10,7 +10,7 @@ import { Screen } from '../../components/ui/Screen';
 import { formatDatePadded } from '../../lib/format';
 import { CARRIER_NAMES, parcelById, status, timeline } from '../../lib/packages';
 import { placeById } from '../../lib/places';
-import { C } from '../../theme/colors';
+import { useColors } from '../../theme/ThemeProvider';
 
 const ACTIONS: { icon: IconName; label: string }[] = [
   { icon: 'history', label: 'Reschedule\nDelivery' },
@@ -31,6 +31,7 @@ const DOT = 13;
 const DETAIL_GUTTER = 14;
 
 export default function PackageDetail() {
+  const C = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const parcel = parcelById(String(id));
 
@@ -92,7 +93,7 @@ export default function PackageDetail() {
                 <View style={{ width: 22, alignItems: 'center' }}>
                   {r.current ? (
                     <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: C.go, alignItems: 'center', justifyContent: 'center', marginTop: 6 }}>
-                      <View style={{ width: 11, height: 11, borderRadius: 5.5, backgroundColor: C.ink }} />
+                      <View style={{ width: 11, height: 11, borderRadius: 5.5, backgroundColor: C.core }} />
                     </View>
                   ) : (
                     <View style={{ width: DOT, height: DOT, borderRadius: DOT / 2, backgroundColor: C.go, marginTop: 5 }} />
@@ -137,7 +138,7 @@ export default function PackageDetail() {
               Pickup Point
             </Text>
             <Pressable accessibilityRole="button" className="items-center justify-center rounded-full bg-ink" style={{ height: 46, paddingHorizontal: 20 }}>
-              <Text className="font-medium" style={{ color: C.night, fontSize: 15 }}>
+              <Text className="font-medium" style={{ color: C.onInk, fontSize: 15 }}>
                 Change
               </Text>
             </Pressable>
