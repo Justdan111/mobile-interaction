@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { Pressable, Text, TextInput, View, type TextInputProps } from 'react-native';
 import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
-import { C } from '../../theme/colors';
+import { useColors } from '../../theme/ThemeProvider';
 import { Icon } from '../ui/icons';
 
 export const FIELD_HEIGHT = 64;
 
 export function Field(props: TextInputProps) {
+  const C = useColors();
   return (
     <View className="justify-center rounded-full bg-card" style={{ height: FIELD_HEIGHT, paddingHorizontal: 24 }}>
-      <TextInput placeholderTextColor="#8A8A8A" className="font-body text-ink" style={{ fontSize: 16.5 }} {...props} />
+      <TextInput placeholderTextColor={C.placeholder} className="font-body text-ink" style={{ fontSize: 16.5 }} {...props} />
     </View>
   );
 }
@@ -26,6 +27,7 @@ export function Select<T extends string>({
   onChange: (v: T) => void;
   label: string;
 }) {
+  const C = useColors();
   const [open, setOpen] = useState(false);
   const current = options.find((o) => o.value === value)?.label ?? value;
   return (
@@ -59,7 +61,7 @@ export function Select<T extends string>({
                 accessibilityRole="button"
                 style={{ paddingHorizontal: 24, paddingVertical: 12 }}
               >
-                <Text className="font-body" style={{ color: '#BDBDBD', fontSize: 16 }}>
+                <Text className="font-body" style={{ color: C.dim, fontSize: 16 }}>
                   {o.label}
                 </Text>
               </Pressable>

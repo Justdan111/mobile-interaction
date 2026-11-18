@@ -7,9 +7,23 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold } from '@expo-google-fonts/poppins';
-import { C } from '../theme/colors';
+import { ThemeProvider, useColors } from '../theme/ThemeProvider';
 
 SplashScreen.preventAutoHideAsync();
+
+/** Inside the provider, so the navigator and status bar follow the theme. */
+function Shell() {
+  const C = useColors();
+  return (
+    <>
+      <StatusBar style={C.statusBar} />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.page } }}>
+        <Stack.Screen name="index" options={{ contentStyle: { backgroundColor: C.iris } }} />
+        <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
+      </Stack>
+    </>
+  );
+}
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({ Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold });
@@ -25,11 +39,9 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <StatusBar style="light" />
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.page } }}>
-          <Stack.Screen name="index" options={{ contentStyle: { backgroundColor: C.iris } }} />
-          <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
-        </Stack>
+        <ThemeProvider>
+          <Shell />
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

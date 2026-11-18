@@ -7,7 +7,7 @@ import { TitleHeader } from '../../components/ui/Header';
 import { Icon } from '../../components/ui/icons';
 import { Screen } from '../../components/ui/Screen';
 import { CARRIER_NAMES, inFolder, type Folder } from '../../lib/packages';
-import { C } from '../../theme/colors';
+import { useColors } from '../../theme/ThemeProvider';
 
 const FOLDERS: { key: Folder | 'all'; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -17,6 +17,7 @@ const FOLDERS: { key: Folder | 'all'; label: string }[] = [
 ];
 
 export default function Packages() {
+  const C = useColors();
   const [folder, setFolder] = useState<Folder | 'all'>('all');
   const [query, setQuery] = useState('');
 
@@ -42,7 +43,7 @@ export default function Packages() {
             value={query}
             onChangeText={setQuery}
             placeholder="Search packages"
-            placeholderTextColor="#8A8A8A"
+            placeholderTextColor={C.placeholder}
             className="flex-1 font-body text-ink"
             style={{ fontSize: 15.5 }}
           />
@@ -53,7 +54,7 @@ export default function Packages() {
           className="items-center justify-center bg-ink"
           style={{ width: 54, height: 54, borderRadius: 27 }}
         >
-          <Icon name="filter" color={C.night} surface={C.ink} size={20} />
+          <Icon name="filter" color={C.onInk} surface={C.ink} size={20} />
         </Pressable>
       </View>
 
@@ -62,7 +63,7 @@ export default function Packages() {
           const on = f.key === folder;
           return (
             <Pressable key={f.key} onPress={() => setFolder(f.key)} accessibilityRole="tab" accessibilityState={{ selected: on }}>
-              <Text className={on ? 'font-semibold' : 'font-body'} style={{ color: on ? C.ink : '#BDBDBD', fontSize: 15.5 }}>
+              <Text className={on ? 'font-semibold' : 'font-body'} style={{ color: on ? C.ink : C.dim, fontSize: 15.5 }}>
                 {f.label}
               </Text>
               <View style={{ height: 2, marginTop: 6, borderRadius: 1, backgroundColor: on ? C.ink : 'transparent' }} />

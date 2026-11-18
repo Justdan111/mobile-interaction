@@ -4,7 +4,7 @@ import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { formatDate } from '../../lib/format';
 import { arrivalAt, shippedAt, stage, status, type Parcel } from '../../lib/packages';
-import { C } from '../../theme/colors';
+import { useColors } from '../../theme/ThemeProvider';
 import { CarrierMark } from '../ui/CarrierMark';
 import { Icon } from '../ui/icons';
 import { RouteTrack } from '../ui/RouteTrack';
@@ -14,6 +14,7 @@ import { Press } from '../ui/Press';
 /** Carrier, number with copy, contents, and the status pill. Shared by the
  *  Packages list and the top of the detail screen. */
 export function ParcelSummary({ parcel }: { parcel: Parcel }) {
+  const C = useColors();
   const copy = () => {
     Clipboard.setStringAsync(parcel.id).catch(() => {});
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
@@ -27,10 +28,10 @@ export function ParcelSummary({ parcel }: { parcel: Parcel }) {
             {parcel.id}
           </Text>
           <Pressable onPress={copy} accessibilityRole="button" accessibilityLabel={`Copy ${parcel.id}`} hitSlop={10}>
-            <Icon name="copy" color="#9A9A9A" surface={C.card} size={17} />
+            <Icon name="copy" color={C.dim} surface={C.card} size={17} />
           </Pressable>
         </View>
-        <Text className="font-body" style={{ color: '#C9C9C9', fontSize: 13.5, marginTop: 1 }}>
+        <Text className="font-body" style={{ color: C.soft, fontSize: 13.5, marginTop: 1 }}>
           {parcel.contents}
         </Text>
       </View>
@@ -40,6 +41,7 @@ export function ParcelSummary({ parcel }: { parcel: Parcel }) {
 }
 
 export function ParcelCard({ parcel, onPress }: { parcel: Parcel; onPress: () => void }) {
+  const C = useColors();
   const arrived = stage(parcel) === 2;
   return (
     <Press

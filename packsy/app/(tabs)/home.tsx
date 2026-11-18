@@ -8,7 +8,7 @@ import { TitleHeader } from '../../components/ui/Header';
 import { Icon, type IconName } from '../../components/ui/icons';
 import { GUTTER, Screen } from '../../components/ui/Screen';
 import { activeParcels, parcelById, type Parcel } from '../../lib/packages';
-import { C } from '../../theme/colors';
+import { useColors } from '../../theme/ThemeProvider';
 import { Press } from '../../components/ui/Press';
 
 const ACTIVE = activeParcels();
@@ -17,6 +17,7 @@ const ACTIVE = activeParcels();
 const rise = (i: number) => FadeInDown.duration(420).delay(i * 70);
 
 function ActionTile({ icon, label, onPress }: { icon: IconName; label: string; onPress: () => void }) {
+  const C = useColors();
   return (
     <Press
       onPress={onPress}
@@ -35,6 +36,7 @@ function ActionTile({ icon, label, onPress }: { icon: IconName; label: string; o
 }
 
 export default function Home() {
+  const C = useColors();
   const { width } = useWindowDimensions();
   const inner = width - GUTTER * 2;
   const [front, setFront] = useState<Parcel>(ACTIVE[0]);
@@ -60,11 +62,11 @@ export default function Home() {
           onChangeText={setQuery}
           onSubmitEditing={track}
           placeholder="Track a package"
-          placeholderTextColor={C.night}
+          placeholderTextColor={C.onInk}
           autoCapitalize="characters"
           returnKeyType="search"
           className="flex-1 font-body"
-          style={{ color: C.night, fontSize: 16 }}
+          style={{ color: C.onInk, fontSize: 16 }}
         />
         <Pressable
           onPress={track}

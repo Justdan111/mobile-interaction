@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import { C } from '../../theme/colors';
+import { useColors } from '../../theme/ThemeProvider';
 
 /**
  * Origin · current · destination. Travelled track is solid green, the rest
@@ -8,6 +8,7 @@ import { C } from '../../theme/colors';
  * parcel has arrived the whole track is green and the last node is current.
  */
 export function RouteTrack({ stage, surface }: { stage: 0 | 1 | 2; surface: string }) {
+  const C = useColors();
   const node = (i: 0 | 1 | 2) => {
     const current = i === stage;
     const done = i < stage;
@@ -24,7 +25,7 @@ export function RouteTrack({ stage, surface }: { stage: 0 | 1 | 2; surface: stri
             justifyContent: 'center',
           }}
         >
-          <View style={{ width: 11, height: 11, borderRadius: 5.5, backgroundColor: '#FFFFFF' }} />
+          <View style={{ width: 11, height: 11, borderRadius: 5.5, backgroundColor: C.core }} />
         </View>
       );
     }

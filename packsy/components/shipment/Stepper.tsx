@@ -1,9 +1,10 @@
 import React from 'react';
 import { Text, View } from 'react-native';
-import { C } from '../../theme/colors';
+import { useColors } from '../../theme/ThemeProvider';
 
 /** Three steps on one line: done = green dot, current = green ring, ahead = grey dot. */
 export function Stepper({ steps, current }: { steps: readonly string[]; current: number }) {
+  const C = useColors();
   return (
     <View>
       <View className="flex-row items-center" style={{ paddingHorizontal: 42 }}>
@@ -25,7 +26,7 @@ export function Stepper({ steps, current }: { steps: readonly string[]; current:
               ) : null}
               {here ? (
                 <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: C.go, alignItems: 'center', justifyContent: 'center' }}>
-                  <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: C.ink }} />
+                  <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: C.core }} />
                 </View>
               ) : (
                 <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: done ? C.go : C.node }} />

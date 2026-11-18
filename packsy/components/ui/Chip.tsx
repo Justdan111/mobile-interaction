@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, Text } from 'react-native';
-import { C } from '../../theme/colors';
+import { useColors } from '../../theme/ThemeProvider';
 
 /** A selectable pill: pale grey with dark text when on, card grey with white text when off. */
 export function Chip({
@@ -16,6 +16,7 @@ export function Chip({
   children?: React.ReactNode;
   height?: number;
 }) {
+  const C = useColors();
   return (
     <Pressable
       onPress={onPress}
@@ -32,7 +33,7 @@ export function Chip({
       }}
     >
       {children ?? (
-        <Text className="font-medium" style={{ fontSize: 15, color: active ? C.night : C.ink }}>
+        <Text className="font-medium" style={{ fontSize: 15, color: active ? C.onPill : C.ink }}>
           {label}
         </Text>
       )}

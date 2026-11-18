@@ -13,7 +13,7 @@ import { Icon } from '../../components/ui/icons';
 import { GUTTER } from '../../components/ui/Screen';
 import { art } from '../../lib/art';
 import { CARRIER_NAMES, type CarrierId } from '../../lib/packages';
-import { C } from '../../theme/colors';
+import { useColors } from '../../theme/ThemeProvider';
 
 const STEPS = ['Add shipment', 'Package Details', 'Sender Address'] as const;
 const CATEGORIES = ['Shopping', 'Documents', 'Gift'] as const;
@@ -24,6 +24,7 @@ const UNITS = [
 ] as const;
 
 function ParcelCard({ tracking }: { tracking: string }) {
+  const C = useColors();
   const box = art['parcel-hero'];
   const h = 230;
   return (
@@ -48,6 +49,7 @@ function ParcelCard({ tracking }: { tracking: string }) {
 }
 
 export default function NewShipment() {
+  const C = useColors();
   const insets = useSafeAreaInsets();
   // Opens on Package Details: arriving from "Create Shipment" or "+", the
   // tracking number has already been captured.
@@ -129,20 +131,20 @@ export default function NewShipment() {
       <Animated.View
         entering={FadeIn.duration(300)}
         className="absolute inset-x-0 bottom-0 flex-row"
-        style={{ paddingHorizontal: GUTTER - 6, paddingBottom: insets.bottom + 8, paddingTop: 14, gap: 12, backgroundColor: 'rgba(28,28,28,0.94)' }}
+        style={{ paddingHorizontal: GUTTER - 6, paddingBottom: insets.bottom + 8, paddingTop: 14, gap: 12, backgroundColor: C.scrim }}
       >
         <Pressable
           onPress={leave}
           accessibilityRole="button"
           className="flex-1 items-center justify-center rounded-full"
-          style={{ height: FIELD_HEIGHT, borderWidth: 1, borderColor: '#6A6A6A' }}
+          style={{ height: FIELD_HEIGHT, borderWidth: 1, borderColor: C.outline }}
         >
           <Text className="font-medium text-ink" style={{ fontSize: 17 }}>
             Save as draft
           </Text>
         </Pressable>
         <Pressable onPress={next} accessibilityRole="button" className="flex-1 items-center justify-center rounded-full bg-ink" style={{ height: FIELD_HEIGHT }}>
-          <Text className="font-medium" style={{ color: C.night, fontSize: 17 }}>
+          <Text className="font-medium" style={{ color: C.onInk, fontSize: 17 }}>
             {step === STEPS.length - 1 ? 'Create' : 'Next'}
           </Text>
         </Pressable>

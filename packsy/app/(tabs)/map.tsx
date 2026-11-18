@@ -9,7 +9,7 @@ import { TitleHeader } from '../../components/ui/Header';
 import { Icon } from '../../components/ui/icons';
 import { GUTTER, TAB_BAR_CLEARANCE } from '../../components/ui/Screen';
 import { PLACES, type Place, type PlaceKind } from '../../lib/places';
-import { C } from '../../theme/colors';
+import { useColors } from '../../theme/ThemeProvider';
 
 const FILTERS: { key: PlaceKind | 'all'; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -19,6 +19,7 @@ const FILTERS: { key: PlaceKind | 'all'; label: string }[] = [
 ];
 
 export default function MapScreen() {
+  const C = useColors();
   const insets = useSafeAreaInsets();
   const map = useRef<CityMapHandle>(null);
   const [filter, setFilter] = useState<PlaceKind | 'all'>('all');
@@ -56,7 +57,7 @@ export default function MapScreen() {
             onSubmitEditing={search}
             returnKeyType="search"
             placeholder="Search address or pickup point"
-            placeholderTextColor="#8A8A8A"
+            placeholderTextColor={C.placeholder}
             className="flex-1 font-body text-ink"
             style={{ fontSize: 15.5 }}
           />
@@ -78,8 +79,8 @@ export default function MapScreen() {
         <CityMap ref={map} places={places} selectedId={selected} onSelect={select} />
 
         <View style={{ position: 'absolute', right: 16, bottom: TAB_BAR_CLEARANCE + insets.bottom + 6, gap: 12 }}>
-          <CircleButton icon="plus" label="Zoom in" size={58} variant="solid" fill="rgba(40,40,40,0.92)" glyph={C.ink} onPress={() => map.current?.zoomBy(1.35)} />
-          <CircleButton icon="minus" label="Zoom out" size={58} variant="solid" fill="rgba(40,40,40,0.92)" glyph={C.ink} onPress={() => map.current?.zoomBy(1 / 1.35)} />
+          <CircleButton icon="plus" label="Zoom in" size={58} variant="solid" fill={C.glass} glyph={C.ink} onPress={() => map.current?.zoomBy(1.35)} />
+          <CircleButton icon="minus" label="Zoom out" size={58} variant="solid" fill={C.glass} glyph={C.ink} onPress={() => map.current?.zoomBy(1 / 1.35)} />
         </View>
 
         {opened && current ? (

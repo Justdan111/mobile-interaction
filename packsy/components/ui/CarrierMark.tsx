@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import type { CarrierId } from '../../lib/packages';
+import { useTheme } from '../../theme/ThemeProvider';
 
 /**
  * The carrier's badge: a white disc with the carrier's name set as type.
@@ -9,6 +10,8 @@ import type { CarrierId } from '../../lib/packages';
  */
 export function CarrierMark({ carrier, size = 44 }: { carrier: CarrierId; size?: number }) {
   const s = size / 44;
+  // White on a white light-mode card needs an edge to read as a disc.
+  const { scheme, colors } = useTheme();
   return (
     <View
       accessibilityLabel={carrier}
@@ -17,6 +20,8 @@ export function CarrierMark({ carrier, size = 44 }: { carrier: CarrierId; size?:
         height: size,
         borderRadius: size / 2,
         backgroundColor: '#FFFFFF',
+        borderWidth: scheme === 'light' ? 1 : 0,
+        borderColor: colors.ring,
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',

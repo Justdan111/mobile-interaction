@@ -1,13 +1,14 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { C } from '../../theme/colors';
+import { useColors } from '../../theme/ThemeProvider';
 import { CircleButton } from './CircleButton';
 import { Icon } from './icons';
 import { Pressable } from 'react-native';
 
 /** Tab screens: large title, bell with unread dot, and a plus that starts a shipment. */
 export function TitleHeader({ title }: { title: string }) {
+  const C = useColors();
   return (
     <View className="flex-row items-center justify-between" style={{ marginBottom: 22 }}>
       <Text className="font-semibold text-ink" style={{ fontSize: 32, lineHeight: 42 }}>
@@ -23,6 +24,7 @@ export function TitleHeader({ title }: { title: string }) {
 
 /** Pushed screens: back ring, centred title, more. */
 export function NavHeader({ title, onBack }: { title: string; onBack?: () => void }) {
+  const C = useColors();
   return (
     <View className="flex-row items-center justify-between" style={{ marginBottom: 18 }}>
       <CircleButton
