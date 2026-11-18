@@ -1,7 +1,6 @@
 import '../global.css';
 import { useEffect } from 'react';
-import { router, Stack } from 'expo-router';
-import { DEV_ROUTE } from '../dev-route'; // TEMP-VERIFY
+import { Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -34,10 +33,6 @@ export default function RootLayout() {
   useEffect(() => {
     if (ready) SplashScreen.hideAsync();
   }, [ready]);
-
-  useEffect(() => { // TEMP-VERIFY
-    if (ready && DEV_ROUTE) { const t = setTimeout(() => router.replace(DEV_ROUTE as never), 50); return () => clearTimeout(t); }
-  }, [ready]); // TEMP-VERIFY
 
   if (!ready) return null;
 
