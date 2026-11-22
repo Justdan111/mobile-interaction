@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Mirrors theme/colors.ts — change both together. */
+@layer base {
+  :root {
+    --color-page: 255 255 255;
+    --color-card: 245 245 245;  /* #F5F5F5 text posts, unselected tiles */
+    --color-line: 236 236 236;  /* #ECECEC hairlines and card borders */
+    --color-ink: 28 28 28;      /* #1C1C1C */
+    --color-muted: 142 142 142; /* #8E8E8E captions, inactive tabs */
+    --color-faint: 196 196 196; /* #C4C4C4 */
+    --color-brand: 227 97 53;   /* #E36135 progress, unread dot */
+    --color-blue: 56 114 244;   /* #3872F4 bubbles, selection */
+    --color-mist: 228 236 253;  /* #E4ECFD the number bubble */
+    --color-peach: 247 218 206; /* #F7DACE onboarding photo card */
+  }
+}
+
+/* expo-google-fonts registers each weight as its own family, so the family is
+   named with the weight; weight alone selects nothing on Android. */
+@layer components {
+  .font-body     { font-family: PlusJakartaSans_400Regular;  font-weight: 400; }
+  .font-medium   { font-family: PlusJakartaSans_500Medium;   font-weight: 500; }
+  .font-semibold { font-family: PlusJakartaSans_600SemiBold; font-weight: 600; }
+  .font-bold     { font-family: PlusJakartaSans_700Bold;     font-weight: 700; }
+  .font-script   { font-family: PlaywriteUSModern_400Regular; }
+}
