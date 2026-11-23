@@ -44,6 +44,7 @@ module.exports = {
   withTiming: (v) => v,
   withSpring: (v) => v,
   withRepeat: (v) => v,
+  useDerivedValue: (fn) => ({ value: fn() }),
   withSequence: (...steps) => steps[steps.length - 1],
   withDelay: (_ms, v) => v,
   interpolateColor: (_v, _i, o) => o[0],

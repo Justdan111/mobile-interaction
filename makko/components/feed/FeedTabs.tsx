@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
-import Animated, { interpolate, interpolateColor, useAnimatedStyle, useSharedValue, type SharedValue } from 'react-native-reanimated';
+import Animated, { Easing, interpolate, interpolateColor, useAnimatedStyle, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
 import { FEED_TABS, type FeedTab } from '../../data/posts';
 import { C } from '../../theme/colors';
 import { Icon } from '../ui/icons';
@@ -8,12 +8,20 @@ import { Press } from '../ui/Press';
 
 const INACTIVE = '#A3A3A3';
 
-function Label({ label, index, pos, onPress, onLayout }: { label: string; index: number; pos: SharedValue<number>; onPress: () => void; onLayout: (e: LayoutChangeEvent) => void }) {
+function Label({ label, index, pos, onPress, onPressIn, onPressOut, onLayout }: {
+  label: string;
+  index: number;
+  pos: SharedValue<number>;
+  onPress: () => void;
+  onPressIn: () => void;
+  onPressOut: () => void;
+  onLayout: (e: LayoutChangeEvent) => void;
+}) {
   const color = useAnimatedStyle(() => ({
     color: interpolateColor(Math.min(1, Math.abs(pos.value - index)), [0, 1], [C.ink, INACTIVE]),
   }));
   return (
-    <Press onPress={onPress} accessibilityRole="tab" accessibilityLabel={label} onLayout={onLayout} hitSlop={8} pressedStyle={{ opacity: 0.6 }}>
+    <Press onPress={onPress} onPressIn={onPressIn} onPressOut={onPressOut} accessibilityRole="tab" accessibilityLabel={label} onLayout={onLayout} hitSlop={8} pressedStyle={{}}>
       <Animated.Text className="font-medium" style={[{ fontSize: 17, paddingVertical: 6 }, color]}>
         {label}
       </Animated.Text>
@@ -22,13 +30,30 @@ function Label({ label, index, pos, onPress, onLayout }: { label: string; index:
 }
 
 /**
- * The All / Photos / Videos / Posts row. `pos` is the pager's position in
- * pages, so the underline slides and stretches between labels as you swipe.
+ * The All / Photos / Videos / Posts row. The underline glides to the selected
+ * label and takes its width. Press-in on another tab is reported so the feed
+ * can dim while the finger is down.
  */
-export function FeedTabs({ pos, onSelect, onFilter, filtered }: { pos: SharedValue<number>; onSelect: (t: FeedTab, i: number) => void; onFilter: () => void; filtered: boolean }) {
+export function FeedTabs({
+  index,
+  onSelect,
+  onPressTab,
+  onFilter,
+  filtered,
+}: {
+  index: number;
+  onSelect: (t: FeedTab, i: number) => void;
+  onPressTab: (i: number | null) => void;
+  onFilter: () => void;
+  filtered: boolean;
+}) {
+  const pos = useSharedValue(index);
+  useEffect(() => {
+    pos.value = withTiming(index, { duration: 300, easing: Easing.bezier(0.33, 1, 0.68, 1) });
+  }, [index, pos]);
+
   const xs = useSharedValue<number[]>(FEED_TABS.map(() => 0));
   const ws = useSharedValue<number[]>(FEED_TABS.map(() => 0));
-
   const underline = useAnimatedStyle(() => {
     const idx = FEED_TABS.map((_, i) => i);
     return {
@@ -47,6 +72,8 @@ export function FeedTabs({ pos, onSelect, onFilter, filtered }: { pos: SharedVal
             index={i}
             pos={pos}
             onPress={() => onSelect(t.key, i)}
+            onPressIn={() => onPressTab(i)}
+            onPressOut={() => onPressTab(null)}
             onLayout={(e) => {
               const { x, width } = e.nativeEvent.layout;
               xs.value = xs.value.map((v, j) => (j === i ? x : v));
